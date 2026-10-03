@@ -1,0 +1,167 @@
+#!/usr/bin/env node
+// Genera los datos del atlas a partir de los vaults, las skills y los agentes de
+// esta Mac. Escribe en ./datos (ignorado por git: es contenido personal y se
+// regenera en segundos). Uso: npm run datos
+import fs from 'node:fs';
+import path from 'node:path';
+import { leerAgentesIA, leerAutomatizaciones, leerMotor, notaPorRuta } from './lib/agentes.mjs';
+import { CONFIG } from './lib/config.mjs';
+import { leerSkills } from './lib/skills.mjs';
+import { leerVaults } from './lib/vaults.mjs';
+
+const inicio = Date.now();
+const slug = (texto) =>
+  texto
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+if (!fs.existsSync(CONFIG.obsidian)) {
+  console.error(`No encuentro el contenedor de Obsidian en ${CONFIG.obsidian}. Usa ATLAS_OBSIDIAN=/ruta npm run datos`);
+  process.exit(1);
+}
+
+const secretos = { total: 0 };
+const temporal = `${CONFIG.salida}.nuevo`;
+fs.rmSync(temporal, { recursive: true, force: true });
+fs.mkdirSync(path.join(temporal, 'vault'), { recursive: true });
+fs.mkdirSync(path.join(temporal, 'contenido'), { recursive: true });
+fs.mkdirSync(path.join(temporal, 'skills'), { recursive: true });
+const escribir = (rel, datos) => fs.writeFileSync(path.join(temporal, rel), JSON.stringify(datos));
+
+// --- Vaults -------------------------------------------------------------------
+const { vaults, todas, puentes, totalEnlaces, sinResolver, routing, obsidian, arbolCarpetas } = leerVaults(secretos);
+
+const resumenVaults = [];
+const porId = new Map(todas.map((n) => [n.id, n]));
+for (const { info, notas, adjuntos, generados } of vaults) {
+  const s = slug(info.name);
+  // El contenido completo va en bloques de ~450 KB que el navegador pide solo al abrir una nota.
+  let bloque = 0;
+  let actual = {};
+  let tamano = 0;
+  const cerrar = () => {
+    if (!Object.keys(actual).length) return;
+    escribir(`contenido/${s}-${bloque}.json`, actual);
+    bloque += 1;
+    actual = {};
+    tamano = 0;
+  };
+  for (const n of notas) {
+    if (tamano > CONFIG.maxBytesBloque) cerrar();
+    actual[n.id] = n._contenido;
+    tamano += n._contenido.length;
+    n.c = `${s}-${bloque}`;
+  }
+  cerrar();
+
+  // Notas de otros vaults que esta cita o que la citan: basta con título y vault.
+  const externos = {};
+  for (const n of notas) {
+    for (const id of [...n.x, ...n.xb]) {
+      const e = porId.get(id);
+      if (e) externos[id] = { v: e.v, t: e.t, f: e.f };
+    }
+  }
+  escribir(`vault/${s}.json`, {
+    notas: notas.map(({ _enlaces, _contenido, _texto, nb, ...resto }) => resto),
+    externos,
+  });
+
+  const etiquetas = new Map();
+  for (const n of notas) for (const t of n.tg) etiquetas.set(t, (etiquetas.get(t) || 0) + 1);
+  const ultima = notas.reduce((max, n) => (n.m > max ? n.m : max), '');
+  const inicioId = info.home ? notaPorRuta(notas, info.name, info.home) : null;
+
+  resumenVaults.push({
+    nombre: info.name,
+    slug: s,
+    color: info.color || '#64748b',
+    icono: info.icono || 'folder',
+    proposito: info.proposito || '',
+    incluye: info.incluye || [],
+    noIncluye: info.no_incluye || [],
+    inicio: inicioId,
+    entradas: (info.entradas || []).map((rel) => notaPorRuta(notas, info.name, rel)).filter(Boolean),
+    notas: notas.length,
+    palabras: notas.reduce((t, n) => t + n.w, 0),
+    adjuntos: adjuntos.length,
+    generados,
+    ultima,
+    enlaces: notas.reduce((t, n) => t + n.o.length, 0),
+    etiquetas: [...etiquetas.entries()].sort((a, b) => b[1] - a[1]).slice(0, 24),
+    carpetas: arbolCarpetas(notas, adjuntos),
+    complementos: [...(obsidian.plugins_base || []), ...((obsidian.plugins_extra || {})[info.name] || [])],
+  });
+}
+
+// --- Skills y agentes -----------------------------------------------------------
+const { skills, detalles, paquetes, mencionadas, totalInstalaciones } = leerSkills(secretos, todas);
+for (const [nombre, detalle] of detalles) escribir(`skills/${slug(nombre) || 'skill'}.json`, detalle);
+for (const s of skills) s.archivoDetalle = slug(s.nombre) || 'skill';
+
+const notasTalleres = todas.filter((n) => n.v === 'TALLERES IA');
+const agentesIA = leerAgentesIA(secretos, mencionadas, notasTalleres);
+const automatizaciones = leerAutomatizaciones();
+const motor = leerMotor();
+
+// Qué agentes usan cada skill (relación inversa).
+const usadaPor = new Map();
+for (const a of agentesIA) for (const s of a.skills) usadaPor.set(s, [...(usadaPor.get(s) || []), a.id]);
+for (const s of skills) s.agentes = usadaPor.get(s.nombre) || [];
+
+const categorias = [...new Set(skills.map((s) => s.categoria))].sort((a, b) => a.localeCompare(b, 'es'));
+escribir('skills.json', { skills, paquetes, categorias, totalInstalaciones });
+escribir('agentes.json', { agentes: [...agentesIA, ...automatizaciones] });
+
+// --- Índice general -------------------------------------------------------------
+const core = vaults.find((v) => v.info.name === 'CORE');
+const idCore = (rel) => (core ? notaPorRuta(core.notas, 'CORE', rel) : null);
+
+const atlas = {
+  version: 1,
+  generado: new Date().toISOString(),
+  origen: CONFIG.obsidian,
+  totales: {
+    vaults: resumenVaults.length,
+    notas: todas.length,
+    palabras: resumenVaults.reduce((t, v) => t + v.palabras, 0),
+    enlaces: totalEnlaces,
+    sinResolver,
+    puentes: [...puentes.values()].reduce((t, n) => t + n, 0),
+    generados: resumenVaults.reduce((t, v) => t + v.generados, 0),
+    skills: skills.length,
+    instalaciones: totalInstalaciones,
+    agentes: agentesIA.length,
+    automatizaciones: automatizaciones.length,
+    secretosOcultos: secretos.total,
+  },
+  vaults: resumenVaults,
+  puentes: [...puentes.entries()].map(([clave, n]) => {
+    const [de, a] = clave.split('→');
+    return { de, a, n };
+  }),
+  sistema: {
+    contexto: idCore('Contexto IA/Contexto para IA.md'),
+    reglas: idCore('Contexto IA/Reglas de Clasificacion.md'),
+    mapaRutas: idCore('Contexto IA/Mapa de Rutas.md'),
+    multivault: idCore('Runbooks/Sistema Multi-vault.md'),
+    salud: idCore('Reportes/Salud del Sistema.md'),
+    routing: routing.map((r) => ({ vault: r.vault, seccion: r.seccion, palabras: r.palabras || [] })),
+    motor,
+  },
+};
+escribir('atlas.json', atlas);
+
+fs.rmSync(CONFIG.salida, { recursive: true, force: true });
+fs.renameSync(temporal, CONFIG.salida);
+
+const seg = ((Date.now() - inicio) / 1000).toFixed(1);
+console.log(
+  `Atlas listo en ${seg}s → ${path.relative(process.cwd(), CONFIG.salida) || CONFIG.salida}\n` +
+    `  ${atlas.totales.notas} notas en ${atlas.totales.vaults} vaults · ${atlas.totales.enlaces} enlaces · ${atlas.totales.puentes} puentes\n` +
+    `  ${atlas.totales.skills} skills (${totalInstalaciones} instalaciones) · ${atlas.totales.agentes} agentes · ${atlas.totales.automatizaciones} automatizaciones\n` +
+    `  ${atlas.totales.generados} notas generadas por Graphify omitidas · ${secretos.total} posibles secretos ocultos`,
+);
