@@ -1,0 +1,40 @@
+{
+  "name": "atlas-memoria",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Atlas interactivo de la memoria: los 6 vaults de Obsidian con CORE al centro, las skills y los agentes, con su contenido navegable.",
+  "type": "module",
+  "scripts": {
+    "datos": "node scripts/generar-datos.mjs",
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.node.json && vite build",
+    "start": "vite build && vite preview",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "@fontsource/instrument-serif": "^5.3.0",
+    "dompurify": "^3.4.16",
+    "force-graph": "^1.52.0",
+    "lucide-react": "^1.50.0",
+    "marked": "^18.0.14",
+    "minisearch": "^7.2.0",
+    "motion": "^14.0.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.2",
+    "yaml": "^2.9.1"
+  }
+}

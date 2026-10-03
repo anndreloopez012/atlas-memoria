@@ -1,0 +1,16 @@
+# Dependencias y compilados
+node_modules/
+dist/
+
+# Datos generados: contenido personal de los vaults. Se regeneran con `npm run datos`.
+datos/
+datos.nuevo/
+
+# Enlace que crea el sistema de memoria en cada proyecto (es un symlink, sin barra final)
+graphify-out
+
+# macOS / editores
+.DS_Store
+*.log
+.vscode/
+.idea/
