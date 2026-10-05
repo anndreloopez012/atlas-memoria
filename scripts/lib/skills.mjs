@@ -6,6 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { CONFIG } from './config.mjs';
 import { contarPalabras, limpiarEnLinea, ocultarSecretos, separarFrontmatter, sinBloquesDeCodigo } from './texto.mjs';
+import { documentoTraducido, es, esDocumento } from './traduccion.mjs';
 
 const HOME = os.homedir();
 const PREFERENCIA_IA = ['Claude', 'Codex', 'Antigravity', 'Extra'];
@@ -136,6 +137,22 @@ export function analizarDescripcion(descripcion) {
   const activadores = new Set();
   for (const m of descripcion.matchAll(/["“]([^"”]{2,70})["”]/g)) activadores.add(m[1].trim());
   return { que, cuando, noPara, activadores: [...activadores].slice(0, 40) };
+}
+
+/**
+ * Versión en español de una descripción ya analizada. Se traduce oración por
+ * oración: así la descripción completa y sus partes comparten traducciones.
+ */
+export function traducirAnalisis(descripcion, analisis) {
+  return {
+    descripcion: oraciones(descripcion)
+      .map((o) => es(o))
+      .join(' '),
+    que: analisis.que.map((o) => es(o)),
+    cuando: analisis.cuando.map((o) => es(o)),
+    noPara: analisis.noPara.map((o) => es(o)),
+    activadores: analisis.activadores.map((a) => es(a, 'activador')),
+  };
 }
 
 function seccionesConResumen(cuerpo) {
@@ -321,7 +338,7 @@ export function leerSkills(contadorSecretos, notasTodas) {
         if (texto.length > MAX_REF_BYTES) texto = `${texto.slice(0, MAX_REF_BYTES)}\n\n…(recortado: abre el archivo para verlo completo)`;
         referencias[a.r] = ocultarSecretos(texto, contadorSecretos);
         bytes += texto.length;
-        a.t = tituloDeArchivo(path.join(principal.real, a.r));
+        a.t = es(tituloDeArchivo(path.join(principal.real, a.r)), 'titulo');
       } catch {
         /* archivo ilegible */
       }
@@ -330,18 +347,18 @@ export function leerSkills(contadorSecretos, notasTodas) {
     const extras = {};
     for (const [k, v] of Object.entries(principal.fm)) {
       if (['name', 'description'].includes(k) || v == null) continue;
-      extras[k] = typeof v === 'object' ? JSON.stringify(v) : String(v);
+      const valor = typeof v === 'object' ? JSON.stringify(v) : String(v);
+      // Los valores con frases (licencias, notas) se traducen; los técnicos no.
+      extras[k] = typeof v === 'string' && v.trim().split(/\s+/).length >= 3 ? es(valor) : valor;
     }
 
     skills.push({
       id: nombre,
       nombre,
-      titulo: h1 ? limpiarEnLinea(h1[1]) : nombre,
-      descripcion,
-      que: analisis.que,
-      cuando: analisis.cuando,
-      noPara: analisis.noPara,
-      activadores: analisis.activadores,
+      titulo: h1 ? es(limpiarEnLinea(h1[1]), 'titulo') : nombre,
+      ...traducirAnalisis(descripcion, analisis),
+      // El original se conserva para que la búsqueda también encuentre términos en inglés.
+      descripcionOriginal: descripcion,
       categoria,
       paquete: paquete?.nombre || null,
       origen: principal.sistema ? 'sistema' : propia ? 'propia' : 'instalada',
@@ -349,7 +366,7 @@ export function leerSkills(contadorSecretos, notasTodas) {
       repo: git ? { remoto: git.remoto, raiz: git.raiz } : null,
       instalaciones: lista.map((i) => ({ ia: i.ia, ruta: i.dir, real: i.real !== i.dir ? i.real : null })),
       ias: [...new Set(lista.map((i) => i.ia))],
-      secciones: seccionesConResumen(cuerpo),
+      secciones: seccionesConResumen(cuerpo).map((x) => ({ ...x, t: es(x.t, 'titulo'), r: es(x.r) })),
       palabras: contarPalabras(cuerpo),
       archivos,
       relacionadas: mencionadas(`${sinBloquesDeCodigo(cuerpo)} ${(cuerpo.match(/`[^`\n]+`/g) || []).join(' ')}`, nombre).slice(0, 30),
@@ -357,7 +374,10 @@ export function leerSkills(contadorSecretos, notasTodas) {
       notas: (notasSkills.get(nombre) || []).slice(0, 6),
       ruta: principal.real,
     });
-    detalles.set(nombre, { cuerpo, referencias });
+    // Los manuales completos son largos: se traducen solo si se pide con
+    // ATLAS_TRADUCIR_MANUALES=1, pero si ya hay traducción se usa siempre.
+    const registrar = process.env.ATLAS_TRADUCIR_MANUALES === '1';
+    detalles.set(nombre, { cuerpo: esDocumento(cuerpo, 'manual', { registrar }), traducido: documentoTraducido(cuerpo), referencias });
   }
 
   const paquetes = PAQUETES.map((p) => ({ nombre: p.nombre, descripcion: p.descripcion, skills: skills.filter((s) => s.paquete === p.nombre).map((s) => s.id) })).filter((p) => p.skills.length);

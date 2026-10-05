@@ -4,7 +4,8 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { CONFIG } from './config.mjs';
-import { analizarDescripcion } from './skills.mjs';
+import { analizarDescripcion, traducirAnalisis } from './skills.mjs';
+import { es, esDocumento } from './traduccion.mjs';
 import { idCorto, ocultarSecretos, separarFrontmatter } from './texto.mjs';
 
 function herramientas(valor) {
@@ -45,16 +46,13 @@ export function leerAgentesIA(contadorSecretos, mencionadas, notasTalleres) {
         ia: fuente.ia,
         ambito: fuente.ambito,
         tipo: 'ia',
-        descripcion,
-        que: analisis.que,
-        cuando: analisis.cuando,
-        noPara: analisis.noPara,
-        activadores: analisis.activadores,
-        modelo: fm.model ? String(fm.model) : 'hereda la sesión',
+        ...traducirAnalisis(descripcion, analisis),
+        descripcionOriginal: descripcion,
+        modelo: !fm.model || String(fm.model) === 'inherit' ? 'hereda el de la sesión' : String(fm.model),
         herramientas: herramientas(fm.tools),
         color: fm.color ? String(fm.color) : null,
         skills: mencionadas(`${descripcion}\n${cuerpo}`, null).slice(0, 30),
-        cuerpo,
+        cuerpo: esDocumento(cuerpo),
         ruta,
         notas: notasQueMencionan(notasTalleres, nombre),
       });
@@ -103,8 +101,8 @@ export function leerAutomatizaciones() {
       tipo: 'automatizacion',
       ia: 'launchd',
       ambito: 'macOS · LaunchAgent',
-      descripcion: DESCRIPCIONES_CONOCIDAS[nombreScript] || doc.split('\n\n')[0].replace(/\s+/g, ' ') || `Ejecuta ${nombreScript}.`,
-      detalle: doc,
+      descripcion: DESCRIPCIONES_CONOCIDAS[nombreScript] || es(doc.split('\n\n')[0].replace(/\s+/g, ' ')) || `Ejecuta ${nombreScript}.`,
+      detalle: esDocumento(doc),
       script,
       intervalo: plist.StartInterval || null,
       alIniciar: Boolean(plist.RunAtLoad),
@@ -125,7 +123,7 @@ export function leerMotor() {
     .sort()
     .map((f) => {
       const doc = docstringPython(path.join(bin, f));
-      return { nombre: f, resumen: doc.split('\n').find((l) => l.trim())?.trim() || '' };
+      return { nombre: f, resumen: es(doc.split('\n').find((l) => l.trim())?.trim() || '') };
     });
   const comandos = [];
   try {

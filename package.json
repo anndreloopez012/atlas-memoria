@@ -1,11 +1,12 @@
 {
   "name": "atlas-memoria",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Atlas interactivo de la memoria: los 6 vaults de Obsidian con CORE al centro, las skills y los agentes, con su contenido navegable.",
   "type": "module",
   "scripts": {
     "datos": "node scripts/generar-datos.mjs",
+    "traducir": "node scripts/traducir.mjs",
     "dev": "vite",
     "build": "tsc -p tsconfig.json && tsc -p tsconfig.node.json && vite build",
     "start": "vite build && vite preview",

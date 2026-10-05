@@ -2107,6 +2107,16 @@ a.activador:hover {
   font-size: 13px;
 }
 
+.aviso-original {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border-left: 2px solid var(--laton);
+  background: var(--laton-suave);
+  border-radius: 0 var(--radio-s) var(--radio-s) 0;
+  color: var(--tinta-2);
+  font-size: 13.5px;
+}
+
 .skill-md {
   padding: 28px 32px;
   border: 1px solid var(--linea);
