@@ -7,6 +7,7 @@ import path from 'node:path';
 import { leerAgentesIA, leerAutomatizaciones, leerMotor, notaPorRuta } from './lib/agentes.mjs';
 import { CONFIG } from './lib/config.mjs';
 import { leerSkills } from './lib/skills.mjs';
+import { pendientesDeTraduccion } from './lib/traduccion.mjs';
 import { leerVaults } from './lib/vaults.mjs';
 
 const inicio = Date.now();
@@ -24,7 +25,13 @@ if (!fs.existsSync(CONFIG.obsidian)) {
 }
 
 const secretos = { total: 0 };
-const temporal = `${CONFIG.salida}.nuevo`;
+// Carpeta temporal propia de esta corrida: el vigía del servidor puede lanzar otra a la vez.
+const temporal = `${CONFIG.salida}.nuevo-${process.pid}`;
+// Restos de corridas que se interrumpieron (más de 10 minutos).
+for (const resto of fs.readdirSync(path.dirname(CONFIG.salida))) {
+  const abs = path.join(path.dirname(CONFIG.salida), resto);
+  if (/^datos\.(nuevo|viejo)-\d+$/.test(resto) && Date.now() - fs.statSync(abs).mtimeMs > 600_000) fs.rmSync(abs, { recursive: true, force: true });
+}
 fs.rmSync(temporal, { recursive: true, force: true });
 fs.mkdirSync(path.join(temporal, 'vault'), { recursive: true });
 fs.mkdirSync(path.join(temporal, 'contenido'), { recursive: true });
@@ -153,15 +160,23 @@ const atlas = {
     motor,
   },
 };
+// Textos que todavía no tienen traducción al español (se completan con npm run traducir).
+const pendientes = pendientesDeTraduccion();
+atlas.totales.sinTraducir = pendientes.length;
+escribir('pendientes-traduccion.json', pendientes);
 escribir('atlas.json', atlas);
 
-fs.rmSync(CONFIG.salida, { recursive: true, force: true });
+// Reemplazo casi atómico: se aparta la versión anterior y se borra después.
+const anterior = `${CONFIG.salida}.viejo-${process.pid}`;
+if (fs.existsSync(CONFIG.salida)) fs.renameSync(CONFIG.salida, anterior);
 fs.renameSync(temporal, CONFIG.salida);
+fs.rmSync(anterior, { recursive: true, force: true });
 
 const seg = ((Date.now() - inicio) / 1000).toFixed(1);
 console.log(
   `Atlas listo en ${seg}s → ${path.relative(process.cwd(), CONFIG.salida) || CONFIG.salida}\n` +
     `  ${atlas.totales.notas} notas en ${atlas.totales.vaults} vaults · ${atlas.totales.enlaces} enlaces · ${atlas.totales.puentes} puentes\n` +
     `  ${atlas.totales.skills} skills (${totalInstalaciones} instalaciones) · ${atlas.totales.agentes} agentes · ${atlas.totales.automatizaciones} automatizaciones\n` +
-    `  ${atlas.totales.generados} notas generadas por Graphify omitidas · ${secretos.total} posibles secretos ocultos`,
+    `  ${atlas.totales.generados} notas generadas por Graphify omitidas · ${secretos.total} posibles secretos ocultos\n` +
+    `  ${pendientes.length ? `${pendientes.length} textos sin traducir al español → npm run traducir` : 'todo el texto descriptivo está en español'}`,
 );

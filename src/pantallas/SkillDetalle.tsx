@@ -13,6 +13,23 @@ import { InsigniasIA } from './Skills';
 
 export const corto = (ruta: string) => ruta.replace(/^\/Users\/[^/]+/, '~');
 
+// Las claves del frontmatter son identificadores en inglés: se muestran en español.
+const ETIQUETA_METADATO: Record<string, string> = {
+  license: 'Licencia',
+  version: 'Versión',
+  'user-invocable': 'Se puede invocar',
+  'argument-hint': 'Argumento',
+  'allowed-tools': 'Herramientas permitidas',
+  metadata: 'Metadatos',
+  model: 'Modelo',
+  compatibility: 'Compatibilidad',
+  author: 'Autor',
+  tags: 'Etiquetas',
+  'disable-model-invocation': 'Solo manual',
+};
+
+const valorMetadato = (v: string) => (v === 'true' ? 'sí' : v === 'false' ? 'no' : v);
+
 const ETIQUETA_TIPO: Record<ArchivoSkill['k'], string> = {
   referencias: 'Referencias',
   scripts: 'Scripts',
@@ -53,7 +70,7 @@ export default function SkillDetalle({ atlas, nombre }: { atlas: Atlas; nombre: 
     const refs = detalle.datos?.referencias ?? {};
     // Los enlaces dentro de una referencia son relativos a su carpeta: se busca por final de ruta.
     const clave = limpia in refs ? limpia : Object.keys(refs).find((k) => k.endsWith(`/${limpia}`));
-    if (clave) setVisor({ titulo: clave, texto: refs[clave], subtitulo: `${skill.nombre} · referencia` });
+    if (clave) setVisor({ titulo: clave, texto: refs[clave], subtitulo: `${skill.nombre} · referencia · texto original del archivo` });
   };
 
   const listaArchivos = (lista: ArchivoSkill[], max = 8) => (
@@ -201,11 +218,14 @@ export default function SkillDetalle({ atlas, nombre }: { atlas: Atlas; nombre: 
 
           <section className="bloque">
             <div className="bloque-titulo">
-              <h2 className="rotulo">SKILL.md</h2>
+              <h2 className="rotulo">Manual completo · SKILL.md</h2>
               <button className="boton-secundario" onClick={() => setCompleto((x) => !x)}>
                 <BookOpen size={14} /> {completo ? 'Ocultar' : 'Leer completo'}
               </button>
             </div>
+            {completo && detalle.datos && !detalle.datos.traducido && (
+              <p className="aviso-original">Texto original del archivo, tal como lo lee la IA. Su resumen en español está arriba, en «Qué hay dentro del manual».</p>
+            )}
             {detalle.cargando && <div className="esqueleto" />}
             {completo && detalle.datos && <Markdown texto={detalle.datos.cuerpo} onRuta={abrirArchivo} className="skill-md" />}
           </section>
@@ -306,8 +326,8 @@ export default function SkillDetalle({ atlas, nombre }: { atlas: Atlas; nombre: 
               <dl className="metadatos">
                 {Object.entries(skill.extras).map(([k, v]) => (
                   <div key={k}>
-                    <dt className="mono">{k}</dt>
-                    <dd>{v}</dd>
+                    <dt>{ETIQUETA_METADATO[k] ?? k}</dt>
+                    <dd>{valorMetadato(v)}</dd>
                   </div>
                 ))}
               </dl>

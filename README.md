@@ -14,6 +14,7 @@ Lee los datos directamente de esta Mac y se mantiene **sincronizado solo**: si c
 - [Cómo se mantiene sincronizado](#cómo-se-mantiene-sincronizado)
 - [De dónde lee los datos](#de-dónde-lee-los-datos)
 - [Configuración](#configuración)
+- [Todo en español](#todo-en-español)
 - [Privacidad](#privacidad)
 - [Estructura del proyecto](#estructura-del-proyecto)
 - [Arquitectura](#arquitectura)
@@ -91,6 +92,7 @@ Abre <http://localhost:5190>. La primera vez el servidor genera los datos solo (
 |---|---|
 | `npm run dev` | Servidor de desarrollo con sincronización en vivo. Es la forma recomendada de usarlo. |
 | `npm run datos` | Vuelve a leer vaults, skills y agentes y reescribe `datos/`. |
+| `npm run traducir` | Traduce al español los textos nuevos que lo necesiten (ver [Todo en español](#todo-en-español)). |
 | `npm start` | Compila y sirve la versión optimizada en el puerto 5190 (sin vigilancia en vivo; usa el botón de actualizar). |
 | `npm run build` | Revisa tipos y compila en `dist/`. |
 | `npm run typecheck` | Solo revisión de tipos. |
@@ -137,12 +139,45 @@ Todo se ajusta con variables de entorno, sin tocar el código:
 | `ATLAS_SKILLS_EXTRA` | — | Carpetas extra de skills, separadas por `:` |
 | `ATLAS_LAUNCH_PREFIJOS` | `com.anndre.,com.codex.` | Prefijos de los LaunchAgents a mostrar |
 | `ATLAS_VIGILAR` | `1` | `0` desactiva la sincronización en vivo |
+| `ATLAS_TRADUCIR_MANUALES` | `0` | `1` también marca para traducir los `SKILL.md` completos |
 
 Ejemplo:
 
 ```bash
 ATLAS_OBSIDIAN=/Volumes/Respaldo/OBSIDIAN npm run dev
 ```
+
+---
+
+## Todo en español
+
+Todo texto descriptivo se muestra **en español**: descripciones, «para qué sirve», «cuándo se activa», títulos y resúmenes de las secciones de cada manual, títulos de las referencias, instrucciones de los agentes, docstrings del motor y metadatos. En inglés solo quedan los **nombres** de vaults, skills y agentes (y el código, comandos y rutas).
+
+Cómo funciona:
+
+1. El generador detecta qué textos no están en español y busca su traducción en `traducciones/es.json` (versionado). La clave es la huella del texto original: si una skill cambia su descripción, ese texto vuelve a quedar pendiente.
+2. Lo que falta se anota en `datos/pendientes-traduccion.json` y se cuenta en «Cómo trabaja».
+3. `npm run traducir` lo traduce con tu Claude Code (`claude -p`, modelo Sonnet, 3 lotes a la vez) y regenera los datos.
+
+```bash
+npm run traducir
+```
+
+`claude -p` no puede abrirse dentro de otra sesión de Claude Code: ejecútalo desde una terminal normal. Desde una sesión de Claude se usan las otras dos formas:
+
+| Opción | Uso |
+|---|---|
+| `npm run traducir -- --lotes <carpeta>` | Parte lo pendiente en `lote-NN.json` para traducirlo aparte (por ejemplo, con agentes). |
+| `npm run traducir -- --importar <carpeta>` | Incorpora los `resultado-NN.json` (`{ clave: traducción }`) al diccionario y regenera. |
+| `--modelo opus` · `--paralelo 5` · `--tamano 20000` | Ajustes del traductor. |
+
+**Manuales completos.** El texto íntegro de cada `SKILL.md` y de sus referencias es el documento que lee la IA; se muestra tal cual, marcado como «texto original», y su resumen en español aparece en la ficha. Para traducir también los manuales completos:
+
+```bash
+ATLAS_TRADUCIR_MANUALES=1 npm run traducir
+```
+
+Las notas de los vaults son tus propios archivos: el atlas las muestra como están.
 
 ---
 
@@ -160,18 +195,22 @@ ATLAS_OBSIDIAN=/Volumes/Respaldo/OBSIDIAN npm run dev
 atlas-memoria/
 ├── scripts/
 │   ├── generar-datos.mjs      # punto de entrada: escribe datos/
+│   ├── traducir.mjs           # completa las traducciones (claude -p, lotes o importación)
 │   └── lib/
 │       ├── config.mjs         # rutas y límites (variables de entorno)
 │       ├── texto.mjs          # frontmatter, enlaces, extractos, ocultar secretos
 │       ├── vaults.mjs         # notas, carpetas, resolución de enlaces y puentes
 │       ├── skills.mjs         # inventario de skills de las tres IAs
-│       └── agentes.mjs        # subagentes, LaunchAgents y motor
+│       ├── agentes.mjs        # subagentes, LaunchAgents y motor
+│       └── traduccion.mjs     # diccionario al español y textos pendientes
 ├── src/
 │   ├── App.tsx                # barra, rutas y búsqueda
 │   ├── pantallas/             # Universo, Vault, Skills, SkillDetalle, Agentes, Sistema
 │   ├── componentes/           # Grafo, LectorNota, ArbolCarpetas, Buscador, Pipeline…
 │   ├── lib/                   # datos (caché), rutas (hash), markdown, tema, formato, tipos
 │   └── estilos/               # base (tokens y atmósfera), app, markdown
+├── traducciones/
+│   └── es.json                # traducciones al español (versionado)
 ├── docs/
 │   ├── ARQUITECTURA.md        # cómo está hecho y por qué
 │   ├── DATOS.md               # formato de cada archivo generado
@@ -228,6 +267,8 @@ Comandos paso a paso en [docs/FLUJO-GIT.md](docs/FLUJO-GIT.md).
 | «Todavía no hay mapa» | No existe `datos/atlas.json`. Ejecuta `npm run datos`. Si dice que no encuentra el contenedor, usa `ATLAS_OBSIDIAN`. |
 | Una nota nueva no aparece | Con `npm start` no hay vigilancia en vivo: usa el botón de actualizar. Con `npm run dev`, espera ~10 s. |
 | Una skill aparece sin descripción | Su `SKILL.md` no tiene `description` en el frontmatter. |
+| Aparece texto en inglés | Es nuevo y aún no tiene traducción: `npm run traducir` desde una terminal normal. |
+| `npm run traducir` dice que estás dentro de Claude Code | Ábrelo desde Terminal, fuera de la sesión de Claude, o usa `--lotes` / `--importar`. |
 | Una imagen de una nota no carga | El adjunto no está dentro del mismo vault o tiene otro nombre. |
 | El grafo de PROGRAMACION se ve como un ovillo | Con más de 1.200 notas los enlaces entre notas se ocultan; actívalos con «Enlaces» o elige una carpeta. |
 | `EX_CONFIG 78` en LaunchAgents | No es de este proyecto: es la trampa de permisos (TCC) del sistema de memoria con `~/Documents/OBSIDIAN`. |

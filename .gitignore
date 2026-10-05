@@ -4,7 +4,8 @@ dist/
 
 # Datos generados: contenido personal de los vaults. Se regeneran con `npm run datos`.
 datos/
-datos.nuevo/
+datos.nuevo*/
+datos.viejo*/
 
 # Enlace que crea el sistema de memoria en cada proyecto (es un symlink, sin barra final)
 graphify-out

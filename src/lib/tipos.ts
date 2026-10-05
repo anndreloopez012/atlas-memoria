@@ -58,6 +58,8 @@ export interface Atlas {
     agentes: number;
     automatizaciones: number;
     secretosOcultos: number;
+    /** textos descriptivos que aún no tienen traducción al español */
+    sinTraducir?: number;
   };
   vaults: ResumenVault[];
   puentes: Puente[];
@@ -125,7 +127,10 @@ export interface Skill {
   id: string;
   nombre: string;
   titulo: string;
+  /** descripción en español */
   descripcion: string;
+  /** descripción tal como está en el SKILL.md (para la búsqueda) */
+  descripcionOriginal?: string;
   que: string[];
   cuando: string[];
   noPara: string[];
@@ -157,6 +162,8 @@ export interface DatosSkills {
 
 export interface DetalleSkill {
   cuerpo: string;
+  /** el manual completo ya está en español */
+  traducido?: boolean;
   referencias: Record<string, string>;
 }
 
@@ -171,6 +178,7 @@ interface AgenteBase {
 
 export interface AgenteIA extends AgenteBase {
   tipo: 'ia';
+  descripcionOriginal?: string;
   que: string[];
   cuando: string[];
   noPara: string[];

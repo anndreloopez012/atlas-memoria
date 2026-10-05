@@ -216,6 +216,16 @@ export default function Sistema({ atlas }: { atlas: Atlas }) {
           <li>
             Lee {n(t.notas)} notas y omite {n(t.generados)} notas generadas por Graphify. {t.secretosOcultos > 0 && `Ocultó ${t.secretosOcultos} valores con forma de contraseña o token antes de mostrarlos.`}
           </li>
+          <li>
+            Todo texto descriptivo se muestra en español; solo los nombres de vaults, skills y agentes quedan como están.{' '}
+            {t.sinTraducir ? (
+              <>
+                Hay {n(t.sinTraducir)} textos nuevos esperando traducción: <code>npm run traducir</code>.
+              </>
+            ) : (
+              'No hay textos pendientes de traducir.'
+            )}
+          </li>
         </ul>
       </section>
     </div>

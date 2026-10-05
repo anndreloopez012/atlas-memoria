@@ -9,7 +9,8 @@ datos/
 ├── contenido/<slug>-<n>.json  # texto completo de las notas, por bloques
 ├── skills.json                # catálogo de skills
 ├── skills/<slug>.json         # SKILL.md y referencias de cada skill
-└── agentes.json               # subagentes y automatizaciones
+├── agentes.json               # subagentes y automatizaciones
+└── pendientes-traduccion.json # textos que aún no tienen traducción al español
 ```
 
 El `slug` de un vault es su nombre en minúsculas sin acentos ni símbolos: `CORE` → `core`, `TALLERES IA` → `talleres-ia`, `PERSONAL (YO)` → `personal-yo`.
@@ -23,7 +24,7 @@ Los tipos de TypeScript equivalentes están en [`src/lib/tipos.ts`](../src/lib/t
 | `version` | número | Versión del formato (1). |
 | `generado` | ISO 8601 | Momento de la generación. |
 | `origen` | texto | Ruta del contenedor de Obsidian. |
-| `totales` | objeto | `vaults`, `notas`, `palabras`, `enlaces`, `sinResolver`, `puentes`, `generados` (notas de Graphify omitidas), `skills`, `instalaciones`, `agentes`, `automatizaciones`, `secretosOcultos`. |
+| `totales` | objeto | `vaults`, `notas`, `palabras`, `enlaces`, `sinResolver`, `puentes`, `generados` (notas de Graphify omitidas), `skills`, `instalaciones`, `agentes`, `automatizaciones`, `secretosOcultos`, `sinTraducir`. |
 | `vaults[]` | lista | Resumen de cada vault (ver abajo), en el orden de `vaults.json`. |
 | `puentes[]` | lista | `{ de, a, n }`: enlaces del vault `de` hacia el vault `a`. |
 | `sistema` | objeto | Ids de notas clave de CORE (`contexto`, `reglas`, `mapaRutas`, `multivault`, `salud`), `routing` (`{ vault, seccion, palabras[] }`) y `motor` (`scripts[]` con `{ nombre, resumen }`, `comandos[]` con `{ comando, ayuda }`). |
@@ -92,9 +93,10 @@ Cada skill:
 | Campo | Descripción |
 |---|---|
 | `id`, `nombre`, `titulo` | Nombre del frontmatter y primer `#` del manual. |
-| `descripcion` | Descripción completa del frontmatter. |
-| `que[]`, `cuando[]`, `noPara[]` | La descripción partida en oraciones: qué hace, cuándo se activa, cuándo no. |
-| `activadores[]` | Frases entre comillas de la descripción (lo que la despierta). |
+| `descripcion` | Descripción del frontmatter, en español. |
+| `descripcionOriginal` | La misma descripción tal como está en el archivo (la usa la búsqueda). |
+| `que[]`, `cuando[]`, `noPara[]` | La descripción partida en oraciones, en español: qué hace, cuándo se activa, cuándo no. |
+| `activadores[]` | Frases entre comillas de la descripción (lo que la despierta), en español. |
 | `categoria` | Del índice del sistema de memoria o de un clasificador por palabras. |
 | `paquete` | Familia a la que pertenece (Impeccable, HyperFrames…), o `null`. |
 | `origen` | `propia` (repositorio tuyo o carpeta en PROYECTOS), `instalada` o `sistema`. |
@@ -113,12 +115,20 @@ Cada skill:
 
 ## `skills/<slug>.json`
 
-`{ "cuerpo": "<SKILL.md sin frontmatter>", "referencias": { "<ruta>": "<texto>" } }`. Solo archivos `.md`/`.txt`, hasta 80 KB cada uno y ~1,2 MB por skill.
+`{ "cuerpo": "<SKILL.md sin frontmatter>", "traducido": false, "referencias": { "<ruta>": "<texto>" } }`. Solo archivos `.md`/`.txt`, hasta 80 KB cada uno y ~1,2 MB por skill. `cuerpo` sale en español si el manual ya está traducido (`traducido: true`); si no, es el texto original.
+
+## `pendientes-traduccion.json`
+
+Lista de `{ clave, tipo, texto }` con cada texto que todavía no tiene traducción. `tipo` es `frase`, `titulo`, `activador`, `documento` (instrucciones de agentes y docstrings) o `manual` (solo con `ATLAS_TRADUCIR_MANUALES=1`). `npm run traducir` lo consume.
+
+## `traducciones/es.json` (versionado, fuera de `datos/`)
+
+`{ "<huella>": "<traducción>" }`. La huella son los primeros 16 caracteres del SHA-1 del texto original sin espacios a los lados.
 
 ## `agentes.json`
 
 `{ "agentes": [ … ] }` con dos tipos:
 
-**`tipo: "ia"`** — `id`, `nombre`, `ia` (Claude/Codex), `ambito`, `descripcion`, `que[]`, `cuando[]`, `noPara[]`, `activadores[]`, `modelo`, `herramientas[]`, `color`, `skills[]` (mencionadas), `cuerpo` (instrucciones), `ruta`, `notas[]` (notas de TALLERES IA que lo mencionan).
+**`tipo: "ia"`** — `id`, `nombre`, `ia` (Claude/Codex), `ambito`, `descripcion` (en español), `descripcionOriginal`, `que[]`, `cuando[]`, `noPara[]`, `activadores[]`, `modelo`, `herramientas[]`, `color`, `skills[]` (mencionadas), `cuerpo` (instrucciones, en español), `ruta`, `notas[]` (notas de TALLERES IA que lo mencionan).
 
 **`tipo: "automatizacion"`** — `id`, `nombre` (label de launchd), `ia: "launchd"`, `ambito`, `descripcion`, `detalle` (docstring del script), `script`, `intervalo` (segundos), `alIniciar`, `vigila[]` (vaults), `logs[]`, `ruta` (plist).
