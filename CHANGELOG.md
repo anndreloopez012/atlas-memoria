@@ -1,5 +1,16 @@
 # Cambios
 
+## 1.1.0 · 2026-10-05
+
+### Todo en español
+- Descripciones, «para qué sirve», «cuándo se activa», títulos y resúmenes de secciones, títulos de referencias, instrucciones de agentes, docstrings del motor y metadatos se muestran en español. Solo los nombres de vaults, skills y agentes quedan en inglés.
+- Diccionario versionado `traducciones/es.json` con la huella del texto original como clave.
+- `npm run traducir`: traduce lo pendiente con Claude Code, o por lotes (`--lotes`, `--importar`).
+- Los manuales completos se marcan como «texto original»; se pueden traducir con `ATLAS_TRADUCIR_MANUALES=1`.
+
+### Arreglos
+- Cada corrida del generador usa su propia carpeta temporal: el vigía del servidor y una corrida manual ya no se pisan.
+
 ## 1.0.0 · 2026-10-03
 
 Primera versión.

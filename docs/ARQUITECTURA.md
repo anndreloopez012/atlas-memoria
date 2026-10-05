@@ -19,6 +19,7 @@ Node puro (solo depende de `yaml`). Se ejecuta en ~5 s para ~4.200 notas.
 | `vaults.mjs` | Recorre cada vault, arma el árbol de carpetas, resuelve enlaces al estilo Obsidian, cuenta puentes entre vaults y **reescribe los enlaces** del contenido. |
 | `skills.mjs` | Busca `SKILL.md` en las carpetas de cada IA, agrupa por nombre, analiza la descripción (qué hace / cuándo / cuándo no / frases activadoras), lista archivos, detecta repositorio Git, paquete, categoría y menciones a otras skills. |
 | `agentes.mjs` | Subagentes (`.md` con frontmatter), LaunchAgents (`plutil -convert json`), docstrings de los scripts del motor y comandos `memoria`. |
+| `traduccion.mjs` | Diccionario al español (`traducciones/es.json`): `es(texto)` devuelve la traducción o anota el texto como pendiente; `esDocumento()` traduce markdown largo por piezas sin cortar bloques de código. |
 | `generar-datos.mjs` | Orquesta todo, parte el contenido en bloques y escribe `datos/` de forma atómica (escribe en `datos.nuevo/` y renombra). |
 
 ### Decisiones
@@ -29,6 +30,7 @@ Node puro (solo depende de `yaml`). Se ejecuta en ~5 s para ~4.200 notas.
 - **Identificadores estables.** El id de una nota es `sha1("<VAULT>/<ruta>")` recortado a 10 caracteres: no cambia entre regeneraciones, por eso los enlaces del navegador (`#/v/core/<id>`) siguen sirviendo.
 - **Contenido en bloques.** El índice de cada vault (metadatos, enlaces, extracto) se carga de una vez; el texto completo va en bloques de ~450 KB que se piden solo al abrir una nota.
 - **Secretos.** Se reemplazan por `[oculto]` antes de escribir cualquier archivo. Los patrones ignoran valores que son código (`process.env.X`, `z.string()`, `req.body`) para no romper ejemplos.
+- **Todo en español.** Cada texto descriptivo pasa por `es()`. Se detecta el idioma con listas cortas de palabras frecuentes: ante la duda se pide traducción (si ya estaba en español, vuelve igual). Las descripciones se traducen **oración por oración**, así la descripción completa y sus partes («qué hace», «cuándo», «cuándo no») comparten traducciones. La clave del diccionario es la huella SHA-1 del original: si el texto cambia, se vuelve a pedir; si no, nunca se traduce dos veces. Los manuales completos solo se piden con `ATLAS_TRADUCIR_MANUALES=1`. `scripts/traducir.mjs` completa lo pendiente con `claude -p` (o por lotes para traducir aparte) y guarda el diccionario con las claves ordenadas para que los cambios sean legibles en git.
 - **Skills duplicadas.** La misma skill puede estar en Claude, Codex y Antigravity (a veces con enlace simbólico al mismo repositorio). Se agrupan por nombre; el contenido sale de la instalación preferida (Claude → Codex → Antigravity) y se listan todas las rutas.
 - **Menciones entre skills.** Los nombres compuestos (`web-inmersiva`) se buscan tal cual; los de una palabra (`layout`, `audit`, `polish`) solo cuentan entre `` `comillas` `` o como `/comando`, porque son palabras comunes.
 
