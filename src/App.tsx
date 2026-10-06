@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Marca } from './componentes/BarraSuperior';
 import BarraSuperior from './componentes/BarraSuperior';
 import Buscador from './componentes/Buscador';
 import { cargarAtlas, recargarDatos, useDatos } from './lib/datos';
 import { useRuta } from './lib/rutas';
-import Agentes from './pantallas/Agentes';
-import Sistema from './pantallas/Sistema';
-import Skills from './pantallas/Skills';
 import Universo from './pantallas/Universo';
-import Vault from './pantallas/Vault';
+
+// Las demás pantallas se cargan al abrirlas: la portada aparece antes.
+const Vault = lazy(() => import('./pantallas/Vault'));
+const Skills = lazy(() => import('./pantallas/Skills'));
+const Agentes = lazy(() => import('./pantallas/Agentes'));
+const Sistema = lazy(() => import('./pantallas/Sistema'));
 
 export default function App() {
   const ruta = useRuta();
@@ -66,6 +68,13 @@ export default function App() {
           </div>
         )}
         {atlas && ruta.vista === 'universo' && <Universo atlas={atlas} />}
+        <Suspense
+          fallback={
+            <div className="pantalla-estado cargando">
+              <Marca />
+            </div>
+          }
+        >
         {atlas && ruta.vista === 'vault' && atlas.vaults.length > 0 && <Vault key={ruta.slug || 'centro'} atlas={atlas} slug={ruta.slug} notaId={ruta.nota} carpeta={ruta.carpeta} />}
         {atlas && ruta.vista === 'vault' && atlas.vaults.length === 0 && (
           <div className="pantalla-estado">
@@ -78,6 +87,7 @@ export default function App() {
         {atlas && ruta.vista === 'skills' && <Skills atlas={atlas} skill={ruta.skill} categoria={ruta.categoria} />}
         {atlas && ruta.vista === 'agentes' && <Agentes atlas={atlas} agente={ruta.agente} />}
         {atlas && ruta.vista === 'sistema' && <Sistema atlas={atlas} />}
+        </Suspense>
       </main>
       {atlas && <Buscador atlas={atlas} abierto={buscando} cerrar={() => setBuscando(false)} />}
     </div>

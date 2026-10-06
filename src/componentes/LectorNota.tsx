@@ -10,6 +10,7 @@ import { navegar, rutaVault } from '../lib/rutas';
 import { tono, useTema } from '../lib/tema';
 import type { Atlas, DatosVault, Nota } from '../lib/tipos';
 import Markdown from './Markdown';
+import Vecindario from './vault/Vecindario';
 
 interface Props {
   atlas: Atlas;
@@ -27,13 +28,23 @@ export default function LectorNota({ atlas, nota, datos, porId, entrantes, carpe
   const [copiado, setCopiado] = useState(false);
   const [indice, setIndice] = useState(false);
   const cuerpo = useRef<HTMLDivElement>(null);
+  const [progreso, setProgreso] = useState(0);
   const vault = atlas.vaults.find((v) => v.nombre === nota.v)!;
   const centro = vaultCentral(atlas);
   const vaultDe = (nombre: string) => atlas.vaults.find((v) => v.nombre === nombre);
 
   useEffect(() => {
     cuerpo.current?.scrollTo({ top: 0 });
+    setProgreso(0);
   }, [nota.id]);
+
+  // Cuánto se ha leído (barra fina arriba del lector).
+  const alDesplazar = () => {
+    const el = cuerpo.current;
+    if (!el) return;
+    const total = el.scrollHeight - el.clientHeight;
+    setProgreso(total > 0 ? el.scrollTop / total : 0);
+  };
 
   const irA = (id: string) => {
     const local = porId.get(id);
@@ -89,6 +100,7 @@ export default function LectorNota({ atlas, nota, datos, porId, entrantes, carpe
 
   return (
     <article className="lector" aria-label={nota.t}>
+      <div className="lector-progreso" style={{ transform: `scaleX(${progreso})` }} aria-hidden="true" />
       <div className="lector-barra">
         <nav className="migas mono" aria-label="Ubicación">
           {centro && centro.slug !== vault.slug && (
@@ -125,8 +137,9 @@ export default function LectorNota({ atlas, nota, datos, porId, entrantes, carpe
         </div>
       </div>
 
-      <div className="lector-cuerpo" ref={cuerpo}>
+      <div className="lector-cuerpo" ref={cuerpo} onScroll={alDesplazar}>
         <header className="lector-cabecera">
+          <div className="lector-banda" aria-hidden="true" />
           <h1 className="display">{nota.t}</h1>
           <p className="lector-meta mono">
             <span>{formatoFecha(nota.m)}</span>
@@ -182,6 +195,7 @@ export default function LectorNota({ atlas, nota, datos, porId, entrantes, carpe
         {texto !== undefined && (texto.trim() ? <Markdown texto={texto} onNota={irA} /> : <p className="vacio">Esta nota está vacía.</p>)}
 
         <footer className="relaciones">
+          <Vecindario atlas={atlas} nota={nota} datos={datos} porId={porId} entrantes={entrantes} color={vault.color} onNota={irA} />
           <section>
             <h2 className="rotulo">
               <ArrowUpRight size={13} /> Enlaza a · {nota.o.length}

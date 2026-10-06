@@ -4,6 +4,7 @@ import { vaultCentral } from '../lib/atlas';
 import { navegar, rutaVault } from '../lib/rutas';
 import { tono, useTema } from '../lib/tema';
 import type { Atlas } from '../lib/tipos';
+import OrbeVault from './vault/OrbeVault';
 
 export default function SelectorVaults({ atlas, actual }: { atlas: Atlas; actual: string }) {
   const tema = useTema();
@@ -18,7 +19,7 @@ export default function SelectorVaults({ atlas, actual }: { atlas: Atlas; actual
       onClick={() => navegar(rutaVault(v.slug))}
       aria-current={v.slug === actual ? 'page' : undefined}
     >
-      <span className="vault-pastilla-punto" />
+      <OrbeVault color={v.color} tamano={v === core ? 22 : 18} simple activo={v.slug === actual} />
       {v.nombre}
       <span className="mono">{v.notas.toLocaleString('es-GT')}</span>
     </button>
