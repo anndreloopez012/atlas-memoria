@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 // Genera los datos del atlas a partir de los vaults, las skills y los agentes de
-// esta Mac. Escribe en ./datos (ignorado por git: es contenido personal y se
-// regenera en segundos). Uso: npm run datos
+// este equipo (ver scripts/lib/config.mjs). Escribe en ./datos (ignorado por git:
+// es contenido personal y se regenera en segundos). Uso: npm run datos
 import fs from 'node:fs';
 import path from 'node:path';
 import { leerAgentesIA, leerAutomatizaciones, leerMotor, notaPorRuta } from './lib/agentes.mjs';
-import { CONFIG } from './lib/config.mjs';
+import { abreviar, CONFIG } from './lib/config.mjs';
 import { leerSkills } from './lib/skills.mjs';
 import { pendientesDeTraduccion } from './lib/traduccion.mjs';
 import { leerVaults } from './lib/vaults.mjs';
@@ -14,14 +14,13 @@ const inicio = Date.now();
 const slug = (texto) =>
   texto
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 
-if (!fs.existsSync(CONFIG.obsidian)) {
-  console.error(`No encuentro el contenedor de Obsidian en ${CONFIG.obsidian}. Usa ATLAS_OBSIDIAN=/ruta npm run datos`);
-  process.exit(1);
+if (!CONFIG.vaults.length) {
+  console.warn('  aviso: no hay vaults configurados; el atlas mostrará solo skills y agentes. Agrega uno con: npm run instalar -- --vault "<ruta>"');
 }
 
 const secretos = { total: 0 };
@@ -85,6 +84,7 @@ for (const { info, notas, adjuntos, generados } of vaults) {
   resumenVaults.push({
     nombre: info.name,
     slug: s,
+    ruta: info.ruta,
     color: info.color || '#64748b',
     icono: info.icono || 'folder',
     proposito: info.proposito || '',
@@ -105,12 +105,11 @@ for (const { info, notas, adjuntos, generados } of vaults) {
 }
 
 // --- Skills y agentes -----------------------------------------------------------
-const { skills, detalles, paquetes, mencionadas, totalInstalaciones } = leerSkills(secretos, todas);
+const { skills, detalles, paquetes, ias, mencionadas, totalInstalaciones } = leerSkills(secretos, todas);
 for (const [nombre, detalle] of detalles) escribir(`skills/${slug(nombre) || 'skill'}.json`, detalle);
 for (const s of skills) s.archivoDetalle = slug(s.nombre) || 'skill';
 
-const notasTalleres = todas.filter((n) => n.v === 'TALLERES IA');
-const agentesIA = leerAgentesIA(secretos, mencionadas, notasTalleres);
+const agentesIA = leerAgentesIA(secretos, mencionadas, todas);
 const automatizaciones = leerAutomatizaciones();
 const motor = leerMotor();
 
@@ -120,17 +119,33 @@ for (const a of agentesIA) for (const s of a.skills) usadaPor.set(s, [...(usadaP
 for (const s of skills) s.agentes = usadaPor.get(s.nombre) || [];
 
 const categorias = [...new Set(skills.map((s) => s.categoria))].sort((a, b) => a.localeCompare(b, 'es'));
-escribir('skills.json', { skills, paquetes, categorias, totalInstalaciones });
+escribir('skills.json', { skills, paquetes, categorias, ias, totalInstalaciones });
 escribir('agentes.json', { agentes: [...agentesIA, ...automatizaciones] });
 
 // --- Índice general -------------------------------------------------------------
-const core = vaults.find((v) => v.info.name === 'CORE');
-const idCore = (rel) => (core ? notaPorRuta(core.notas, 'CORE', rel) : null);
+// El centro es el vault del que nacen los demás: el configurado; si no, uno que
+// se llame como un centro (CORE, Inicio…); si no, el que más puentes tiene con
+// los otros; si no, el más grande.
+const puentesPorVault = new Map();
+for (const [clave, n] of puentes) for (const v of clave.split('→')) puentesPorVault.set(v, (puentesPorVault.get(v) || 0) + n);
+const centro =
+  resumenVaults.find((v) => v.nombre === CONFIG.centro) ||
+  resumenVaults.find((v) => /^(core|inicio|home|hub|central|centro|cerebro|main|index|principal)$/i.test(v.nombre)) ||
+  [...resumenVaults].sort((a, b) => (puentesPorVault.get(b.nombre) || 0) - (puentesPorVault.get(a.nombre) || 0) || b.notas - a.notas)[0] ||
+  null;
+if (centro) resumenVaults.splice(resumenVaults.indexOf(centro), 1), resumenVaults.unshift(centro);
+
+// Notas clave de un sistema de memoria (si existe): viven en el vault central.
+const vaultCentro = centro ? vaults.find((v) => v.info.name === centro.nombre) : null;
+const notaCentro = (rel) => (CONFIG.sistemaMemoria && vaultCentro ? notaPorRuta(vaultCentro.notas, vaultCentro.info.name, rel) : null);
+
+const contarSkillsDe = (dir) => skills.filter((s) => s.instalaciones.some((i) => i.ruta.startsWith(dir))).length;
 
 const atlas = {
-  version: 1,
+  version: 2,
   generado: new Date().toISOString(),
-  origen: CONFIG.obsidian,
+  centro: centro?.slug ?? null,
+  ias,
   totales: {
     vaults: resumenVaults.length,
     notas: todas.length,
@@ -151,13 +166,27 @@ const atlas = {
     return { de, a, n };
   }),
   sistema: {
-    contexto: idCore('Contexto IA/Contexto para IA.md'),
-    reglas: idCore('Contexto IA/Reglas de Clasificacion.md'),
-    mapaRutas: idCore('Contexto IA/Mapa de Rutas.md'),
-    multivault: idCore('Runbooks/Sistema Multi-vault.md'),
-    salud: idCore('Reportes/Salud del Sistema.md'),
+    plataforma: CONFIG.plataforma,
+    configLocal: CONFIG.tieneConfigLocal,
+    memoria: Boolean(CONFIG.sistemaMemoria),
+    contexto: notaCentro('Contexto IA/Contexto para IA.md'),
+    reglas: notaCentro('Contexto IA/Reglas de Clasificacion.md'),
+    mapaRutas: notaCentro('Contexto IA/Mapa de Rutas.md'),
+    multivault: notaCentro('Runbooks/Sistema Multi-vault.md'),
+    salud: notaCentro('Reportes/Salud del Sistema.md'),
     routing: routing.map((r) => ({ vault: r.vault, seccion: r.seccion, palabras: r.palabras || [] })),
     motor,
+    // De dónde salió cada cosa en este equipo (se muestra en «Cómo trabaja»).
+    fuentes: {
+      vaults: resumenVaults.map((v) => ({ nombre: v.nombre, ruta: abreviar(v.ruta), notas: v.notas })),
+      skills: CONFIG.fuentesSkills
+        .filter((f) => fs.existsSync(f.dir))
+        .map((f) => ({ ia: f.ia, ruta: abreviar(f.dir), paquete: f.paquete, skills: contarSkillsDe(f.dir) })),
+      agentes: CONFIG.fuentesAgentes
+        .filter((f) => fs.existsSync(f.dir))
+        .map((f) => ({ ia: f.ia, ambito: f.ambito, ruta: abreviar(f.dir), agentes: agentesIA.filter((a) => a.ruta.startsWith(f.dir)).length })),
+      automatizaciones: [...new Set(automatizaciones.map((a) => a.ambito))],
+    },
   },
 };
 // Textos que todavía no tienen traducción al español (se completan con npm run traducir).
@@ -177,6 +206,6 @@ console.log(
   `Atlas listo en ${seg}s → ${path.relative(process.cwd(), CONFIG.salida) || CONFIG.salida}\n` +
     `  ${atlas.totales.notas} notas en ${atlas.totales.vaults} vaults · ${atlas.totales.enlaces} enlaces · ${atlas.totales.puentes} puentes\n` +
     `  ${atlas.totales.skills} skills (${totalInstalaciones} instalaciones) · ${atlas.totales.agentes} agentes · ${atlas.totales.automatizaciones} automatizaciones\n` +
-    `  ${atlas.totales.generados} notas generadas por Graphify omitidas · ${secretos.total} posibles secretos ocultos\n` +
+    `  ${atlas.totales.generados} notas generadas omitidas · ${secretos.total} posibles secretos ocultos · centro: ${centro?.nombre ?? 'ninguno'}\n` +
     `  ${pendientes.length ? `${pendientes.length} textos sin traducir al español → npm run traducir` : 'todo el texto descriptivo está en español'}`,
 );

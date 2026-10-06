@@ -2,15 +2,29 @@ import react from '@vitejs/plugin-react';
 import { execFile, execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import type { ServerResponse } from 'node:http';
-import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Connect, type Plugin, type ViteDevServer } from 'vite';
 
 const RAIZ = path.dirname(fileURLToPath(import.meta.url));
-const DATOS = process.env.ATLAS_SALIDA || path.join(RAIZ, 'datos');
-const OBSIDIAN = process.env.ATLAS_OBSIDIAN || path.join(os.homedir(), 'Documents/OBSIDIAN');
+const DATOS = process.env.ATLAS_SALIDA ? path.resolve(process.env.ATLAS_SALIDA) : path.join(RAIZ, 'datos');
+const ARCHIVO_CONFIG = process.env.ATLAS_CONFIG ? path.resolve(process.env.ATLAS_CONFIG) : path.join(RAIZ, 'atlas.config.json');
 const GENERADOR = path.join(RAIZ, 'scripts/generar-datos.mjs');
+
+interface ConfigLocal {
+  puerto?: number;
+  carpetasGeneradas?: string[];
+}
+
+function leerConfig(): ConfigLocal {
+  try {
+    return JSON.parse(fs.readFileSync(ARCHIVO_CONFIG, 'utf8'));
+  } catch {
+    return {};
+  }
+}
+
+const PUERTO = Number(process.env.ATLAS_PUERTO || process.env.PORT || leerConfig().puerto || 5190);
 
 const TIPOS: Record<string, string> = {
   '.json': 'application/json; charset=utf-8',
@@ -37,17 +51,25 @@ function dentroDe(base: string, rel: string) {
   return abs.startsWith(base + path.sep) && fs.existsSync(abs) && fs.statSync(abs).isFile() ? abs : null;
 }
 
-const slug = (texto: string) =>
-  texto
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
+// Rutas de los vaults de ESTE equipo, tal como quedaron en los datos generados.
+let cacheVaults: { mtime: number; porSlug: Map<string, string> } = { mtime: -1, porSlug: new Map() };
+function vaultsActuales(): Map<string, string> {
+  const archivo = path.join(DATOS, 'atlas.json');
+  try {
+    const mtime = fs.statSync(archivo).mtimeMs;
+    if (mtime !== cacheVaults.mtime) {
+      const atlas = JSON.parse(fs.readFileSync(archivo, 'utf8')) as { vaults: { slug: string; ruta: string }[] };
+      cacheVaults = { mtime, porSlug: new Map(atlas.vaults.filter((v) => v.ruta).map((v) => [v.slug, v.ruta])) };
+    }
+  } catch {
+    /* todavía sin datos */
+  }
+  return cacheVaults.porSlug;
+}
 
 function generar(): Promise<{ ok: boolean; salida: string }> {
   return new Promise((resolve) => {
-    execFile(process.execPath, [GENERADOR], { cwd: RAIZ, env: process.env }, (error, stdout, stderr) => {
+    execFile(process.execPath, [GENERADOR], { cwd: RAIZ, env: process.env, maxBuffer: 10_000_000 }, (error, stdout, stderr) => {
       resolve({ ok: !error, salida: (stdout || stderr || String(error || '')).trim() });
     });
   });
@@ -55,7 +77,7 @@ function generar(): Promise<{ ok: boolean; salida: string }> {
 
 /**
  * Sirve los datos del atlas y los adjuntos de los vaults, regenera bajo pedido y,
- * en desarrollo, vigila los vaults para mantener el atlas sincronizado solo.
+ * en desarrollo, vigila los vaults de este equipo para mantener el atlas al día.
  */
 function atlas(): Plugin {
   let generando: Promise<{ ok: boolean; salida: string }> | null = null;
@@ -67,7 +89,7 @@ function atlas(): Plugin {
       const abs = dentroDe(DATOS, rel);
       if (!abs) {
         res.statusCode = 404;
-        res.end('{"error":"sin datos: ejecuta npm run datos"}');
+        res.end('{"error":"sin datos: ejecuta npm run instalar"}');
         return;
       }
       enviarArchivo(res, abs);
@@ -75,8 +97,8 @@ function atlas(): Plugin {
 
     app.use('/adjunto', (req, res) => {
       const [vaultSlug, ...resto] = (req.url || '').split('?')[0].replace(/^\/+/, '').split('/');
-      const vault = fs.existsSync(OBSIDIAN) ? fs.readdirSync(OBSIDIAN).find((v) => slug(v) === vaultSlug) : null;
-      const abs = vault ? dentroDe(path.join(OBSIDIAN, vault), resto.map(decodeURIComponent).join('/')) : null;
+      const raiz = vaultsActuales().get(vaultSlug);
+      const abs = raiz ? dentroDe(raiz, resto.map(decodeURIComponent).join('/')) : null;
       if (!abs) {
         res.statusCode = 404;
         res.end();
@@ -105,27 +127,52 @@ function atlas(): Plugin {
         execFileSync(process.execPath, [GENERADOR], { cwd: RAIZ, stdio: 'inherit' });
       }
       middlewares(server.middlewares);
+      if (process.env.ATLAS_VIGILAR === '0') return;
 
-      // Sincronización en vivo: cualquier cambio en los vaults regenera el atlas
-      // (con espera de 8 s para agrupar guardados) y avisa al navegador.
-      if (process.env.ATLAS_VIGILAR === '0' || !fs.existsSync(OBSIDIAN)) return;
+      // Sincronización en vivo: un cambio en cualquier vault (o en la
+      // configuración) regenera el atlas tras 8 s sin cambios y avisa al navegador.
       let temporizador: NodeJS.Timeout | undefined;
-      try {
-        const vigia = fs.watch(OBSIDIAN, { recursive: true }, (_evento, archivo) => {
-          const ruta = String(archivo || '');
-          if (!ruta.endsWith('.md') || /(^|\/)(\.obsidian|\.git|\.memoria-system|Graphify)\//.test(ruta)) return;
-          clearTimeout(temporizador);
-          temporizador = setTimeout(async () => {
-            const { ok, salida } = await regenerar();
-            server.config.logger.info(`  atlas: ${ok ? 'datos actualizados' : 'error al regenerar'}`, { timestamp: true });
-            if (!ok) server.config.logger.error(salida);
-            server.ws.send({ type: 'custom', event: 'atlas:datos', data: { ok } });
-          }, 8000);
-        });
-        server.httpServer?.on('close', () => vigia.close());
-      } catch (error) {
-        server.config.logger.warn(`  atlas: no se pudo vigilar ${OBSIDIAN}: ${String(error)}`);
-      }
+      let vigias: fs.FSWatcher[] = [];
+      let vigilados = '';
+      const avisar = () => {
+        clearTimeout(temporizador);
+        temporizador = setTimeout(async () => {
+          const { ok, salida } = await regenerar();
+          server.config.logger.info(`  atlas: ${ok ? 'datos actualizados' : 'error al regenerar'}`, { timestamp: true });
+          if (!ok) server.config.logger.error(salida);
+          server.ws.send({ type: 'custom', event: 'atlas:datos', data: { ok } });
+          armar();
+        }, 8000);
+      };
+      const armar = () => {
+        const rutas = [...vaultsActuales().values()];
+        if (rutas.join('|') === vigilados) return;
+        vigias.forEach((v) => v.close());
+        vigias = [];
+        vigilados = rutas.join('|');
+        const generadas = new Set(leerConfig().carpetasGeneradas || ['Graphify']);
+        for (const ruta of rutas) {
+          try {
+            vigias.push(
+              fs.watch(ruta, { recursive: true }, (_evento, archivo) => {
+                const rel = String(archivo || '').split(path.sep).join('/');
+                if (!rel.endsWith('.md')) return;
+                const primera = rel.split('/')[0];
+                if (primera.startsWith('.') || (generadas.has(primera) && rel.includes('/'))) return;
+                avisar();
+              }),
+            );
+          } catch (error) {
+            server.config.logger.warn(`  atlas: no se pudo vigilar ${ruta}: ${String(error)}`);
+          }
+        }
+      };
+      armar();
+      fs.watchFile(ARCHIVO_CONFIG, { interval: 2000 }, avisar);
+      server.httpServer?.on('close', () => {
+        vigias.forEach((v) => v.close());
+        fs.unwatchFile(ARCHIVO_CONFIG);
+      });
     },
     configurePreviewServer(server) {
       middlewares(server.middlewares);
@@ -135,7 +182,7 @@ function atlas(): Plugin {
 
 export default defineConfig({
   plugins: [react(), atlas()],
-  server: { port: 5190, strictPort: false },
-  preview: { port: 5190 },
+  server: { port: PUERTO, strictPort: false },
+  preview: { port: PUERTO },
   build: { chunkSizeWarningLimit: 900 },
 });

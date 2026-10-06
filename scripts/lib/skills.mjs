@@ -9,7 +9,11 @@ import { contarPalabras, limpiarEnLinea, ocultarSecretos, separarFrontmatter, si
 import { documentoTraducido, es, esDocumento } from './traduccion.mjs';
 
 const HOME = os.homedir();
-const PREFERENCIA_IA = ['Claude', 'Codex', 'Antigravity', 'Extra'];
+const PREFERENCIA_IA = ['Claude', 'Codex', 'Antigravity', 'Compartidas', 'Extra'];
+
+// Carpetas de configuración de las IAs: una skill que vive fuera de ellas (en un
+// repositorio o carpeta propia, enlazada) se considera de la persona.
+const CARPETAS_DE_IA = ['.claude', '.codex', '.gemini', '.agents'].map((d) => path.join(HOME, d));
 const MAX_REF_BYTES = 80_000;
 const MAX_DETALLE_BYTES = 1_200_000;
 
@@ -48,7 +52,8 @@ const NORMALIZAR_CATEGORIA = {
 };
 
 function categoriasDelIndice() {
-  const archivo = path.join(CONFIG.obsidian, '.memoria-system/data/memoria_index.json');
+  if (!CONFIG.sistemaMemoria) return new Map();
+  const archivo = path.join(CONFIG.sistemaMemoria, 'data', 'memoria_index.json');
   const mapa = new Map();
   try {
     const indice = JSON.parse(fs.readFileSync(archivo, 'utf8'));
@@ -287,7 +292,18 @@ export function leerSkills(contadorSecretos, notasTodas) {
       const nombre = String(fm.name || path.basename(dir)).trim();
       const relFuente = path.relative(fuente.dir, dir);
       const padre = relFuente.includes(path.sep) ? relFuente.split(path.sep)[0] : null;
-      instalaciones.push({ ia: fuente.ia, nombre, dir, real, fm, cuerpo, sistema: relFuente.startsWith('.system'), padre: padre && padre !== '.system' ? padre : null });
+      instalaciones.push({
+        ia: fuente.ia,
+        nombre,
+        dir,
+        real,
+        fm,
+        cuerpo,
+        sistema: fuente.sistema || relFuente.startsWith('.system'),
+        plugin: fuente.plugin,
+        paquete: fuente.paquete,
+        padre: padre && padre !== '.system' ? padre : null,
+      });
     }
   }
 
@@ -300,20 +316,26 @@ export function leerSkills(contadorSecretos, notasTodas) {
   const nombres = new Set(grupos.keys());
   const mencionadas = crearDetectorDeMenciones(nombres);
 
+  // Notas de los vaults que hablan de una skill: las que se llaman como ella o
+  // «<IA> - <skill>» (así las nombra, por ejemplo, un inventario de skills).
   const notasSkills = new Map();
+  const ias = new Set(CONFIG.fuentesSkills.map((f) => f.ia.toLowerCase()));
   for (const n of notasTodas) {
-    if (n.v !== 'TALLERES IA') continue;
-    const m = n.nb.match(/^(Claude|Codex|Antigravity) - (.+)$/);
-    if (m && n.f === 'Skills') {
-      if (!notasSkills.has(m[2])) notasSkills.set(m[2], []);
-      notasSkills.get(m[2]).push(n.id);
-    }
+    const m = n.nb.match(/^(.+?) - (.+)$/);
+    const destino = nombres.has(n.nb) ? n.nb : m && ias.has(m[1].toLowerCase()) && nombres.has(m[2]) ? m[2] : null;
+    if (!destino) continue;
+    if (!notasSkills.has(destino)) notasSkills.set(destino, []);
+    notasSkills.get(destino).push({ id: n.id, v: n.v, t: n.t });
   }
 
   const skills = [];
   const detalles = new Map();
+  const paquetesDePlugins = new Map();
   for (const [nombre, lista] of grupos) {
-    lista.sort((a, b) => PREFERENCIA_IA.indexOf(a.ia) - PREFERENCIA_IA.indexOf(b.ia));
+    // El contenido sale de la instalación preferida: primero las que no vienen de un
+    // plugin, luego por IA (Claude, Codex, Antigravity…).
+    const orden = (i) => (i.plugin ? 100 : 0) + (PREFERENCIA_IA.indexOf(i.ia) + 1 || 50);
+    lista.sort((a, b) => orden(a) - orden(b));
     const principal = lista[0];
     const cuerpo = ocultarSecretos(principal.cuerpo, contadorSecretos);
     const descripcion = ocultarSecretos(String(principal.fm.description || '').replace(/\s+/g, ' ').trim(), contadorSecretos);
@@ -321,9 +343,16 @@ export function leerSkills(contadorSecretos, notasTodas) {
     const archivos = listarArchivos(principal.real);
     const git = infoGit(principal.real);
     const h1 = cuerpo.match(/^#\s+(.+)$/m);
-    const paquete = PAQUETES.find((p) => p.test(nombre));
-    const enProyectos = /\/PROYECTOS\//.test(principal.real);
-    const propia = enProyectos || /anndreloopez012/.test(git?.remoto || '') || /alcore|campuslands|kinvo|softplus/i.test(nombre);
+    const delPlugin = lista.find((i) => i.plugin && i.paquete);
+    const paquete = PAQUETES.find((p) => p.test(nombre))?.nombre || (delPlugin ? `Plugin ${delPlugin.paquete}` : null);
+    if (delPlugin && !paquetesDePlugins.has(`Plugin ${delPlugin.paquete}`)) {
+      paquetesDePlugins.set(`Plugin ${delPlugin.paquete}`, `Skills que trae el plugin «${delPlugin.paquete}» de ${delPlugin.ia}.`);
+    }
+    const fueraDeLasIAs = !principal.plugin && !CARPETAS_DE_IA.some((d) => principal.real.startsWith(d + path.sep));
+    const propia =
+      fueraDeLasIAs ||
+      CONFIG.propias.cuentas.some((c) => (git?.remoto || '').toLowerCase().includes(`/${c.toLowerCase()}/`)) ||
+      CONFIG.propias.patrones.some((p) => nombre.toLowerCase().includes(p.toLowerCase()));
     const categoria =
       categorias.get(nombre) || CATEGORIAS.find(([, re]) => re.test(`${nombre} ${descripcion}`))?.[0] || 'General';
 
@@ -360,8 +389,8 @@ export function leerSkills(contadorSecretos, notasTodas) {
       // El original se conserva para que la búsqueda también encuentre términos en inglés.
       descripcionOriginal: descripcion,
       categoria,
-      paquete: paquete?.nombre || null,
-      origen: principal.sistema ? 'sistema' : propia ? 'propia' : 'instalada',
+      paquete,
+      origen: propia ? 'propia' : principal.sistema ? 'sistema' : principal.plugin ? 'plugin' : 'instalada',
       padre: principal.padre && nombres.has(principal.padre) ? principal.padre : null,
       repo: git ? { remoto: git.remoto, raiz: git.raiz } : null,
       instalaciones: lista.map((i) => ({ ia: i.ia, ruta: i.dir, real: i.real !== i.dir ? i.real : null })),
@@ -380,7 +409,21 @@ export function leerSkills(contadorSecretos, notasTodas) {
     detalles.set(nombre, { cuerpo: esDocumento(cuerpo, 'manual', { registrar }), traducido: documentoTraducido(cuerpo), referencias });
   }
 
-  const paquetes = PAQUETES.map((p) => ({ nombre: p.nombre, descripcion: p.descripcion, skills: skills.filter((s) => s.paquete === p.nombre).map((s) => s.id) })).filter((p) => p.skills.length);
+  const paquetes = [...PAQUETES.map((p) => [p.nombre, p.descripcion]), ...paquetesDePlugins]
+    .map(([nombrePaquete, descripcion]) => ({ nombre: nombrePaquete, descripcion, skills: skills.filter((s) => s.paquete === nombrePaquete).map((s) => s.id) }))
+    .filter((p) => p.skills.length);
+  // IAs en el orden de preferencia (las desconocidas, al final).
+  const iasPresentes = [...new Set(instalaciones.map((i) => i.ia))].sort(
+    (a, b) => (PREFERENCIA_IA.indexOf(a) + 1 || 99) - (PREFERENCIA_IA.indexOf(b) + 1 || 99),
+  );
 
-  return { skills: skills.sort((a, b) => a.nombre.localeCompare(b.nombre)), detalles, paquetes, nombres, mencionadas, totalInstalaciones: instalaciones.length };
+  return {
+    skills: skills.sort((a, b) => a.nombre.localeCompare(b.nombre)),
+    detalles,
+    paquetes,
+    ias: iasPresentes,
+    nombres,
+    mencionadas,
+    totalInstalaciones: instalaciones.length,
+  };
 }

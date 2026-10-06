@@ -18,7 +18,7 @@ interface Doc {
   contexto: string;
 }
 
-let indiceCache: { version: number; indice: MiniSearch<Doc>; docs: Map<string, Doc> } | null = null;
+let indiceCache: { version: number; indice: MiniSearch<Doc>; docs: Map<string, Doc>; sugerencias: string[] } | null = null;
 
 async function construirIndice(atlas: Atlas, version: number) {
   if (indiceCache?.version === version) return indiceCache;
@@ -69,10 +69,18 @@ async function construirIndice(atlas: Atlas, version: number) {
     fields: ['titulo', 'ruta', 'etiquetas', 'texto'],
     storeFields: ['id'],
     searchOptions: { boost: { titulo: 4, etiquetas: 2, ruta: 1.5 }, prefix: true, fuzzy: 0.18 },
-    processTerm: (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(),
+    processTerm: (t) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(),
   });
   indice.addAll(docs);
-  indiceCache = { version, indice, docs: new Map(docs.map((d) => [d.id, d])) };
+  // Sugerencias de este equipo: algunas skills propias (o las primeras), etiquetas
+  // frecuentes de los vaults y el nombre de un agente.
+  const propias = skills.skills.filter((x) => x.origen === 'propia');
+  const sugerencias = [
+    ...(propias.length ? propias : skills.skills).slice(0, 3).map((x) => x.nombre),
+    ...atlas.vaults.flatMap((v) => v.etiquetas.slice(0, 1).map(([etiqueta]) => etiqueta)).slice(0, 2),
+    ...agentes.agentes.slice(0, 1).map((a) => a.nombre),
+  ];
+  indiceCache = { version, indice, docs: new Map(docs.map((d) => [d.id, d])), sugerencias: [...new Set(sugerencias)] };
   return indiceCache;
 }
 
@@ -147,7 +155,7 @@ export default function Buscador({ atlas, abierto, cerrar }: { atlas: Atlas; abi
           {consulta.trim().length < 2 && (
             <div className="buscador-ayuda">
               <p className="rotulo">Prueba con</p>
-              {['contexto para ia', 'web-inmersiva', 'stripe', 'bitacora kinvo', 'remotion', 'reglas de clasificacion'].map((s) => (
+              {(listo?.sugerencias ?? []).map((s) => (
                 <button key={s} className="chip" onClick={() => setConsulta(s)}>
                   {s}
                 </button>

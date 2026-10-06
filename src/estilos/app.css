@@ -936,7 +936,7 @@
 .arbol-ramas {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--ramas, 5), minmax(0, 1fr));
   gap: 14px;
   width: 100%;
   padding-top: 30px;
@@ -2576,6 +2576,99 @@ a:hover > .caja rect {
   color: var(--tinta);
 }
 
+/* Fuentes detectadas en este equipo */
+.fuentes-detectadas {
+  margin-top: 30px;
+  padding: 26px 28px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+
+.fuentes-detectadas header h2 {
+  margin: 6px 0 8px;
+  font-size: 34px;
+}
+
+.fuentes-detectadas header p {
+  max-width: 80ch;
+  margin: 0;
+  color: var(--tinta-2);
+  font-size: 14px;
+}
+
+.fuentes-detectadas code {
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--superficie-2);
+  font-family: var(--f-mono);
+  font-size: 12px;
+}
+
+.fuentes-columnas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 26px;
+  margin-top: 22px;
+}
+
+.fuentes-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fuentes-lista li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.fuente-nombre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 620;
+}
+
+.fuente-nombre a {
+  text-decoration: none;
+}
+
+.fuente-nombre a:hover {
+  text-decoration: underline;
+}
+
+.fuente-nombre .mono {
+  margin-left: auto;
+  color: var(--tinta-3);
+  font-weight: 400;
+}
+
+.fuentes-lista .ruta {
+  padding-left: 15px;
+}
+
+.rotulo.separada {
+  margin-top: 18px;
+}
+
+.comandos-atlas {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px 24px;
+  max-height: none;
+  margin: 8px 0 0;
+  padding-top: 18px;
+  border-top: 1px dashed var(--linea);
+}
+
 .sincronia {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
@@ -2873,7 +2966,8 @@ a:hover > .caja rect {
     position: static;
   }
 
-  .etapas {
+  .etapas,
+  .fuentes-columnas {
     grid-template-columns: minmax(0, 1fr);
   }
 

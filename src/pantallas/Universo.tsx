@@ -1,9 +1,11 @@
-// Vista inicial: CORE es el sol; los otros cinco vaults orbitan y nacen de él.
+// Vista inicial: el vault central es el sol; los demás orbitan y nacen de él.
 // El anillo exterior es el zodiaco de skills (agrupadas por categoría) y agentes.
+// Todo sale de los datos de cada equipo: 0, 1 o muchos vaults.
 import { ArrowRight, BookOpen } from 'lucide-react';
 import { useMemo, useState, type MouseEvent } from 'react';
 import { cargarAgentes, cargarSkills, useDatos } from '../lib/datos';
-import { colorTexto, hace, n, PALETA } from '../lib/formato';
+import { vaultCentral } from '../lib/atlas';
+import { colorTexto, enPalabras, hace, n, PALETA } from '../lib/formato';
 import { navegar, rutaAgente, rutaSkill, rutaVault } from '../lib/rutas';
 import { mezclar, tono, useTema } from '../lib/tema';
 import type { Atlas, ResumenVault } from '../lib/tipos';
@@ -91,17 +93,22 @@ export default function Universo({ atlas }: { atlas: Atlas }) {
   const [categoriaFoco, setCategoriaFoco] = useState<string | null>(null);
   const [tip, setTip] = useState<Tip | null>(null);
 
-  const core = atlas.vaults.find((v) => v.nombre === 'CORE') ?? atlas.vaults[0];
-  const hijos = atlas.vaults.filter((v) => v !== core);
+  const central = vaultCentral(atlas);
+  // Sin vaults, el centro es simbólico y lleva a las skills.
+  const core = central ?? { nombre: 'Atlas', slug: '', notas: 0, color: '#1d24f7', inicio: null, carpetas: { n: '', p: '', d: 0, t: 0, a: 0, h: [] } };
+  const hijos = atlas.vaults.filter((v) => v !== central);
   const maxNotas = Math.max(...hijos.map((v) => v.notas), 1);
+  // Con muchos vaults los planetas se achican para no chocar en la órbita.
+  const factor = Math.min(1, 7 / Math.max(hijos.length, 1));
+  const cerebro = atlas.sistema.memoria ? 'cerebro' : 'centro';
 
   const planetas = useMemo(
     () =>
       hijos.map((v, i) => {
         const p = enElipse(-90 + (360 * i) / hijos.length + 18, ORBITA.rx, ORBITA.ry);
-        return { v, ...p, r: 21 + 33 * Math.sqrt(v.notas / maxNotas) };
+        return { v, ...p, r: (21 + 33 * Math.sqrt(v.notas / maxNotas)) * factor };
       }),
-    [hijos, maxNotas],
+    [hijos, maxNotas, factor],
   );
   const porNombre = new Map(planetas.map((p) => [p.v.nombre, p]));
 
@@ -146,7 +153,7 @@ export default function Universo({ atlas }: { atlas: Atlas }) {
     }
     // Cada bloque ocupa lo que pida su nombre o sus puntos (lo mayor), medido en largo
     // de arco real del anillo; lo que sobra se reparte en proporción.
-    const PASO_MIN = 13;
+    const PASO_MIN = 11;
     const HUECO = 22;
     const necesidad = bloques.map((b) => Math.max(b.items.length * PASO_MIN, `${b.texto} · ${b.items.length}`.length * 7.4 + 24));
     const escala = (ARCO.total - HUECO * bloques.length) / necesidad.reduce((t, x) => t + x, 0);
@@ -185,7 +192,17 @@ export default function Universo({ atlas }: { atlas: Atlas }) {
             <em>en un solo cielo.</em>
           </h1>
           <p className="cielo-bajada">
-            <strong>CORE</strong> es el cerebro: de él nacen los otros cinco vaults. Toca un planeta para entrar; el anillo exterior son tus skills y agentes.
+            {central ? (
+              <>
+                <strong>{central.nombre}</strong> es el {cerebro}
+                {hijos.length === 0
+                  ? ': toca el sol para entrar.'
+                  : `: de él ${hijos.length === 1 ? 'nace el otro vault' : `nacen los otros ${enPalabras(hijos.length)} vaults`}. Toca un planeta para entrar.`}{' '}
+                El anillo exterior son tus skills y agentes.
+              </>
+            ) : (
+              <>Todavía no hay vaults de Obsidian en este equipo: el anillo muestra tus skills y agentes. Para sumar uno, pídele a tu IA que lo agregue al atlas.</>
+            )}
           </p>
           <dl className="cifras">
             <div>
@@ -209,15 +226,16 @@ export default function Universo({ atlas }: { atlas: Atlas }) {
               <dd>{n(t.agentes + t.automatizaciones)}</dd>
             </div>
           </dl>
-          {atlas.sistema.contexto && (
-            <a className="boton-primario" href={rutaVault('core', atlas.sistema.contexto)}>
-              <BookOpen size={16} /> Empieza por CORE · Contexto para IA
+          {central && (
+            <a className="boton-primario" href={rutaVault(central.slug, atlas.sistema.contexto ?? central.inicio)}>
+              <BookOpen size={16} /> Empieza por {central.nombre}
+              {atlas.sistema.contexto ? ' · Contexto para IA' : ''}
             </a>
           )}
         </div>
 
         <div className="cielo-lienzo" onMouseLeave={() => setTip(null)}>
-          <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="CORE al centro, cinco vaults en órbita y el anillo de skills y agentes">
+          <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${core.nombre} al centro, ${hijos.length} vaults en órbita y el anillo de skills y agentes`}>
             <defs>
               {atlas.vaults.map((v) => (
                 <radialGradient key={v.slug} id={`grad-${v.slug}`} cx="35%" cy="32%" r="75%">
@@ -288,7 +306,7 @@ export default function Universo({ atlas }: { atlas: Atlas }) {
             {/* CORE */}
             <g
               className="sol"
-              onClick={() => navegar(rutaVault(core.slug, core.inicio))}
+              onClick={() => navegar(central ? rutaVault(central.slug, central.inicio) : '#/skills')}
               onMouseEnter={() => setFoco(core.nombre)}
               onMouseLeave={() => setFoco(null)}
               role="link"
@@ -297,12 +315,12 @@ export default function Universo({ atlas }: { atlas: Atlas }) {
               <circle cx={CX} cy={CY} r={R_CORE * 2.1} fill="url(#corona)" className="corona" />
               <circle cx={CX} cy={CY} r={R_CORE + 22} className="sol-anillo" />
               <circle cx={CX} cy={CY} r={R_CORE + 40} className="sol-anillo lento" />
-              <circle cx={CX} cy={CY} r={R_CORE} fill={`url(#grad-${core.slug})`} />
-              <text x={CX} y={CY + 6} className="sol-nombre">
-                CORE
+              <circle cx={CX} cy={CY} r={R_CORE} fill={central ? `url(#grad-${core.slug})` : core.color} />
+              <text x={CX} y={CY + 6} className="sol-nombre" style={{ fontSize: core.nombre.length > 8 ? `${Math.max(16, 38 - (core.nombre.length - 8) * 2.2)}px` : undefined }}>
+                {core.nombre}
               </text>
               <text x={CX} y={CY + 30} className="sol-dato">
-                {n(core.notas)} notas · cerebro
+                {central ? `${n(core.notas)} notas · ${cerebro}` : `${n(atlas.totales.skills)} skills`}
               </text>
             </g>
 
@@ -383,11 +401,11 @@ export default function Universo({ atlas }: { atlas: Atlas }) {
             </div>
           )}
 
-          {vaultFoco && <FichaFlotante v={vaultFoco} atlas={atlas} />}
+          {vaultFoco && <FichaFlotante v={vaultFoco} atlas={atlas} centro={central} cerebro={cerebro} />}
         </div>
       </section>
 
-      <ArbolVaults atlas={atlas} core={core} hijos={hijos} />
+      {central && <ArbolVaults atlas={atlas} core={central} hijos={hijos} />}
     </div>
   );
 }
@@ -396,11 +414,11 @@ function formatoFechaCorta(iso: string) {
   return `actualizado ${hace(iso)}`;
 }
 
-function FichaFlotante({ v, atlas }: { v: ResumenVault; atlas: Atlas }) {
+function FichaFlotante({ v, atlas, centro, cerebro }: { v: ResumenVault; atlas: Atlas; centro: ResumenVault | null; cerebro: string }) {
   const salen = atlas.puentes.filter((p) => p.de === v.nombre).sort((a, b) => b.n - a.n);
   return (
     <aside className="ficha-flotante" style={{ ['--vault' as string]: v.color }}>
-      <p className="rotulo">{v.nombre === 'CORE' ? 'Raíz · cerebro del sistema' : 'Nace de CORE'}</p>
+      <p className="rotulo">{v === centro ? `Raíz · ${cerebro} del sistema` : `Nace de ${centro?.nombre ?? 'el centro'}`}</p>
       <h2 className="display" style={{ color: colorTexto(v.color) }}>
         {v.nombre}
       </h2>
@@ -443,24 +461,30 @@ function ArbolVaults({ atlas, core, hijos }: { atlas: Atlas; core: ResumenVault;
       <header className="seccion-cabecera">
         <p className="rotulo">Estructura</p>
         <h2 className="display">
-          Un tronco, <em>cinco ramas</em>
+          Un tronco, <em>{hijos.length === 1 ? 'una rama' : `${enPalabras(hijos.length)} ramas`}</em>
         </h2>
         <p>
-          Todo entra por CORE y se clasifica en el vault que le corresponde. Cada tarjeta muestra para qué es el vault y sus carpetas; entra para leer cualquier nota.
+          Todo nace de {core.nombre} y se reparte en el vault que le corresponde. Cada tarjeta muestra para qué es el vault y sus carpetas; entra para leer cualquier nota.
         </p>
       </header>
       <TarjetaVault v={core} raiz />
-      <div className="arbol-tronco" aria-hidden="true" />
-      <div className="arbol-ramas">
-        {hijos.map((v) => (
-          <div className="arbol-rama" key={v.slug}>
-            <TarjetaVault v={v} />
+      {hijos.length > 0 && (
+        <>
+          <div className="arbol-tronco" aria-hidden="true" />
+          <div className="arbol-ramas" style={{ ['--ramas' as string]: Math.min(hijos.length, 5) }}>
+            {hijos.map((v) => (
+              <div className="arbol-rama" key={v.slug}>
+                <TarjetaVault v={v} />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <p className="arbol-nota mono">
-        {n(atlas.totales.generados)} notas generadas por Graphify (una por archivo de código) no se cargan: su resumen ya vive en las fichas de proyecto.
-      </p>
+        </>
+      )}
+      {atlas.totales.generados > 0 && (
+        <p className="arbol-nota mono">
+          {n(atlas.totales.generados)} notas generadas por herramientas (por ejemplo, Graphify crea una por archivo de código) no se cargan: su resumen ya vive en el resto del vault.
+        </p>
+      )}
     </section>
   );
 }

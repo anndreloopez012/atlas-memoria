@@ -1,12 +1,14 @@
-// Carril para saltar entre vaults. CORE va primero y separado: es la raíz de la
-// que nacen los demás (la línea dibuja esa rama).
+// Carril para saltar entre vaults. El vault central va primero y separado: es la
+// raíz de la que nacen los demás (la línea dibuja esa rama).
+import { vaultCentral } from '../lib/atlas';
 import { navegar, rutaVault } from '../lib/rutas';
 import { tono, useTema } from '../lib/tema';
 import type { Atlas } from '../lib/tipos';
 
 export default function SelectorVaults({ atlas, actual }: { atlas: Atlas; actual: string }) {
   const tema = useTema();
-  const core = atlas.vaults.find((v) => v.nombre === 'CORE') ?? atlas.vaults[0];
+  const core = vaultCentral(atlas);
+  if (!core) return null;
   const hijos = atlas.vaults.filter((v) => v !== core);
   const boton = (v: typeof core) => (
     <button
@@ -24,10 +26,14 @@ export default function SelectorVaults({ atlas, actual }: { atlas: Atlas; actual
   return (
     <nav className="selector-vaults" aria-label="Vaults">
       {boton(core)}
-      <svg className="selector-rama" viewBox="0 0 40 24" aria-hidden="true">
-        <path d="M0 12 H18 M18 12 C26 12 26 4 40 4 M18 12 C26 12 26 20 40 20" fill="none" stroke="currentColor" />
-      </svg>
-      <div className="selector-hijos">{hijos.map(boton)}</div>
+      {hijos.length > 0 && (
+        <>
+          <svg className="selector-rama" viewBox="0 0 40 24" aria-hidden="true">
+            <path d="M0 12 H18 M18 12 C26 12 26 4 40 4 M18 12 C26 12 26 20 40 20" fill="none" stroke="currentColor" />
+          </svg>
+          <div className="selector-hijos">{hijos.map(boton)}</div>
+        </>
+      )}
     </nav>
   );
 }
