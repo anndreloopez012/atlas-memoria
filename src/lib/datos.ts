@@ -10,7 +10,7 @@ const oyentes = new Set<() => void>();
 function pedir<T>(ruta: string): Promise<T> {
   if (!cache.has(ruta)) {
     const promesa = fetch(`/datos/${ruta}?v=${version}`).then(async (r) => {
-      if (!r.ok) throw new Error(`No se pudo leer ${ruta} (${r.status}). Ejecuta npm run datos.`);
+      if (!r.ok) throw new Error(`No se pudo leer ${ruta} (${r.status}). Ejecuta npm run instalar.`);
       return r.json();
     });
     promesa.catch(() => cache.delete(ruta));

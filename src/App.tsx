@@ -56,7 +56,7 @@ export default function App() {
             <Marca />
             <h1 className="display">Todavía no hay mapa</h1>
             <p>{error}</p>
-            <pre className="mono">npm run datos</pre>
+            <pre className="mono">npm run instalar</pre>
           </div>
         )}
         {!atlas && !error && (
@@ -66,7 +66,15 @@ export default function App() {
           </div>
         )}
         {atlas && ruta.vista === 'universo' && <Universo atlas={atlas} />}
-        {atlas && ruta.vista === 'vault' && <Vault key={ruta.slug} atlas={atlas} slug={ruta.slug} notaId={ruta.nota} carpeta={ruta.carpeta} />}
+        {atlas && ruta.vista === 'vault' && atlas.vaults.length > 0 && <Vault key={ruta.slug || 'centro'} atlas={atlas} slug={ruta.slug} notaId={ruta.nota} carpeta={ruta.carpeta} />}
+        {atlas && ruta.vista === 'vault' && atlas.vaults.length === 0 && (
+          <div className="pantalla-estado">
+            <Marca />
+            <h1 className="display">Todavía no hay vaults</h1>
+            <p>No se encontró ningún vault de Obsidian en este equipo. Pídele a tu IA que agregue uno al atlas, o ejecuta:</p>
+            <pre className="mono">npm run instalar -- --vault "/ruta/a/tu/vault"</pre>
+          </div>
+        )}
         {atlas && ruta.vista === 'skills' && <Skills atlas={atlas} skill={ruta.skill} categoria={ruta.categoria} />}
         {atlas && ruta.vista === 'agentes' && <Agentes atlas={atlas} agente={ruta.agente} />}
         {atlas && ruta.vista === 'sistema' && <Sistema atlas={atlas} />}

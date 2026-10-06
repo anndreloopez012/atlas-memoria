@@ -14,9 +14,20 @@ export interface Carpeta {
   h: Carpeta[];
 }
 
+/** Referencia a una nota de cualquier vault (para no cargar el vault entero). */
+export interface NotaRef {
+  id: string;
+  /** vault */
+  v: string;
+  /** título */
+  t: string;
+}
+
 export interface ResumenVault {
   nombre: string;
   slug: string;
+  /** carpeta del vault en este equipo */
+  ruta: string;
   color: string;
   icono: string;
   proposito: string;
@@ -41,10 +52,20 @@ export interface Puente {
   n: number;
 }
 
+export interface FuentesDetectadas {
+  vaults: { nombre: string; ruta: string; notas: number }[];
+  skills: { ia: string; ruta: string; paquete: string | null; skills: number }[];
+  agentes: { ia: string; ambito: string; ruta: string; agentes: number }[];
+  automatizaciones: string[];
+}
+
 export interface Atlas {
   version: number;
   generado: string;
-  origen: string;
+  /** slug del vault central (del que nacen los demás) */
+  centro: string | null;
+  /** IAs con skills en este equipo, en orden */
+  ias: string[];
   totales: {
     vaults: number;
     notas: number;
@@ -64,6 +85,12 @@ export interface Atlas {
   vaults: ResumenVault[];
   puentes: Puente[];
   sistema: {
+    plataforma: string;
+    /** hay atlas.config.json (si no, se usó la detección automática) */
+    configLocal: boolean;
+    /** hay un sistema de memoria tipo .memoria-system */
+    memoria: boolean;
+    fuentes: FuentesDetectadas;
     contexto: string | null;
     reglas: string | null;
     mapaRutas: string | null;
@@ -137,7 +164,7 @@ export interface Skill {
   activadores: string[];
   categoria: string;
   paquete: string | null;
-  origen: 'propia' | 'instalada' | 'sistema';
+  origen: 'propia' | 'instalada' | 'sistema' | 'plugin';
   padre: string | null;
   repo: { remoto: string; raiz: string } | null;
   instalaciones: { ia: string; ruta: string; real: string | null }[];
@@ -147,7 +174,7 @@ export interface Skill {
   archivos: ArchivoSkill[];
   relacionadas: string[];
   extras: Record<string, string>;
-  notas: string[];
+  notas: NotaRef[];
   ruta: string;
   archivoDetalle: string;
   agentes: string[];
@@ -157,6 +184,7 @@ export interface DatosSkills {
   skills: Skill[];
   paquetes: { nombre: string; descripcion: string; skills: string[] }[];
   categorias: string[];
+  ias: string[];
   totalInstalaciones: number;
 }
 
@@ -188,7 +216,7 @@ export interface AgenteIA extends AgenteBase {
   color: string | null;
   skills: string[];
   cuerpo: string;
-  notas: string[];
+  notas: NotaRef[];
 }
 
 export interface Automatizacion extends AgenteBase {
@@ -196,9 +224,13 @@ export interface Automatizacion extends AgenteBase {
   detalle: string;
   script: string;
   intervalo: number | null;
+  /** expresión de cron, si aplica */
+  programacion: string | null;
   alIniciar: boolean;
   vigila: string[];
   logs: string[];
+  /** comandos para pausar y reactivar */
+  pausar: string[];
 }
 
 export type Agente = AgenteIA | Automatizacion;

@@ -1,13 +1,13 @@
-// Agentes: subagentes de IA (Claude y Codex) que envuelven skills, y las
-// automatizaciones de macOS que mantienen viva la memoria.
+// Agentes: subagentes de IA (Claude Code, Codex, Antigravity…) que envuelven
+// skills, y las automatizaciones del sistema que trabajan sobre los vaults.
 import { ArrowLeft, Bot, Clock, Cpu, Eye, FileText, Wrench } from 'lucide-react';
 import Markdown from '../componentes/Markdown';
 import Pipeline from '../componentes/Pipeline';
-import { cargarAgentes, cargarSkills, cargarVault, useDatos } from '../lib/datos';
-import { COLOR_IA, intervalo } from '../lib/formato';
+import { vaultPorNombre } from '../lib/atlas';
+import { cargarAgentes, cargarSkills, useDatos } from '../lib/datos';
+import { colorIA, corto, intervalo } from '../lib/formato';
 import { rutaAgente, rutaSkill, rutaVault } from '../lib/rutas';
 import type { Agente, AgenteIA, Atlas, Automatizacion } from '../lib/tipos';
-import { corto } from './SkillDetalle';
 
 export default function Agentes({ atlas, agente }: { atlas: Atlas; agente: string | null }) {
   const datos = useDatos('agentes', cargarAgentes);
@@ -16,7 +16,9 @@ export default function Agentes({ atlas, agente }: { atlas: Atlas; agente: strin
   const lista = datos.datos?.agentes ?? [];
   const ia = lista.filter((a): a is AgenteIA => a.tipo === 'ia');
   const autos = lista.filter((a): a is Automatizacion => a.tipo === 'automatizacion');
-  const porIA = ['Claude', 'Codex'].map((x) => [x, ia.filter((a) => a.ia === x)] as const).filter(([, l]) => l.length);
+  const orden = ['Claude', 'Codex', 'Antigravity'];
+  const nombresIA = [...new Set(ia.map((a) => a.ia))].sort((x, y) => (orden.indexOf(x) + 1 || 9) - (orden.indexOf(y) + 1 || 9));
+  const porIA = nombresIA.map((x) => [x, ia.filter((a) => a.ia === x)] as const);
 
   return (
     <div className="pagina agentes">
@@ -26,7 +28,7 @@ export default function Agentes({ atlas, agente }: { atlas: Atlas; agente: strin
           Agentes que <em>trabajan por ti</em>
         </h1>
         <p className="pagina-bajada">
-          Un agente es un especialista al que la IA le delega una tarea completa: tiene sus propias instrucciones, herramientas y skills. Las automatizaciones, en cambio, corren solas en tu Mac para que la memoria esté siempre al día.
+          Un agente es un especialista al que la IA le delega una tarea completa: tiene sus propias instrucciones, herramientas y skills. Las automatizaciones, en cambio, corren solas en tu equipo y trabajan sobre tus vaults.
         </p>
       </header>
 
@@ -35,13 +37,13 @@ export default function Agentes({ atlas, agente }: { atlas: Atlas; agente: strin
       {porIA.map(([nombreIA, agentes]) => (
         <section key={nombreIA} className="grupo-agentes">
           <header>
-            <span className="grupo-punto" style={{ background: COLOR_IA[nombreIA] }} />
+            <span className="grupo-punto" style={{ background: colorIA(nombreIA) }} />
             <h2 className="display">Agentes de {nombreIA}</h2>
             <span className="mono">{agentes.length}</span>
           </header>
           <div className="rejilla-agentes">
             {agentes.map((a, i) => (
-              <a key={a.id} href={rutaAgente(a.id)} className="tarjeta-agente" style={{ ['--ia' as string]: COLOR_IA[a.ia], animationDelay: `${i * 0.04}s` }}>
+              <a key={a.id} href={rutaAgente(a.id)} className="tarjeta-agente" style={{ ['--ia' as string]: colorIA(a.ia), animationDelay: `${i * 0.04}s` }}>
                 <span className="tarjeta-agente-icono">
                   <Bot size={18} />
                 </span>
@@ -60,26 +62,26 @@ export default function Agentes({ atlas, agente }: { atlas: Atlas; agente: strin
       {autos.length > 0 && (
         <section className="grupo-agentes">
           <header>
-            <span className="grupo-punto" style={{ background: COLOR_IA.launchd }} />
+            <span className="grupo-punto" style={{ background: colorIA('launchd') }} />
             <h2 className="display">Automatizaciones del sistema</h2>
             <span className="mono">{autos.length}</span>
           </header>
           <div className="rejilla-agentes">
             {autos.map((a) => (
-              <a key={a.id} href={rutaAgente(a.id)} className="tarjeta-agente automatizacion" style={{ ['--ia' as string]: COLOR_IA.launchd }}>
+              <a key={a.id} href={rutaAgente(a.id)} className="tarjeta-agente automatizacion" style={{ ['--ia' as string]: colorIA(a.ia) }}>
                 <span className="tarjeta-agente-icono">
                   <Clock size={18} />
                 </span>
                 <span className="tarjeta-agente-nombre mono">{a.nombre}</span>
                 <span className="tarjeta-agente-ambito rotulo">
-                  {intervalo(a.intervalo)}
-                  {a.vigila.length ? ` · vigila ${a.vigila.length} vaults` : ''}
+                  {a.programacion ? `cron ${a.programacion}` : intervalo(a.intervalo)}
+                  {a.vigila.length ? ` · vigila ${a.vigila.length} carpetas` : ''}
                 </span>
                 <span className="tarjeta-agente-que">{a.descripcion}</span>
               </a>
             ))}
           </div>
-          {atlas.sistema.contexto && (
+          {atlas.vaults.length > 0 && (
             <p className="nota-al-pie">
               Así encaja todo: <a href="#/sistema">mira cómo trabaja el sistema completo</a>.
             </p>
@@ -93,8 +95,6 @@ export default function Agentes({ atlas, agente }: { atlas: Atlas; agente: strin
 function AgenteDetalle({ atlas, id }: { atlas: Atlas; id: string }) {
   const datos = useDatos('agentes', cargarAgentes);
   const skills = useDatos('skills', cargarSkills);
-  const talleres = atlas.vaults.find((v) => v.nombre === 'TALLERES IA');
-  const notas = useDatos(talleres ? `vault:${talleres.slug}` : null, () => cargarVault(talleres!.slug));
   const a: Agente | undefined = datos.datos?.agentes.find((x) => x.id === id);
 
   if (!datos.datos) return <div className="pantalla-estado cargando"><p className="rotulo">Abriendo agente…</p></div>;
@@ -224,20 +224,23 @@ function AgenteDetalle({ atlas, id }: { atlas: Atlas; id: string }) {
                 </ul>
               </section>
             )}
-            {a.notas.length > 0 && talleres && (
+            {a.notas.length > 0 && (
               <section className="lateral-bloque">
                 <h2 className="rotulo">
                   <FileText size={12} /> Notas en Obsidian
                 </h2>
                 <ul className="notas-relacionadas">
-                  {a.notas.map((nid) => (
-                    <li key={nid}>
-                      <a href={rutaVault(talleres.slug, nid)} style={{ ['--vault' as string]: talleres.color }}>
-                        <span className="relacion-punto" />
-                        {notas.datos?.notas.find((x) => x.id === nid)?.t ?? 'Nota en TALLERES IA'}
-                      </a>
-                    </li>
-                  ))}
+                  {a.notas.map((ref) => {
+                    const v = vaultPorNombre(atlas, ref.v);
+                    return v ? (
+                      <li key={ref.id}>
+                        <a href={rutaVault(v.slug, ref.id)} style={{ ['--vault' as string]: v.color }}>
+                          <span className="relacion-punto" />
+                          {ref.t}
+                        </a>
+                      </li>
+                    ) : null;
+                  })}
                 </ul>
               </section>
             )}
@@ -256,7 +259,11 @@ function AgenteDetalle({ atlas, id }: { atlas: Atlas; id: string }) {
               <h2 className="rotulo">Cómo trabaja</h2>
               <Pipeline
                 pasos={[
-                  { titulo: 'macOS lo despierta', cifra: intervalo(a.intervalo), detalle: `launchd lo ejecuta ${intervalo(a.intervalo)}${a.alIniciar ? ' y al iniciar sesión' : ''}${a.vigila.length ? `, y también cuando cambia algo en ${a.vigila.join(', ')}` : ''}.` },
+                  {
+                    titulo: `${a.ia} lo despierta`,
+                    cifra: a.programacion ? `cron ${a.programacion}` : intervalo(a.intervalo),
+                    detalle: `${a.ambito}: se ejecuta ${a.programacion ? `según la programación «${a.programacion}»` : intervalo(a.intervalo)}${a.alIniciar ? ' y al iniciar sesión' : ''}${a.vigila.length ? `, y también cuando cambia algo en ${a.vigila.join(', ')}` : ''}.`,
+                  },
                   { titulo: 'Corre el script', detalle: <span className="mono">{corto(a.script)}</span> },
                   { titulo: 'Deja registro', detalle: a.logs.length ? a.logs.map((l) => <span key={l} className="mono bloque-linea">{corto(l)}</span>) : 'Sin archivo de registro.' },
                 ]}
@@ -274,7 +281,7 @@ function AgenteDetalle({ atlas, id }: { atlas: Atlas; id: string }) {
               <h2 className="rotulo">
                 <Clock size={12} /> Frecuencia
               </h2>
-              <p>{intervalo(a.intervalo)}</p>
+              <p>{a.programacion ? `cron ${a.programacion}` : intervalo(a.intervalo)}</p>
             </section>
             {a.vigila.length > 0 && (
               <section className="lateral-bloque">
@@ -300,8 +307,11 @@ function AgenteDetalle({ atlas, id }: { atlas: Atlas; id: string }) {
             )}
             <section className="lateral-bloque">
               <h2 className="rotulo">Pausar y reactivar</h2>
-              <pre className="mono comando">launchctl bootout gui/$(id -u)/{a.nombre}</pre>
-              <pre className="mono comando">launchctl bootstrap gui/$(id -u) {corto(a.ruta)}</pre>
+              {a.pausar.map((c) => (
+                <pre key={c} className="mono comando">
+                  {corto(c)}
+                </pre>
+              ))}
             </section>
           </aside>
         </div>

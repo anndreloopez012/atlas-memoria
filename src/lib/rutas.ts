@@ -25,7 +25,8 @@ function leer(): Ruta {
   const params = new URLSearchParams(consulta);
   switch (partes[0]) {
     case 'v':
-      return { vista: 'vault', slug: partes[1] || 'core', nota: partes[2] || null, carpeta: params.get('carpeta') };
+      // Sin vault en la URL se abre el central (lo resuelve la pantalla con los datos).
+      return { vista: 'vault', slug: partes[1] || '', nota: partes[2] || null, carpeta: params.get('carpeta') };
     case 'skills':
       return { vista: 'skills', skill: partes.slice(1).join('/') || null, categoria: params.get('categoria') };
     case 'agentes':

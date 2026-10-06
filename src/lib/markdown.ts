@@ -6,7 +6,7 @@ import { Marked, type Tokens } from 'marked';
 export const slugTitulo = (texto: string) =>
   texto
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/<[^>]+>/g, '')
     .replace(/&(?:[a-z]+|#\d+);/g, '')

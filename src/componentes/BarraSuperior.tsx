@@ -6,9 +6,9 @@ import { rutaVault, type Ruta } from '../lib/rutas';
 import { alternarTema, useTema } from '../lib/tema';
 import type { Atlas } from '../lib/tipos';
 
-const SECCIONES: { vista: Ruta['vista']; hash: string; etiqueta: string }[] = [
+const secciones = (atlas: Atlas | null): { vista: Ruta['vista']; hash: string; etiqueta: string }[] => [
   { vista: 'universo', hash: '#/', etiqueta: 'Universo' },
-  { vista: 'vault', hash: rutaVault('core'), etiqueta: 'Vaults' },
+  { vista: 'vault', hash: rutaVault(atlas?.centro ?? ''), etiqueta: 'Vaults' },
   { vista: 'skills', hash: '#/skills', etiqueta: 'Skills' },
   { vista: 'agentes', hash: '#/agentes', etiqueta: 'Agentes' },
   { vista: 'sistema', hash: '#/sistema', etiqueta: 'Cómo trabaja' },
@@ -56,7 +56,7 @@ export default function BarraSuperior({ atlas, ruta, abrirBuscador }: { atlas: A
       </a>
 
       <nav className="navegacion" aria-label="Secciones">
-        {SECCIONES.map((s) => (
+        {secciones(atlas).map((s) => (
           <a key={s.vista} href={s.hash} className={ruta.vista === s.vista ? 'activa' : ''} aria-current={ruta.vista === s.vista ? 'page' : undefined}>
             {s.etiqueta}
           </a>

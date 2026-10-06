@@ -4,7 +4,7 @@ import { LayoutGrid, Network, Search, Star } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import Grafo, { type EnlaceGrafo, type NodoGrafo } from '../componentes/Grafo';
 import { cargarAgentes, cargarSkills, useDatos } from '../lib/datos';
-import { COLOR_IA, INICIAL_IA, n, PALETA } from '../lib/formato';
+import { AYUDA_IA, colorIA, inicialIA, n, PALETA } from '../lib/formato';
 import { navegar, rutaAgente, rutaSkill } from '../lib/rutas';
 import { coloresCanvas, tono, useTema } from '../lib/tema';
 import type { Atlas, Skill } from '../lib/tipos';
@@ -13,15 +13,16 @@ import SkillDetalle from './SkillDetalle';
 const sinAcentos = (t: string) =>
   t
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
 
-export function InsigniasIA({ ias }: { ias: string[] }) {
+/** Una insignia por cada IA del equipo: encendida si la skill está instalada en ella. */
+export function InsigniasIA({ ias, todas }: { ias: string[]; todas: string[] }) {
   return (
     <span className="insignias-ia">
-      {['Claude', 'Codex', 'Antigravity'].map((ia) => (
-        <span key={ia} className={`insignia-ia ${ias.includes(ia) ? '' : 'ausente'}`} style={{ ['--ia' as string]: COLOR_IA[ia] }} title={`${ia}: ${ias.includes(ia) ? 'instalada' : 'no instalada'}`}>
-          {INICIAL_IA[ia]}
+      {todas.map((ia) => (
+        <span key={ia} className={`insignia-ia ${ias.includes(ia) ? '' : 'ausente'}`} style={{ ['--ia' as string]: colorIA(ia) }} title={`${ia}: ${ias.includes(ia) ? 'instalada' : 'no instalada'}`}>
+          {inicialIA(ia)}
         </span>
       ))}
     </span>
@@ -39,6 +40,7 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
   const [origen, setOrigen] = useState<string | null>(null);
   const [paquete, setPaquete] = useState<string | null>(null);
   const [vista, setVista] = useState<'tarjetas' | 'red'>('tarjetas');
+  const [verPlugins, setVerPlugins] = useState(false);
 
   useEffect(() => setCat(categoria), [categoria]);
 
@@ -94,12 +96,14 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
 
   const d = datos.datos;
   const propias = d?.skills.filter((s) => s.origen === 'propia').length ?? 0;
+  const todasLasIAs = d?.ias ?? [];
+  const iasReales = todasLasIAs.filter((x) => x !== 'Compartidas' && x !== 'Extra');
   const hayFiltros = q || cat || ia || origen || paquete;
 
   return (
     <div className="pagina skills">
       <header className="pagina-cabecera">
-        <p className="rotulo">Arsenal · {d ? `${n(d.totalInstalaciones)} instalaciones en 3 IAs` : '…'}</p>
+        <p className="rotulo">Arsenal · {d ? `${n(d.totalInstalaciones)} instalaciones en ${iasReales.length} ${iasReales.length === 1 ? 'IA' : 'IAs'}` : '…'}</p>
         <h1 className="display">
           {d ? n(d.skills.length) : '…'} skills, <em>cada una con su oficio</em>
         </h1>
@@ -116,9 +120,9 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
         </label>
         <div className="filtros-fila">
           <span className="rotulo">IA</span>
-          {['Claude', 'Codex', 'Antigravity'].map((x) => (
-            <button key={x} className={`chip ${ia === x ? 'activo' : ''}`} onClick={() => setIa(ia === x ? null : x)}>
-              <span className="chip-punto" style={{ background: COLOR_IA[x] }} />
+          {todasLasIAs.map((x) => (
+            <button key={x} className={`chip ${ia === x ? 'activo' : ''}`} onClick={() => setIa(ia === x ? null : x)} title={AYUDA_IA[x]}>
+              <span className="chip-punto" style={{ background: colorIA(x) }} />
               {x}
             </button>
           ))}
@@ -126,8 +130,11 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
           {[
             ['propia', 'Propias'],
             ['instalada', 'Instaladas'],
+            ['plugin', 'De plugins'],
             ['sistema', 'Sistema'],
-          ].map(([v, e]) => (
+          ]
+            .filter(([v]) => d?.skills.some((x) => x.origen === v))
+            .map(([v, e]) => (
             <button key={v} className={`chip ${origen === v ? 'activo' : ''}`} onClick={() => setOrigen(origen === v ? null : v)}>
               {v === 'propia' && <Star size={12} />}
               {e}
@@ -155,11 +162,18 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
         {d && d.paquetes.length > 0 && (
           <div className="filtros-fila">
             <span className="rotulo">Paquete</span>
-            {d.paquetes.map((p) => (
-              <button key={p.nombre} className={`chip ${paquete === p.nombre ? 'activo' : ''}`} onClick={() => setPaquete(paquete === p.nombre ? null : p.nombre)} title={p.descripcion}>
-                {p.nombre} <span className="mono">{p.skills.length}</span>
+            {d.paquetes
+              .filter((p) => !p.nombre.startsWith('Plugin ') || verPlugins || paquete === p.nombre)
+              .map((p) => (
+                <button key={p.nombre} className={`chip ${paquete === p.nombre ? 'activo' : ''}`} onClick={() => setPaquete(paquete === p.nombre ? null : p.nombre)} title={p.descripcion}>
+                  {p.nombre} <span className="mono">{p.skills.length}</span>
+                </button>
+              ))}
+            {d.paquetes.some((p) => p.nombre.startsWith('Plugin ')) && (
+              <button className="chip limpiar" onClick={() => setVerPlugins((x) => !x)} aria-expanded={verPlugins}>
+                {verPlugins ? 'Ocultar plugins' : `Plugins · ${d.paquetes.filter((p) => p.nombre.startsWith('Plugin ')).length}`}
               </button>
-            ))}
+            )}
             {hayFiltros && (
               <button
                 className="chip limpiar"
@@ -203,7 +217,7 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
                     </span>
                     <span className="tarjeta-skill-que">{s.que[0] ?? s.descripcion}</span>
                     <span className="tarjeta-skill-pie">
-                      <InsigniasIA ias={s.ias} />
+                      <InsigniasIA ias={s.ias} todas={todasLasIAs} />
                       <span className="mono">
                         {s.archivos.filter((a) => a.k === 'referencias').length} ref · {s.archivos.filter((a) => a.k === 'scripts').length} scripts
                       </span>
