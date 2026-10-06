@@ -1,5 +1,21 @@
 # Cambios
 
+## 1.3.0 · 2026-10-05
+
+### Vaults con otra cara
+- **Portada** de cada vault: el vault como planeta (sus lunas son las carpetas principales), su lugar respecto al centro, propósito, notas de entrada, etiquetas que filtran con un clic, cifras, pulso de las últimas 26 semanas y barra de puentes con cada vault vecino.
+- Tres formas de ver el vault, y se recuerda la elegida:
+  - **Constelación**: cada carpeta principal forma su racimo con un halo y su nombre; brillo en los nodos más conectados, enlaces curvos y destellos sobre los enlaces de la nota abierta. Aparece ya acomodada y encuadrada, y recuerda dónde quedó cada nodo.
+  - **Mapa**: carpetas dentro de carpetas como círculos anidados, con zoom de a un nivel, migas y títulos de notas al acercarse.
+  - **Actividad**: calendario de calor del último año (clic en un día para filtrar) y línea de tiempo agrupada en Hoy, Ayer, Esta semana, Este mes y por mes.
+- **Lector**: barra de progreso de lectura y el **vecindario** de la nota (quién la cita, a qué enlaza y sus puentes), con cada punto navegable. `Esc` lo cierra.
+- Carpetas con barra de peso y color propio; filtro por `#etiqueta`; estados de carga y de vault vacío.
+- **Teléfono**: la página del vault se desplaza, las carpetas pasan a una fila de chips, el lienzo tiene alto propio y el lector ocupa la pantalla.
+
+### Más liviano
+- Las pantallas Vault, Skills, Agentes y Cómo trabaja, y el grafo, se cargan aparte, solo cuando se usan.
+- El grafo precalcula su acomodo antes de dibujarse y usa menos iteraciones en vaults de miles de notas.
+
 ## 1.2.0 · 2026-10-05
 
 ### Instalable por IA en cualquier equipo
