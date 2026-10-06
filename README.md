@@ -70,17 +70,22 @@ El mapa completo. **Tu vault central es el sol** y los demás vaults orbitan a s
 - Funciona con un vault, con muchos o con ninguno (en ese caso muestra tus skills y agentes).
 
 ### Vaults (`#/v/<vault>`)
-Un vault por dentro, en tres columnas:
+Cada vault tiene una **portada**: el vault dibujado como planeta (sus lunas son las carpetas principales), su lugar respecto al centro, su propósito, sus notas de entrada, sus etiquetas principales (un clic filtra por ellas) y un tablero con cifras, el **pulso** de las últimas 26 semanas y la barra de **puentes** con cada vault vecino. El carril de arriba salta a cualquier otro vault.
 
-| Columna | Qué muestra |
+Debajo, el vault se puede ver de tres formas (la elegida se recuerda):
+
+| Vista | Qué muestra |
 |---|---|
-| Carpetas | Árbol navegable con el número de notas de cada carpeta. La carpeta elegida queda en la URL. |
-| Grafo / Recientes | Grafo estructurado (raíz → carpetas → notas, más los enlaces entre notas) o la lista de notas ordenadas por fecha, con filtro. |
-| Lector | La nota renderizada (callouts, tablas, tareas, imágenes del vault), sus propiedades, índice, **a qué enlaza**, **quién la cita** y sus **puentes con otros vaults**. |
+| **Constelación** | Red viva: cada carpeta principal forma su propio racimo con un halo y su nombre (su **territorio**), los nodos más conectados brillan y, al abrir una nota, unos destellos recorren sus enlaces. Aparece ya acomodada y recuerda la posición de lo que ya viste. |
+| **Mapa** | Carpetas dentro de carpetas como círculos anidados: un clic entra un nivel con zoom, clic afuera sube, y la ruta queda arriba como migas. Al acercarse se leen los títulos de las notas. |
+| **Actividad** | Calendario de calor del último año (clic en un día para ver solo lo que cambió) y la línea de tiempo de notas agrupadas en Hoy, Ayer, Esta semana, Este mes y por mes. |
 
-- El carril superior permite saltar entre vaults: el central primero y una rama hacia los demás.
+- **Carpetas** a la izquierda (en el teléfono, una fila de chips) con una barra que muestra el peso de cada una. La carpeta elegida queda en la URL y manda en las tres vistas.
+- **Filtro** por título, carpeta o `#etiqueta`.
+- **Lector**: la nota renderizada (callouts, tablas, tareas, imágenes del vault), sus propiedades, índice, una barra de progreso de lectura y su **vecindario**: un mapa chico con quién la cita (izquierda), a qué enlaza (derecha) y sus puentes con otros vaults (abajo); cada punto lleva a esa nota. `Esc` lo cierra.
 - Los enlaces dentro de una nota llevan a la nota destino, **aunque esté en otro vault**.
 - «Abrir en Obsidian» abre la misma nota en la app.
+- Funciona igual en el teléfono (la página se desplaza y el lector ocupa la pantalla), en tema claro u oscuro y con vaults de miles de notas.
 
 ### Skills (`#/skills`)
 Catálogo de todas las skills del equipo, de **Claude Code, Codex y Antigravity**: las instaladas, las de la carpeta compartida `~/.agents/skills`, las que traen los **plugins activos** y las de sistema. Se agrupan por nombre: una skill instalada en tres IAs aparece una vez, con las tres insignias.
@@ -219,7 +224,8 @@ atlas-memoria/
 │   ├── App.tsx                         # barra, rutas y búsqueda
 │   ├── pantallas/                      # Universo, Vault, Skills, SkillDetalle, Agentes, Sistema
 │   ├── componentes/                    # Grafo, LectorNota, ArbolCarpetas, Buscador, Pipeline…
-│   ├── lib/                            # datos, rutas, atlas, markdown, tema, formato, tipos
+│   │   └── vault/                      # PortadaVault, OrbeVault, MapaCarpetas, Actividad, Vecindario
+│   ├── lib/                            # datos, rutas, atlas, actividad, markdown, tema, formato, tipos
 │   └── estilos/                        # tokens y atmósfera, app, markdown
 ├── traducciones/es.json                # traducciones al español (versionado)
 ├── docs/                               # ARQUITECTURA, DATOS, CONFIGURACION, FLUJO-GIT

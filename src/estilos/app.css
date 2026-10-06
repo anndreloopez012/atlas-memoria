@@ -980,10 +980,26 @@
   height: 100%;
 }
 
-.vault-cabecera {
-  padding: 14px 26px 12px;
+/* Portada del vault */
+.portada-vault {
+  position: relative;
+  padding: 12px 26px 14px;
   border-bottom: 1px solid var(--linea);
-  background: linear-gradient(180deg, color-mix(in oklab, var(--vault) 9%, transparent), transparent);
+  background:
+    radial-gradient(70% 140% at 8% 0%, color-mix(in oklab, var(--vault) 20%, transparent), transparent 60%),
+    radial-gradient(40% 120% at 100% 0%, color-mix(in oklab, var(--vault) 9%, transparent), transparent 70%);
+  overflow: hidden;
+}
+
+.portada-vault::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--vault) 70%, transparent), transparent);
+  opacity: 0.6;
 }
 
 .selector-vaults {
@@ -1010,18 +1026,18 @@
 .vault-pastilla {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 5px 12px;
+  gap: 7px;
+  padding: 3px 12px 3px 4px;
   border: 1px solid var(--linea);
   border-radius: 999px;
-  background: var(--superficie);
+  background: color-mix(in oklab, var(--superficie) 80%, transparent);
   color: var(--tinta-2);
   font-size: 12px;
   font-weight: 650;
   letter-spacing: 0.05em;
   white-space: nowrap;
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  transition: border-color 0.25s, background 0.25s, color 0.25s, transform 0.25s var(--ease);
 }
 
 .vault-pastilla .mono {
@@ -1032,107 +1048,262 @@
 .vault-pastilla:hover {
   border-color: color-mix(in oklab, var(--vault) 50%, transparent);
   color: var(--tinta);
+  transform: translateY(-1px);
 }
 
 .vault-pastilla.activa {
   border-color: var(--vault);
   background: color-mix(in oklab, var(--vault) 16%, var(--superficie));
   color: var(--vault-texto);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--vault) 14%, transparent);
 }
 
 .vault-pastilla.raiz {
-  padding: 6px 14px;
+  padding-right: 14px;
   font-size: 12.5px;
 }
 
-.vault-pastilla-punto {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--vault);
-  box-shadow: 0 0 10px var(--vault);
-}
-
-.vault-titulo {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  margin-top: 14px;
-}
-
-.vault-titulo h1 {
-  margin: 2px 0 4px;
-  font-size: clamp(36px, 4vw, 56px);
-  color: var(--acento);
-}
-
-.vault-proposito {
-  max-width: 76ch;
-  margin: 0;
-  color: var(--tinta-2);
-  font-size: 14px;
-}
-
-.vault-cifras {
-  display: flex;
+.portada-principal {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
   gap: 22px;
-  margin: 0;
-  flex-shrink: 0;
-}
-
-.vault-cifras div {
-  display: flex;
-  flex-direction: column-reverse;
-}
-
-.vault-cifras dt {
-  color: var(--tinta-3);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.vault-cifras dd {
-  margin: 0;
-  color: var(--tinta);
-  font-size: 17px;
-}
-
-.vault-detalles {
   margin-top: 10px;
 }
 
-.vault-detalles summary {
-  cursor: pointer;
-  width: fit-content;
+.portada-orbe {
+  position: relative;
+  animation: aparecer 0.9s var(--ease) both;
 }
 
-.vault-detalles-cuerpo {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 18px 28px;
-  padding: 14px 0 6px;
-  font-size: 13.5px;
+.portada-texto {
+  min-width: 0;
+  animation: aparecer-abajo 0.6s var(--ease) both;
+}
+
+.portada-nombre {
+  margin: 2px 0 2px;
+  font-size: clamp(38px, 4.2vw, 62px);
+  background: linear-gradient(100deg, var(--tinta) 10%, color-mix(in oklab, var(--vault) 70%, var(--tinta)) 60%, var(--vault) 120%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  overflow-wrap: anywhere;
+}
+
+.portada-proposito {
+  max-width: 78ch;
+  margin: 0;
   color: var(--tinta-2);
+  font-size: 14px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.vault-detalles-cuerpo h3 {
+.portada-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.chip.entrada {
+  border-color: color-mix(in oklab, var(--vault) 40%, transparent);
+  color: var(--tinta);
+}
+
+.chip.entrada:hover {
+  background: color-mix(in oklab, var(--vault) 14%, var(--superficie));
+}
+
+.etiqueta-chip {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+}
+
+.portada-mas {
+  position: relative;
+}
+
+.portada-mas summary {
+  list-style: none;
+}
+
+.portada-mas summary::-webkit-details-marker {
+  display: none;
+}
+
+.portada-mas[open] summary {
+  border-color: var(--vault);
+}
+
+.portada-mas-cuerpo {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 8px);
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px 26px;
+  width: min(640px, 80vw);
+  padding: 16px 18px;
+  border: 1px solid var(--linea-fuerte);
+  border-top: 2px solid var(--vault);
+  border-radius: var(--radio);
+  background: var(--velo);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--sombra);
+  color: var(--tinta-2);
+  font-size: 13px;
+  animation: deslizar 0.25s var(--ease) both;
+}
+
+.portada-mas-cuerpo h3 {
   margin: 0 0 6px;
 }
 
-.vault-detalles-cuerpo ul {
+.portada-mas-cuerpo ul {
   margin: 0;
   padding-left: 16px;
 }
 
-.vault-detalles-cuerpo .entradas a {
-  color: var(--acento);
+.portada-mas-cuerpo p {
+  margin: 0;
 }
 
-.complementos {
+.portada-tablero {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 300px;
+  padding: 12px 14px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: color-mix(in oklab, var(--superficie) 70%, transparent);
+  backdrop-filter: blur(8px);
+  animation: aparecer-abajo 0.7s var(--ease) 0.08s both;
+}
+
+.tablero-cifras {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  justify-content: space-between;
+  gap: 4px 18px;
   margin: 0;
+}
+
+.tablero-cifras div {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.tablero-cifras dt {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--tinta-3);
+}
+
+.tablero-cifras dd {
+  margin: 0;
+  font-family: var(--f-display);
+  font-size: 26px;
+  line-height: 1;
+  color: var(--tinta);
+}
+
+.tablero-pulso p {
+  margin: 5px 0 0;
+  color: var(--tinta-3);
+  font-size: 10.5px;
+}
+
+.pulso-barras {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 30px;
+}
+
+.pulso-barras span {
+  flex: 1;
+  min-height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--vault);
+  transform-origin: bottom;
+  animation: crecer 0.8s var(--ease) both;
+}
+
+.pulso-barras span:nth-child(3n) {
+  animation-delay: 0.05s;
+}
+
+.pulso-barras span:nth-child(3n + 1) {
+  animation-delay: 0.1s;
+}
+
+.tablero-puentes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.puentes-barra {
+  display: flex;
+  flex: 1;
+  gap: 2px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+}
+
+.puentes-barra a {
+  flex-basis: 0;
+  min-width: 4px;
+  transition: filter 0.2s;
+}
+
+.puentes-barra a:hover {
+  filter: brightness(1.3);
+}
+
+/* Orbe del vault */
+.orbe-vault {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.orbe-vault .orbe-lunas {
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+  animation: girar 70s linear infinite;
+}
+
+.orbe-vault .orbe-anillo {
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+}
+
+.orbe-vault .orbe-halo {
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+  animation: latido 6s ease-in-out infinite;
+}
+
+.orbe-vault.simple .orbe-halo {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.orbe-vault.simple.activo .orbe-halo,
+.vault-pastilla:hover .orbe-vault.simple .orbe-halo {
+  opacity: 1;
 }
 
 .vault-cuerpo {
@@ -1381,66 +1552,6 @@
   pointer-events: none;
 }
 
-.lista-notas {
-  flex: 1;
-  min-height: 0;
-  margin: 0;
-  padding: 8px 12px 48px;
-  overflow: auto;
-  list-style: none;
-}
-
-.lista-notas a {
-  display: grid;
-  grid-template-columns: 10px minmax(0, 1fr) auto;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  text-decoration: none;
-  transition: background 0.15s;
-}
-
-.lista-notas a:hover,
-.lista-notas a.activa {
-  background: var(--superficie);
-}
-
-.lista-punto {
-  width: 8px;
-  height: 8px;
-  margin-top: 8px;
-  border-radius: 50%;
-}
-
-.lista-texto {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.lista-titulo {
-  font-weight: 620;
-}
-
-.lista-ruta {
-  color: var(--tinta-3);
-}
-
-.lista-extracto {
-  display: -webkit-box;
-  margin-top: 3px;
-  overflow: hidden;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  color: var(--tinta-2);
-  font-size: 13px;
-}
-
-.lista-fecha {
-  color: var(--tinta-3);
-  white-space: nowrap;
-}
-
 /* Lector */
 .lector {
   display: flex;
@@ -1642,6 +1753,630 @@
 .relacion-vault {
   font-size: 10.5px;
   letter-spacing: 0.06em;
+}
+
+/* Vistas del vault */
+.lienzo.vista-constelacion .lienzo-grafo {
+  background:
+    radial-gradient(60% 55% at 50% 50%, color-mix(in oklab, var(--vault) 10%, transparent), transparent 75%),
+    radial-gradient(1px 1px at 20% 30%, color-mix(in oklab, var(--tinta) 30%, transparent), transparent),
+    radial-gradient(1px 1px at 70% 80%, color-mix(in oklab, var(--tinta) 25%, transparent), transparent),
+    radial-gradient(1px 1px at 85% 20%, color-mix(in oklab, var(--tinta) 20%, transparent), transparent);
+}
+
+.grafo-hover {
+  border-left: 3px solid var(--c, var(--vault));
+}
+
+.filtro-limpiar {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--superficie-2);
+  color: var(--tinta-2);
+  cursor: pointer;
+}
+
+.carpetas-chips {
+  display: none;
+}
+
+.lienzo-cargando,
+.lienzo-vacio {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 240px;
+  padding: 24px;
+  text-align: center;
+  color: var(--tinta-2);
+}
+
+.lienzo-vacio .display {
+  margin: 0;
+  font-size: 30px;
+  color: var(--tinta);
+}
+
+.cargando-orbita {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  border: 1px dashed color-mix(in oklab, var(--vault) 60%, transparent);
+  border-radius: 50%;
+  animation: girar 2.4s linear infinite;
+}
+
+.cargando-orbita::before,
+.cargando-orbita::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+}
+
+.cargando-orbita::before {
+  inset: 16px;
+  background: radial-gradient(circle at 35% 30%, color-mix(in oklab, var(--vault) 40%, white), var(--vault));
+  box-shadow: 0 0 18px var(--vault);
+}
+
+.cargando-orbita::after {
+  top: -4px;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  margin-left: -3.5px;
+  background: var(--laton);
+}
+
+/* Mapa: círculos anidados */
+.mapa-carpetas {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: radial-gradient(70% 70% at 50% 50%, color-mix(in oklab, var(--vault) 7%, transparent), transparent 80%);
+}
+
+.mapa-carpetas svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: zoom-out;
+}
+
+.mapa-carpeta {
+  fill: color-mix(in oklab, var(--c) 7%, transparent);
+  stroke: color-mix(in oklab, var(--c) 42%, transparent);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  cursor: zoom-in;
+  transition: fill 0.2s, stroke 0.2s;
+}
+
+.mapa-carpeta.nivel-0 {
+  fill: color-mix(in oklab, var(--c) 4%, transparent);
+  stroke: color-mix(in oklab, var(--c) 22%, transparent);
+  cursor: zoom-out;
+}
+
+.mapa-carpeta.nivel-2 {
+  fill: color-mix(in oklab, var(--c) 9%, transparent);
+}
+
+.mapa-carpeta.nivel-3,
+.mapa-carpeta.nivel-4 {
+  fill: color-mix(in oklab, var(--c) 12%, transparent);
+}
+
+.mapa-carpeta:hover {
+  fill: color-mix(in oklab, var(--c) 18%, transparent);
+  stroke: var(--c);
+}
+
+.mapa-nota {
+  fill: var(--c);
+  opacity: 0.88;
+  cursor: pointer;
+  vector-effect: non-scaling-stroke;
+  transition: opacity 0.25s;
+}
+
+.mapa-nota:hover {
+  opacity: 1;
+  stroke: var(--tinta);
+  stroke-width: 1.5;
+}
+
+.mapa-nota.elegida {
+  opacity: 1;
+  stroke: var(--tinta);
+  stroke-width: 2.5;
+}
+
+.mapa-nota.apagada {
+  opacity: 0.1;
+}
+
+.mapa-etiquetas {
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+
+.mapa-etiquetas.ocultas {
+  opacity: 0;
+  transition: none;
+}
+
+.mapa-etiqueta,
+.mapa-cuenta {
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--fondo);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.mapa-etiqueta {
+  fill: var(--tinta);
+  font-family: var(--f-ui);
+  font-weight: 680;
+  letter-spacing: 0.01em;
+}
+
+.mapa-cuenta {
+  fill: var(--tinta-2);
+  font-family: var(--f-mono);
+}
+
+.mapa-titulo-nota {
+  text-anchor: middle;
+  fill: var(--tinta);
+  font-family: var(--f-ui);
+  font-weight: 560;
+  paint-order: stroke;
+  stroke: color-mix(in oklab, var(--fondo) 70%, transparent);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.mapa-migas {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  max-width: calc(100% - 28px);
+  padding: 4px 8px;
+  border: 1px solid var(--linea);
+  border-radius: 999px;
+  background: var(--velo);
+  backdrop-filter: blur(10px);
+}
+
+.mapa-migas button {
+  padding: 2px 6px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--tinta-2);
+  font: inherit;
+  cursor: pointer;
+}
+
+.mapa-migas button:hover,
+.mapa-migas button.actual {
+  color: var(--tinta);
+  background: color-mix(in oklab, var(--vault) 16%, transparent);
+}
+
+.mapa-migas .separador {
+  color: var(--tinta-3);
+}
+
+.mapa-tip {
+  top: 0;
+  right: auto;
+  width: 290px;
+}
+
+/* Actividad: calendario y línea de tiempo */
+.actividad {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px 18px 48px;
+}
+
+.actividad-calendario {
+  padding: 16px 18px 12px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: color-mix(in oklab, var(--superficie) 80%, transparent);
+}
+
+.actividad-calendario header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 16px;
+  margin-bottom: 10px;
+}
+
+.actividad-calendario header p {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.actividad-calendario header .mono {
+  color: var(--tinta-3);
+}
+
+.calendario-desplazable {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+/* El calendario ocupa el ancho disponible; en pantallas chicas se desplaza. */
+.calendario {
+  display: block;
+  width: 100%;
+  min-width: 620px;
+  max-width: 1180px;
+  height: auto;
+}
+
+.calendario .dia {
+  cursor: pointer;
+  transition: transform 0.15s;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.calendario .dia:hover {
+  transform: scale(1.25);
+}
+
+.dia.nivel-0,
+.dia-muestra.nivel-0 {
+  fill: var(--superficie-2);
+  background: var(--superficie-2);
+}
+
+.dia.nivel-1,
+.dia-muestra.nivel-1 {
+  fill: color-mix(in oklab, var(--c) 28%, var(--superficie-2));
+  background: color-mix(in oklab, var(--c) 28%, var(--superficie-2));
+}
+
+.dia.nivel-2,
+.dia-muestra.nivel-2 {
+  fill: color-mix(in oklab, var(--c) 50%, var(--superficie-2));
+  background: color-mix(in oklab, var(--c) 50%, var(--superficie-2));
+}
+
+.dia.nivel-3,
+.dia-muestra.nivel-3 {
+  fill: color-mix(in oklab, var(--c) 75%, var(--superficie-2));
+  background: color-mix(in oklab, var(--c) 75%, var(--superficie-2));
+}
+
+.dia.nivel-4,
+.dia-muestra.nivel-4 {
+  fill: var(--c);
+  background: var(--c);
+}
+
+.dia.elegido {
+  stroke: var(--tinta);
+  stroke-width: 2;
+}
+
+.calendario-mes,
+.calendario-dia {
+  fill: var(--tinta-3);
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+}
+
+.calendario-leyenda {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 8px;
+  color: var(--tinta-3);
+}
+
+.dia-muestra {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.actividad-filtro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 8px 8px 8px 14px;
+  border: 1px solid color-mix(in oklab, var(--vault) 45%, transparent);
+  border-radius: var(--radio-s);
+  background: color-mix(in oklab, var(--vault) 10%, transparent);
+  font-size: 13.5px;
+}
+
+.linea-tiempo {
+  margin-top: 6px;
+}
+
+.tiempo-grupo ol {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tiempo-titulo {
+  position: sticky;
+  top: -16px;
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 -18px;
+  padding: 18px 18px 8px;
+  background: linear-gradient(var(--fondo) 70%, transparent);
+}
+
+.tiempo-titulo .mono {
+  color: var(--tinta-3);
+  letter-spacing: 0;
+}
+
+.tarjeta-nota {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+  padding: 12px 14px 12px 16px;
+  overflow: hidden;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio-s);
+  background: var(--superficie);
+  text-decoration: none;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 120px;
+  transition: transform 0.2s var(--ease), border-color 0.2s;
+}
+
+.tarjeta-nota::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background: var(--c);
+}
+
+.tarjeta-nota:hover,
+.tarjeta-nota.activa {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--c) 50%, transparent);
+}
+
+.tarjeta-nota.activa {
+  background: color-mix(in oklab, var(--c) 8%, var(--superficie));
+}
+
+.tarjeta-nota-cabeza {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tarjeta-nota-titulo {
+  font-weight: 640;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.tarjeta-nota-fecha,
+.tarjeta-nota-ruta {
+  color: var(--tinta-3);
+  white-space: nowrap;
+}
+
+.tarjeta-nota-ruta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tarjeta-nota-extracto {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  color: var(--tinta-2);
+  font-size: 12.5px;
+}
+
+.tarjeta-nota-etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.tarjeta-nota-etiquetas span {
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: color-mix(in oklab, var(--c) 12%, transparent);
+  color: color-mix(in oklab, var(--c) 70%, var(--tinta));
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+}
+
+.mas-notas {
+  margin: 16px auto 0;
+  display: flex;
+}
+
+/* Vecindario de una nota */
+.vecindario {
+  margin: 0 0 6px;
+  padding: 10px 6px 8px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: radial-gradient(60% 70% at 50% 40%, color-mix(in oklab, var(--c) 10%, transparent), transparent 80%), var(--superficie);
+}
+
+.vecindario svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.vecindario-linea {
+  fill: none;
+  stroke-width: 1.2;
+  stroke-opacity: 0.45;
+  stroke-dasharray: 3 4;
+  animation: flujo 2.4s linear infinite;
+}
+
+.vecindario-punto {
+  cursor: pointer;
+  outline: none;
+}
+
+.vecindario-punto circle:first-child {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.2s var(--ease);
+}
+
+.vecindario-punto:hover circle:first-child,
+.vecindario-punto:focus-visible circle:first-child {
+  transform: scale(1.5);
+}
+
+.vecindario-zona {
+  fill: transparent;
+}
+
+.vecindario-punto text {
+  fill: var(--tinta-2);
+  font-family: var(--f-ui);
+  font-size: 10.5px;
+}
+
+.vecindario-punto:hover text {
+  fill: var(--tinta);
+}
+
+.vecindario-centro {
+  fill: var(--c);
+}
+
+.vecindario-aura {
+  fill: none;
+  stroke: var(--c);
+  stroke-opacity: 0.45;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: latido 3s ease-in-out infinite;
+}
+
+.vecindario figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 10px;
+  color: var(--tinta-3);
+}
+
+/* Lector: progreso y banda de color */
+.lector {
+  position: relative;
+}
+
+.lector-progreso {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--vault), var(--laton));
+  transform-origin: left;
+  transition: transform 0.1s linear;
+}
+
+.lector-cabecera {
+  position: relative;
+}
+
+.lector-banda {
+  position: absolute;
+  z-index: -1;
+  top: -30px;
+  left: -38px;
+  right: -38px;
+  height: 190px;
+  background: radial-gradient(80% 100% at 0% 0%, color-mix(in oklab, var(--vault) 24%, transparent), transparent 70%);
+  pointer-events: none;
+}
+
+.lector-cuerpo {
+  isolation: isolate;
+}
+
+/* Árbol de carpetas: color y peso de cada carpeta */
+.carpeta-fila {
+  position: relative;
+}
+
+.carpeta-fila::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--sangria, 0px) + 30px);
+  bottom: 2px;
+  width: var(--peso, 0%);
+  max-width: calc(100% - 40px);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--c);
+  opacity: 0.35;
+  transition: opacity 0.2s;
+}
+
+.carpeta-fila:hover::after,
+.carpeta-fila.activa::after {
+  opacity: 0.8;
+}
+
+.carpeta-nombre .carpeta-icono {
+  color: var(--c, var(--tinta-3));
 }
 
 /* ============================ Páginas (skills, agentes, sistema) ============================ */
@@ -2917,6 +3652,12 @@ a:hover > .caja rect {
   }
 }
 
+@keyframes crecer {
+  from {
+    transform: scaleY(0);
+  }
+}
+
 @keyframes fundido {
   from {
     opacity: 0;
@@ -2931,6 +3672,28 @@ a:hover > .caja rect {
 
 /* ============================ Adaptación ============================ */
 @media (max-width: 1180px) {
+  .portada-principal {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .portada-tablero {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 24px;
+    min-width: 0;
+  }
+
+  .tablero-pulso {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .tablero-puentes {
+    flex-basis: 100%;
+  }
+
   .cielo {
     grid-template-columns: minmax(0, 1fr);
     height: auto;
@@ -3020,34 +3783,126 @@ a:hover > .caja rect {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .vault-cabecera {
-    padding: 12px 16px;
+  .portada-vault {
+    padding: 10px 14px 12px;
   }
 
-  .vault-titulo {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+  .portada-principal {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .portada-orbe .orbe-vault {
+    width: 64px;
+    height: 64px;
+  }
+
+  .portada-nombre {
+    font-size: 34px;
+  }
+
+  .portada-proposito {
+    font-size: 13px;
+  }
+
+  .portada-chips .etiqueta-chip {
+    display: none;
+  }
+
+  .tablero-pulso p {
+    display: none;
+  }
+
+  .tablero-cifras dd {
+    font-size: 20px;
   }
 
   .vault-cuerpo {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
   }
 
   .panel-carpetas {
-    max-height: 170px;
-    border-right: 0;
+    display: none;
+  }
+
+  .carpetas-chips {
+    display: flex;
+    gap: 6px;
+    padding: 8px 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
     border-bottom: 1px solid var(--linea);
   }
 
+  .conmutador-texto {
+    display: none;
+  }
+
+  .lienzo-barra {
+    padding: 8px 12px;
+  }
+
+  .lienzo-titulo {
+    display: none;
+  }
+
+  /* En el teléfono la página se desplaza: portada arriba y el lienzo con alto propio. */
+  .vault {
+    height: auto;
+    min-height: 100%;
+  }
+
+  .vault-cuerpo {
+    flex: none;
+  }
+
   .lienzo {
-    min-height: 420px;
+    min-height: 0;
+  }
+
+  .lienzo-grafo,
+  .mapa-carpetas {
+    flex: none;
+    height: 68dvh;
+    min-height: 360px;
+  }
+
+  .grafo-ayuda {
+    display: none;
+  }
+
+  .vault.con-lector .lector {
+    position: fixed;
+    inset: 60px 0 0;
+    z-index: 30;
+  }
+
+  .navegacion {
+    mask-image: linear-gradient(90deg, #000 80%, transparent);
+  }
+
+  .actividad {
+    overflow: visible;
+    padding: 12px 12px 40px;
+  }
+
+  .tiempo-titulo {
+    margin: 0 -12px;
+    padding: 14px 12px 8px;
+  }
+
+  .mapa-migas {
+    top: 8px;
+    left: 8px;
+  }
+
+  .vecindario-punto text {
+    font-size: 12px;
   }
 
   .filtro {
     min-width: 0;
-    flex: 1;
+    flex: 1 1 100%;
   }
 
   .lector-cuerpo {

@@ -91,9 +91,14 @@ React 19 + TypeScript, sin enrutador ni gestor de estado externos. Todo lo que d
 | `lib/markdown.ts` | `marked` con renderizador propio: callouts de Obsidian (anidables), enlaces `atlas:`, bloques Dataview/Bases etiquetados, tablas con desplazamiento. Todo pasa por DOMPurify. |
 | `lib/tema.ts` | Tema oscuro («Observatorio») y claro («Carta»); colores equivalentes para el canvas, que no lee variables CSS. |
 | `lib/formato.ts` | Números, fechas, color e inicial de cada IA (las desconocidas reciben un color estable) y números en palabras. |
-| `componentes/Grafo.tsx` | Envoltorio de `force-graph` (canvas). Los datos se recargan solo si cambia `clave`; foco y hover solo repintan. Encuadra a mitad del acomodo y al terminar. |
+| `componentes/Grafo.tsx` | Envoltorio de `force-graph` (canvas), cargado aparte (`React.lazy`) porque es lo más pesado. Los datos se recargan solo si cambia `clave`; foco y hover solo repintan. El acomodo se **precalcula** antes del primer cuadro (`warmupTicks`, menos iteraciones en grafos grandes) y se encuadra enseguida; las posiciones finales se guardan por `clave` y al volver el grafo aparece quieto donde quedó. Extras: **territorios** (una fuerza junta cada nodo con el centro de su grupo y se dibuja un halo con el nombre detrás), enlaces curvos, brillo en los nodos más conectados y destellos sobre los enlaces del nodo enfocado. Las fuerzas reciben los dos nodos de cada enlace, así el que lo usa puede dar más espacio a los grupos grandes. |
 | `pantallas/Universo.tsx` | SVG a mano: el centro, órbita elíptica, rayos con flujo animado, puentes curvos y el zodiaco. Los planetas se achican si hay muchos vaults; sin vaults, el sol lleva a las skills. El anillo se reparte por **largo de arco real** para que cada categoría tenga espacio para su nombre; las etiquetas siguen la curva (`<textPath>`), arriba en sentido horario y abajo antihorario, para que nunca queden de cabeza. |
-| `pantallas/Vault.tsx` | Grafo **estructurado**: raíz → carpetas → notas (enlaces fuertes) más enlaces entre notas (débiles). Con más de 1.200 notas los enlaces entre notas se apagan por defecto: si no, todo colapsa en un ovillo. |
+| `pantallas/Vault.tsx` | Portada, carpetas, las tres vistas y el lector. La Constelación es un grafo **estructurado**: raíz → carpetas → notas (enlaces fuertes) más enlaces entre notas (débiles). Cada carpeta lleva su **peso** (notas que cuelgan de ella): se aleja de su madre según √peso y sus notas quedan pegadas a ella, así cada carpeta forma un racimo. Con más de 1.200 notas los enlaces entre notas se apagan por defecto: si no, todo colapsa en un ovillo. |
+| `componentes/vault/PortadaVault.tsx` | Planeta del vault (`OrbeVault`, SVG con lunas por carpeta), propósito, entradas, etiquetas, cifras, pulso semanal y barra de puentes. |
+| `componentes/vault/MapaCarpetas.tsx` | Círculos anidados con `d3-hierarchy` (`pack`). Los círculos se generan una vez por vault y filtro; el zoom solo cambia la transformación de un grupo (`requestAnimationFrame`), así miles de notas no se vuelven a renderizar. Un clic baja un nivel (al hijo directo del foco que contiene el punto). |
+| `componentes/vault/Actividad.tsx` | Calendario de calor del último año en SVG (escala logarítmica: una importación masiva no apaga los demás días) y línea de tiempo agrupada por cercanía, de a 120 notas, con `content-visibility` para no pintar lo que no se ve. |
+| `componentes/vault/Vecindario.tsx` | Mapa SVG de una nota: la citan (izquierda), enlaza (derecha), puentes (abajo). |
+| `lib/actividad.ts` | Cálculos de fechas: día local, pulso semanal, calendario (semanas que empiezan en lunes), grupos «Hoy», «Ayer»… |
 | `pantallas/Sistema.tsx` | Diagrama del flujo y fuentes detectadas. Con `.memoria-system`, también su enrutado, motor y comandos. |
 | `componentes/Buscador.tsx` | MiniSearch sobre títulos, rutas, etiquetas, encabezados y extractos de todas las notas, más skills (también por su descripción original) y agentes. Las sugerencias salen del equipo. |
 
@@ -103,6 +108,8 @@ React 19 + TypeScript, sin enrutador ni gestor de estado externos. Todo lo que d
 - Atmósfera de carta celeste: retícula fina que se desvanece, resplandor azul del centro y grano. Acento latón para lo interactivo.
 - Los colores de cada vault salen del sistema de memoria o de `atlas.config.json`; si no hay, de una paleta fija.
 - Respeta `prefers-reduced-motion`.
+- Rendimiento: las pantallas que no son el Universo y el grafo se cargan aparte, solo cuando se usan; el mapa y la actividad evitan volver a renderizar lo que no cambia.
+- En el teléfono (≤ 760 px) la página del vault se desplaza: portada arriba, lienzo con alto propio y el lector a pantalla completa.
 
 ## Cómo extenderlo
 

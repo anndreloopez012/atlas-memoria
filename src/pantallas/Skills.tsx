@@ -1,14 +1,16 @@
 // Catálogo de skills: por categoría, con filtros por IA, origen y paquete, o como
 // red (qué skill menciona a cuál y qué agentes las usan).
 import { LayoutGrid, Network, Search, Star } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import Grafo, { type EnlaceGrafo, type NodoGrafo } from '../componentes/Grafo';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import type { EnlaceGrafo, NodoGrafo } from '../componentes/Grafo';
 import { cargarAgentes, cargarSkills, useDatos } from '../lib/datos';
 import { AYUDA_IA, colorIA, inicialIA, n, PALETA } from '../lib/formato';
 import { navegar, rutaAgente, rutaSkill } from '../lib/rutas';
 import { coloresCanvas, tono, useTema } from '../lib/tema';
 import type { Atlas, Skill } from '../lib/tipos';
 import SkillDetalle from './SkillDetalle';
+
+const Grafo = lazy(() => import('../componentes/Grafo'));
 
 const sinAcentos = (t: string) =>
   t
@@ -233,6 +235,7 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
 
       {d && vista === 'red' && (
         <div className="red-skills">
+          <Suspense fallback={null}>
           <Grafo
             clave={`skills|${q}|${cat}|${ia}|${origen}|${paquete}|${tema}|${agentes.datos ? 1 : 0}`}
             nodos={red.nodos}
@@ -250,6 +253,7 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
               else if (nodo.tipo === 'categoria') setCat(nodo.id.slice(4));
             }}
           />
+          </Suspense>
           <p className="grafo-ayuda mono">círculos: skills · anillos: categorías · rombos: agentes · líneas: una menciona a la otra</p>
         </div>
       )}

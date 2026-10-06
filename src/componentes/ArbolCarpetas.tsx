@@ -8,9 +8,11 @@ interface Props {
   seleccion: string | null;
   onSeleccion: (ruta: string | null) => void;
   nombreVault: string;
+  /** color de cada carpeta (el mismo que en el grafo y el mapa) */
+  colorDe?: (ruta: string) => string;
 }
 
-export default function ArbolCarpetas({ raiz, seleccion, onSeleccion, nombreVault }: Props) {
+export default function ArbolCarpetas({ raiz, seleccion, onSeleccion, nombreVault, colorDe }: Props) {
   // Se abren los ancestros de la carpeta elegida.
   const [abiertas, setAbiertas] = useState<Set<string>>(() => new Set());
   useEffect(() => {
@@ -37,7 +39,14 @@ export default function ArbolCarpetas({ raiz, seleccion, onSeleccion, nombreVaul
     const activa = seleccion === c.p;
     return (
       <li key={c.p}>
-        <div className={`carpeta-fila ${activa ? 'activa' : ''}`} style={{ paddingLeft: 8 + nivel * 14 }}>
+        <div
+          className={`carpeta-fila ${activa ? 'activa' : ''}`}
+          style={{
+            paddingLeft: 8 + nivel * 14,
+            ['--c' as string]: colorDe?.(c.p) ?? 'var(--tinta-3)',
+            ['--peso' as string]: `${Math.max(2, (c.t / Math.max(raiz.t, 1)) * 100)}%`,
+          }}
+        >
           <button className={`carpeta-flecha ${abierta ? 'abierta' : ''}`} onClick={() => alternar(c.p)} disabled={!tieneHijos} aria-label={abierta ? 'Contraer' : 'Expandir'}>
             {tieneHijos && <ChevronRight size={13} />}
           </button>
@@ -49,7 +58,7 @@ export default function ArbolCarpetas({ raiz, seleccion, onSeleccion, nombreVaul
             }}
             title={c.p}
           >
-            {abierta ? <FolderOpen size={14} /> : <Folder size={14} />}
+            {abierta ? <FolderOpen size={14} className="carpeta-icono" /> : <Folder size={14} className="carpeta-icono" />}
             <span>{c.n}</span>
           </button>
           <span className="carpeta-cuenta mono">{n(c.t)}</span>
