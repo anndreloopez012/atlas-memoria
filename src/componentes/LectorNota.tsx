@@ -2,6 +2,7 @@
 // entrantes y puentes a otros vaults).
 import { ArrowDownLeft, ArrowUpRight, Check, Copy, ExternalLink, GitFork, ListTree, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { rutaEnDisco, vaultCentral } from '../lib/atlas';
 import { cargarBloque, useDatos } from '../lib/datos';
 import { formatoFecha, hace, minutosLectura, n } from '../lib/formato';
 import { slugTitulo } from '../lib/markdown';
@@ -27,6 +28,7 @@ export default function LectorNota({ atlas, nota, datos, porId, entrantes, carpe
   const [indice, setIndice] = useState(false);
   const cuerpo = useRef<HTMLDivElement>(null);
   const vault = atlas.vaults.find((v) => v.nombre === nota.v)!;
+  const centro = vaultCentral(atlas);
   const vaultDe = (nombre: string) => atlas.vaults.find((v) => v.nombre === nombre);
 
   useEffect(() => {
@@ -45,7 +47,7 @@ export default function LectorNota({ atlas, nota, datos, porId, entrantes, carpe
 
   const copiar = async () => {
     try {
-      await navigator.clipboard.writeText(`${atlas.origen}/${nota.v}/${nota.r}`);
+      await navigator.clipboard.writeText(rutaEnDisco(vault, nota.r));
       setCopiado(true);
       setTimeout(() => setCopiado(false), 1400);
     } catch {
@@ -89,8 +91,12 @@ export default function LectorNota({ atlas, nota, datos, porId, entrantes, carpe
     <article className="lector" aria-label={nota.t}>
       <div className="lector-barra">
         <nav className="migas mono" aria-label="Ubicación">
-          <a href={rutaVault('core')}>CORE</a>
-          <span>›</span>
+          {centro && centro.slug !== vault.slug && (
+            <>
+              <a href={rutaVault(centro.slug)}>{centro.nombre}</a>
+              <span>›</span>
+            </>
+          )}
           <a href={rutaVault(vault.slug)} style={{ color: tono(vault.color, tema) }}>
             {vault.nombre}
           </a>

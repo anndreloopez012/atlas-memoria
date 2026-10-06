@@ -6,6 +6,7 @@ import ArbolCarpetas from '../componentes/ArbolCarpetas';
 import Grafo, { type EnlaceGrafo, type NodoGrafo } from '../componentes/Grafo';
 import LectorNota from '../componentes/LectorNota';
 import SelectorVaults from '../componentes/SelectorVaults';
+import { vaultCentral } from '../lib/atlas';
 import { cargarVault, useDatos } from '../lib/datos';
 import { colorTexto, hace, n, PALETA } from '../lib/formato';
 import { navegar, rutaVault } from '../lib/rutas';
@@ -35,7 +36,8 @@ function buscarCarpeta(raiz: Carpeta, ruta: string | null): Carpeta {
 export default function Vault({ atlas, slug, notaId, carpeta }: Props) {
   const tema = useTema();
   const colores = coloresCanvas(tema);
-  const resumen = atlas.vaults.find((v) => v.slug === slug) ?? atlas.vaults[0];
+  const centro = vaultCentral(atlas);
+  const resumen = atlas.vaults.find((v) => v.slug === slug) ?? centro ?? atlas.vaults[0];
   const datos = useDatos(`vault:${resumen.slug}`, () => cargarVault(resumen.slug));
   const [vista, setVista] = useState<'grafo' | 'lista'>('grafo');
   // null = automático: con enlaces solo si el alcance es manejable (si no, el grafo es un ovillo).
@@ -79,13 +81,13 @@ export default function Vault({ atlas, slug, notaId, carpeta }: Props) {
       .trim()
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '');
+      .replace(/[\u0300-\u036f]/g, '');
     const base = q
       ? notasEnAlcance.filter((x) =>
           `${x.t} ${x.f} ${x.tg.join(' ')}`
             .toLowerCase()
             .normalize('NFD')
-            .replace(/[̀-ͯ]/g, '')
+            .replace(/[\u0300-\u036f]/g, '')
             .includes(q),
         )
       : notasEnAlcance;
@@ -134,7 +136,7 @@ export default function Vault({ atlas, slug, notaId, carpeta }: Props) {
         <div className="vault-titulo">
           <div>
             <p className="rotulo">
-              Vault {String(indice + 1).padStart(2, '0')} / {String(atlas.vaults.length).padStart(2, '0')} · {resumen.nombre === 'CORE' ? 'raíz del sistema' : 'nace de CORE'}
+              Vault {String(indice + 1).padStart(2, '0')} / {String(atlas.vaults.length).padStart(2, '0')} · {resumen === centro ? 'centro: de aquí nacen los demás' : `nace de ${centro?.nombre ?? 'el centro'}`}
             </p>
             <h1 className="display">{resumen.nombre}</h1>
             <p className="vault-proposito">{resumen.proposito}</p>
@@ -200,7 +202,7 @@ export default function Vault({ atlas, slug, notaId, carpeta }: Props) {
       <div className="vault-cuerpo">
         <aside className="panel-carpetas" aria-label="Carpetas">
           <ArbolCarpetas raiz={resumen.carpetas} seleccion={carpetaReal} nombreVault={resumen.nombre} onSeleccion={(c) => navegar(rutaVault(resumen.slug, notaId, c))} />
-          {resumen.generados > 0 && <p className="arbol-pie mono">+ {n(resumen.generados)} notas generadas por Graphify (no se cargan)</p>}
+          {resumen.generados > 0 && <p className="arbol-pie mono">+ {n(resumen.generados)} notas generadas por herramientas (no se cargan)</p>}
         </aside>
 
         <section className="lienzo" aria-label="Notas">

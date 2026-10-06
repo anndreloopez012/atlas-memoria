@@ -13,7 +13,7 @@ datos/
 └── pendientes-traduccion.json # textos que aún no tienen traducción al español
 ```
 
-El `slug` de un vault es su nombre en minúsculas sin acentos ni símbolos: `CORE` → `core`, `TALLERES IA` → `talleres-ia`, `PERSONAL (YO)` → `personal-yo`.
+El `slug` de un vault es su nombre en minúsculas sin acentos ni símbolos: `CORE` → `core`, `Mis Notas` → `mis-notas`, `PERSONAL (YO)` → `personal-yo`.
 
 Los tipos de TypeScript equivalentes están en [`src/lib/tipos.ts`](../src/lib/tipos.ts).
 
@@ -21,19 +21,21 @@ Los tipos de TypeScript equivalentes están en [`src/lib/tipos.ts`](../src/lib/t
 
 | Campo | Tipo | Descripción |
 |---|---|---|
-| `version` | número | Versión del formato (1). |
+| `version` | número | Versión del formato (2). |
 | `generado` | ISO 8601 | Momento de la generación. |
-| `origen` | texto | Ruta del contenedor de Obsidian. |
+| `centro` | texto o `null` | `slug` del vault central (del que nacen los demás). |
+| `ias` | lista | IAs con skills en este equipo, en orden (Claude, Codex, Antigravity, Compartidas…). |
 | `totales` | objeto | `vaults`, `notas`, `palabras`, `enlaces`, `sinResolver`, `puentes`, `generados` (notas de Graphify omitidas), `skills`, `instalaciones`, `agentes`, `automatizaciones`, `secretosOcultos`, `sinTraducir`. |
 | `vaults[]` | lista | Resumen de cada vault (ver abajo), en el orden de `vaults.json`. |
 | `puentes[]` | lista | `{ de, a, n }`: enlaces del vault `de` hacia el vault `a`. |
-| `sistema` | objeto | Ids de notas clave de CORE (`contexto`, `reglas`, `mapaRutas`, `multivault`, `salud`), `routing` (`{ vault, seccion, palabras[] }`) y `motor` (`scripts[]` con `{ nombre, resumen }`, `comandos[]` con `{ comando, ayuda }`). |
+| `sistema` | objeto | `plataforma` (`darwin`, `win32`, `linux`), `configLocal` (hay `atlas.config.json`), `memoria` (hay `.memoria-system`), `fuentes` (lo detectado: `vaults[]`, `skills[]`, `agentes[]` con ruta y cantidad, y `automatizaciones[]`). Si hay sistema de memoria: ids de sus notas clave en el vault central (`contexto`, `reglas`, `mapaRutas`, `multivault`, `salud`), `routing` (`{ vault, seccion, palabras[] }`) y `motor` (`scripts[]` con `{ nombre, resumen }`, `comandos[]` con `{ comando, ayuda }`). |
 
 Resumen de vault:
 
 | Campo | Descripción |
 |---|---|
-| `nombre`, `slug`, `color`, `icono` | Identidad (color e icono de `vaults.json`). |
+| `nombre`, `slug`, `color`, `icono` | Identidad (color e icono del sistema de memoria o de `atlas.config.json`). |
+| `ruta` | Carpeta del vault en este equipo. |
 | `proposito`, `incluye[]`, `noIncluye[]` | Para qué es el vault. |
 | `inicio` | Id de la nota de inicio. |
 | `entradas[]` | Ids de las notas de entrada. |
@@ -85,7 +87,7 @@ Cada nota (claves cortas para que el índice pese poco):
 ## `skills.json`
 
 ```json
-{ "skills": [ … ], "paquetes": [ { "nombre", "descripcion", "skills": [] } ], "categorias": [], "totalInstalaciones": 415 }
+{ "skills": [ … ], "paquetes": [ { "nombre", "descripcion", "skills": [] } ], "categorias": [], "ias": [], "totalInstalaciones": 415 }
 ```
 
 Cada skill:
@@ -98,8 +100,8 @@ Cada skill:
 | `que[]`, `cuando[]`, `noPara[]` | La descripción partida en oraciones, en español: qué hace, cuándo se activa, cuándo no. |
 | `activadores[]` | Frases entre comillas de la descripción (lo que la despierta), en español. |
 | `categoria` | Del índice del sistema de memoria o de un clasificador por palabras. |
-| `paquete` | Familia a la que pertenece (Impeccable, HyperFrames…), o `null`. |
-| `origen` | `propia` (repositorio tuyo o carpeta en PROYECTOS), `instalada` o `sistema`. |
+| `paquete` | Familia a la que pertenece (Impeccable, HyperFrames…, o `Plugin <nombre>` si viene de un plugin), o `null`. |
+| `origen` | `propia` (vive fuera de las carpetas de las IAs o coincide con `propias` de la configuración), `instalada`, `plugin` o `sistema`. |
 | `padre` | Si es una sub-skill dentro de otra. |
 | `repo` | `{ remoto, raiz }` si vive en un repositorio Git. |
 | `instalaciones[]` | `{ ia, ruta, real }` (`real` = destino del enlace simbólico). |
@@ -109,7 +111,7 @@ Cada skill:
 | `archivos[]` | `{ r: ruta, b: bytes, k: referencias \| scripts \| recursos \| otros, t?: título }`. |
 | `relacionadas[]` | Otras skills que menciona. |
 | `agentes[]` | Ids de agentes que la mencionan. |
-| `notas[]` | Ids de sus notas en `TALLERES IA/Skills`. |
+| `notas[]` | Notas de cualquier vault que se llaman como la skill o como `<IA> - <skill>`: `{ id, v (vault), t (título) }`. |
 | `extras` | Resto del frontmatter (`license`, `version`, `user-invocable`…). |
 | `archivoDetalle` | Nombre del archivo en `skills/`. |
 
@@ -129,6 +131,6 @@ Lista de `{ clave, tipo, texto }` con cada texto que todavía no tiene traducci�
 
 `{ "agentes": [ … ] }` con dos tipos:
 
-**`tipo: "ia"`** — `id`, `nombre`, `ia` (Claude/Codex), `ambito`, `descripcion` (en español), `descripcionOriginal`, `que[]`, `cuando[]`, `noPara[]`, `activadores[]`, `modelo`, `herramientas[]`, `color`, `skills[]` (mencionadas), `cuerpo` (instrucciones, en español), `ruta`, `notas[]` (notas de TALLERES IA que lo mencionan).
+**`tipo: "ia"`** — `id`, `nombre`, `ia` (Claude, Codex, Antigravity…), `ambito` («Usuario», «Proyecto x», «Plugin y»), `descripcion` (en español), `descripcionOriginal`, `que[]`, `cuando[]`, `noPara[]`, `activadores[]`, `modelo`, `herramientas[]`, `color`, `skills[]` (mencionadas), `cuerpo` (instrucciones, en español), `ruta`, `notas[]` (notas de cualquier vault que lo mencionan: `{ id, v, t }`).
 
-**`tipo: "automatizacion"`** — `id`, `nombre` (label de launchd), `ia: "launchd"`, `ambito`, `descripcion`, `detalle` (docstring del script), `script`, `intervalo` (segundos), `alIniciar`, `vigila[]` (vaults), `logs[]`, `ruta` (plist).
+**`tipo: "automatizacion"`** — `id`, `nombre` (label de launchd, unidad de systemd o `cron · <script>`), `ia` (`launchd`, `systemd` o `cron`), `ambito`, `descripcion`, `detalle` (docstring del script), `script`, `intervalo` (segundos), `programacion` (expresión de cron, si aplica), `alIniciar`, `vigila[]` (carpetas), `logs[]`, `ruta` (plist, unidad o `crontab -l`), `pausar[]` (comandos para pausarla y reactivarla).

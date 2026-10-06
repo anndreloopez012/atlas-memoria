@@ -43,8 +43,11 @@ function leerJSON(archivo, porDefecto) {
 function guardarTraducciones(nuevas) {
   const actuales = leerJSON(ARCHIVO_TRADUCCIONES, {});
   let agregadas = 0;
-  for (const [clave, valor] of Object.entries(nuevas)) {
-    if (typeof valor !== 'string' || !valor.trim()) continue;
+  // El directorio personal se guarda como ~: el diccionario se sube a git.
+  const home = os.homedir();
+  for (const [clave, original] of Object.entries(nuevas)) {
+    if (typeof original !== 'string' || !original.trim()) continue;
+    const valor = original.split(home).join('~');
     if (actuales[clave] !== valor) agregadas += 1;
     actuales[clave] = valor;
   }

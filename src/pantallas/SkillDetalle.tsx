@@ -5,13 +5,12 @@ import { useState } from 'react';
 import Markdown from '../componentes/Markdown';
 import Pipeline, { type Paso } from '../componentes/Pipeline';
 import Visor from '../componentes/Visor';
-import { cargarAgentes, cargarDetalleSkill, cargarSkills, cargarVault, useDatos } from '../lib/datos';
-import { COLOR_IA, n, tamano } from '../lib/formato';
+import { vaultPorNombre } from '../lib/atlas';
+import { cargarAgentes, cargarDetalleSkill, cargarSkills, useDatos } from '../lib/datos';
+import { colorIA, corto, inicialIA, n, tamano } from '../lib/formato';
 import { rutaAgente, rutaSkill, rutaVault } from '../lib/rutas';
 import type { ArchivoSkill, Atlas } from '../lib/tipos';
 import { InsigniasIA } from './Skills';
-
-export const corto = (ruta: string) => ruta.replace(/^\/Users\/[^/]+/, '~');
 
 // Las claves del frontmatter son identificadores en inglés: se muestran en español.
 const ETIQUETA_METADATO: Record<string, string> = {
@@ -40,8 +39,6 @@ const ETIQUETA_TIPO: Record<ArchivoSkill['k'], string> = {
 export default function SkillDetalle({ atlas, nombre }: { atlas: Atlas; nombre: string }) {
   const datos = useDatos('skills', cargarSkills);
   const agentes = useDatos('agentes', cargarAgentes);
-  const talleres = atlas.vaults.find((v) => v.nombre === 'TALLERES IA');
-  const notasTalleres = useDatos(talleres ? `vault:${talleres.slug}` : null, () => cargarVault(talleres!.slug));
   const skill = datos.datos?.skills.find((s) => s.nombre === nombre);
   const detalle = useDatos(skill ? `skill:${skill.archivoDetalle}` : null, () => cargarDetalleSkill(skill!.archivoDetalle));
   const [visor, setVisor] = useState<{ titulo: string; texto: string; subtitulo: string } | null>(null);
@@ -163,7 +160,8 @@ export default function SkillDetalle({ atlas, nombre }: { atlas: Atlas; nombre: 
             </span>
           )}
           {skill.origen === 'sistema' && <span className="insignia">sistema</span>}
-          <InsigniasIA ias={skill.ias} />
+          {skill.origen === 'plugin' && <span className="insignia">plugin</span>}
+          <InsigniasIA ias={skill.ias} todas={datos.datos.ias} />
         </p>
       </header>
 
@@ -237,8 +235,8 @@ export default function SkillDetalle({ atlas, nombre }: { atlas: Atlas; nombre: 
             <ul className="instalaciones">
               {skill.instalaciones.map((i) => (
                 <li key={`${i.ia}${i.ruta}`}>
-                  <span className="insignia-ia" style={{ ['--ia' as string]: COLOR_IA[i.ia] }}>
-                    {i.ia[0]}
+                  <span className="insignia-ia" style={{ ['--ia' as string]: colorIA(i.ia) }}>
+                    {inicialIA(i.ia)}
                   </span>
                   <span>
                     <strong>{i.ia}</strong>
@@ -304,18 +302,21 @@ export default function SkillDetalle({ atlas, nombre }: { atlas: Atlas; nombre: 
             </section>
           )}
 
-          {skill.notas.length > 0 && talleres && (
+          {skill.notas.length > 0 && (
             <section className="lateral-bloque">
               <h2 className="rotulo">Notas en Obsidian</h2>
               <ul className="notas-relacionadas">
-                {skill.notas.map((id) => (
-                  <li key={id}>
-                    <a href={rutaVault(talleres.slug, id)} style={{ ['--vault' as string]: talleres.color }}>
-                      <span className="relacion-punto" />
-                      {notasTalleres.datos?.notas.find((x) => x.id === id)?.t ?? 'Nota en TALLERES IA'}
-                    </a>
-                  </li>
-                ))}
+                {skill.notas.map((ref) => {
+                  const v = vaultPorNombre(atlas, ref.v);
+                  return v ? (
+                    <li key={ref.id}>
+                      <a href={rutaVault(v.slug, ref.id)} style={{ ['--vault' as string]: v.color }}>
+                        <span className="relacion-punto" />
+                        {ref.t}
+                      </a>
+                    </li>
+                  ) : null;
+                })}
               </ul>
             </section>
           )}
