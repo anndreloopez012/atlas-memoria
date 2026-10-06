@@ -1,19 +1,53 @@
 # Atlas de memoria
 
-Una página interactiva para **ver y recorrer toda tu memoria en un solo lugar**: los 6 vaults de Obsidian (con **CORE** al centro y los demás naciendo de él), las **skills** de tus IAs y los **agentes** que trabajan por ti. Sirve para recordar qué hace cada pieza, leer cualquier nota y moverte entre vaults de forma gráfica.
+Una página interactiva para **ver y recorrer toda tu memoria en un solo lugar**: tus vaults de Obsidian (con un vault central del que nacen los demás), las **skills** de Claude Code, Codex y Antigravity, y los **agentes** que trabajan por ti. Sirve para recordar qué hace cada pieza, leer cualquier nota y moverte entre vaults de forma gráfica.
 
-Lee los datos directamente de esta Mac y se mantiene **sincronizado solo**: si cambias una nota en Obsidian mientras el atlas está abierto, se actualiza en segundos.
+Se instala en cualquier computadora (macOS, Windows o Linux) y **se acopla a lo que tenga cada persona**: encuentra sola sus vaults, sus skills y sus agentes. Corre en tu equipo, no sube nada a internet y se mantiene sincronizado: si cambias una nota en Obsidian, el atlas se actualiza en segundos.
+
+---
+
+## Instalar con IA
+
+Abre **Claude Code**, **Codex** o **Antigravity** y escribe:
+
+```text
+Instala este repositorio: https://github.com/anndreloopez012/atlas-memoria
+```
+
+La IA hace todo:
+
+1. Clona el repositorio.
+2. Instala lo que falte en el equipo (Node.js y dependencias).
+3. Detecta tus vaults, skills, agentes y automatizaciones.
+4. Verifica que funcione, traduce al español lo que haga falta y te deja el atlas abierto en <http://localhost:5190>.
+
+Solo te pregunta si no encuentra tus vaults o si hay carpetas dudosas.
+
+| Si eres… | Lee |
+|---|---|
+| La IA que va a instalar | [AGENTS.md](AGENTS.md) (Codex y Antigravity lo leen solos; [CLAUDE.md](CLAUDE.md) y [GEMINI.md](GEMINI.md) lo importan). Skill: `/instalar-atlas`. |
+| Una persona que quiere hacerlo a mano o entender los pasos | [INSTALAR.md](INSTALAR.md) |
+
+A mano, en dos comandos (macOS / Linux; en Windows `instalar.ps1` e `iniciar.ps1`):
+
+```bash
+bash instalar.sh
+```
+
+```bash
+bash iniciar.sh
+```
+
+> El repositorio es privado: para compartirlo, agrega a la persona como colaboradora en GitHub. Su IA clonará con su propia sesión.
 
 ---
 
 ## Índice
 
 - [Qué puedes hacer](#qué-puedes-hacer)
-- [Requisitos](#requisitos)
-- [Instalación y uso](#instalación-y-uso)
+- [Cómo se acopla a cada equipo](#cómo-se-acopla-a-cada-equipo)
+- [Comandos](#comandos)
 - [Cómo se mantiene sincronizado](#cómo-se-mantiene-sincronizado)
-- [De dónde lee los datos](#de-dónde-lee-los-datos)
-- [Configuración](#configuración)
 - [Todo en español](#todo-en-español)
 - [Privacidad](#privacidad)
 - [Estructura del proyecto](#estructura-del-proyecto)
@@ -27,12 +61,13 @@ Lee los datos directamente de esta Mac y se mantiene **sincronizado solo**: si c
 ## Qué puedes hacer
 
 ### Universo (`#/`)
-El mapa completo. **CORE es el sol** del centro y los otros cinco vaults (PROGRAMACION, MARKETING, TALLERES IA, GENERAL y PERSONAL (YO)) orbitan a su alrededor, unidos a él por rayos que muestran que **nacen de CORE**.
+El mapa completo. **Tu vault central es el sol** y los demás vaults orbitan a su alrededor, unidos a él por rayos que muestran que **nacen del centro**. El centro se elige solo: un vault llamado CORE, Inicio o Home; si no hay, el que más enlaces tiene con los otros. También se puede fijar.
 
 - El tamaño de cada planeta es proporcional a sus notas; las lunas que giran son sus carpetas principales.
 - Las curvas doradas son los **puentes**: enlaces de un vault a otro. Pasa el cursor para ver cuántos hay en cada sentido.
 - El **anillo exterior** es el zodiaco de tus skills (un punto por skill, agrupadas por categoría) y tus agentes (rombos). Los puntos con borde dorado son skills tuyas.
-- Debajo, el **árbol de vaults**: CORE como tronco y cinco ramas, con propósito, cifras y carpetas de cada uno.
+- Debajo, el **árbol de vaults**: el centro como tronco y una rama por vault, con propósito, cifras y carpetas.
+- Funciona con un vault, con muchos o con ninguno (en ese caso muestra tus skills y agentes).
 
 ### Vaults (`#/v/<vault>`)
 Un vault por dentro, en tres columnas:
@@ -43,133 +78,98 @@ Un vault por dentro, en tres columnas:
 | Grafo / Recientes | Grafo estructurado (raíz → carpetas → notas, más los enlaces entre notas) o la lista de notas ordenadas por fecha, con filtro. |
 | Lector | La nota renderizada (callouts, tablas, tareas, imágenes del vault), sus propiedades, índice, **a qué enlaza**, **quién la cita** y sus **puentes con otros vaults**. |
 
-- El carril superior permite saltar entre vaults: CORE primero y una rama que lleva a los otros cinco.
+- El carril superior permite saltar entre vaults: el central primero y una rama hacia los demás.
 - Los enlaces dentro de una nota llevan a la nota destino, **aunque esté en otro vault**.
 - «Abrir en Obsidian» abre la misma nota en la app.
 
 ### Skills (`#/skills`)
-Catálogo de todas las skills instaladas en **Claude, Codex y Antigravity**, agrupadas por nombre (una skill instalada en las tres IAs aparece una vez, con las tres insignias).
+Catálogo de todas las skills del equipo, de **Claude Code, Codex y Antigravity**: las instaladas, las de la carpeta compartida `~/.agents/skills`, las que traen los **plugins activos** y las de sistema. Se agrupan por nombre: una skill instalada en tres IAs aparece una vez, con las tres insignias.
 
-- Filtros por IA, origen (propias, instaladas, sistema), categoría y paquete (Impeccable, HyperFrames, Higgsfield, n8n…).
+- Filtros por IA, origen (propias, instaladas, de plugins, sistema), categoría y paquete.
 - Vista **Red**: qué skill menciona a cuál y qué agentes las usan.
 - **Ficha de cada skill** (`#/skills/<nombre>`):
   - **Para qué sirve**, **cuándo se activa** (con las frases que la despiertan) y **cuándo no usarla**.
   - **Cómo trabaja**, paso a paso: tu pedido → la IA la elige → lee el manual → consulta referencias → ejecuta scripts → usa plantillas → entrega.
   - Las secciones del manual con su resumen, el `SKILL.md` completo y cada archivo de referencia legible en un visor.
-  - Dónde está instalada, su repositorio en GitHub, skills con las que trabaja, agentes que la usan y sus notas en Obsidian.
+  - Dónde está instalada, su repositorio en GitHub, skills con las que trabaja, agentes que la usan y las notas de tus vaults que hablan de ella.
 
 ### Agentes (`#/agentes`)
-- **Agentes de IA** (subagentes de Claude y Codex): para qué sirven, cuándo se les delega, sus herramientas, modelo, skills que usan y sus instrucciones completas.
-- **Automatizaciones** (LaunchAgents de macOS): cada cuánto corren, qué vigilan, qué script ejecutan, dónde dejan registro y cómo pausarlas.
+- **Agentes de IA** (subagentes de Claude Code, Codex y Antigravity, del usuario, de proyectos y de plugins): para qué sirven, cuándo se les delega, sus herramientas, modelo, skills que usan y sus instrucciones completas.
+- **Automatizaciones** que trabajan sobre tus vaults (launchd en macOS, systemd y cron en Linux): cada cuánto corren, qué vigilan, qué script ejecutan, dónde dejan registro y cómo pausarlas.
 
 ### Cómo trabaja (`#/sistema`)
-El flujo del sistema de memoria: de dónde **entra** el conocimiento, quién lo **procesa**, dónde **vive** y quién lo **consulta**. Incluye las reglas de enrutado (qué palabras mandan cada cosa a cada vault), los scripts del motor y los comandos `memoria`.
+El flujo completo: de dónde **entra** el conocimiento, quién lo **procesa**, dónde **vive** y quién lo **consulta**, más la lista de **fuentes que el atlas encontró** en el equipo. Si usas un sistema de memoria multi-vault (`.memoria-system`), muestra además su motor, sus reglas de enrutado y sus comandos.
 
 ### Búsqueda global
-`⌘K` (o `/`) busca entre las ~4.200 notas, las skills y los agentes a la vez.
+`⌘K` (o `/`) busca entre todas las notas, las skills y los agentes a la vez.
 
 ---
 
-## Requisitos
+## Cómo se acopla a cada equipo
 
-- macOS (lee los LaunchAgents con `plutil`; el resto funciona en cualquier sistema).
-- Node.js 20 o superior.
-- El contenedor de Obsidian en `~/Documents/OBSIDIAN` (o en la ruta que indiques, ver [Configuración](#configuración)).
+El instalador detecta lo que hay y lo guarda en `atlas.config.json`. Ese archivo es local, no se sube a git, y se puede editar a mano: [docs/CONFIGURACION.md](docs/CONFIGURACION.md).
 
-## Instalación y uso
+| Qué | Dónde lo busca |
+|---|---|
+| Vaults de Obsidian | El registro de Obsidian (macOS, Windows y Linux, incluido Flatpak y Snap); si no existe, carpetas con `.obsidian` en Documentos, Escritorio, Dropbox, OneDrive e iCloud |
+| Skills de Claude Code | `~/.claude/skills` y los plugins activos de Claude Code |
+| Skills de Codex | `$CODEX_HOME/skills` (o `~/.codex/skills`, incluido `.system`) y los plugins activos de `config.toml` |
+| Skills de Antigravity | `~/.gemini/config/skills`, `~/.gemini/antigravity/skills`, `~/.gemini/skills` y las incluidas de fábrica |
+| Skills compartidas | `~/.agents/skills` (estándar abierto que leen varias IAs) |
+| Agentes | `~/.claude/agents`, `~/.codex/agents`, `~/.gemini/agents`, agentes de plugins y `<proyecto>/.claude/agents` (y equivalentes) en tus carpetas de proyectos |
+| Automatizaciones | launchd (macOS), systemd de usuario y cron (Linux) que tocan las rutas de tus vaults |
+| Sistema de memoria | Una carpeta `.memoria-system/` junto a tus vaults (opcional) |
 
-```bash
-npm install
-```
+Lo que no se detecta se agrega con una opción: `--vault`, `--skills`, `--agentes`, `--centro`… (ver [INSTALAR.md](INSTALAR.md#3-ajustar-si-hace-falta)).
 
-```bash
-npm run dev
-```
+---
 
-Abre <http://localhost:5190>. La primera vez el servidor genera los datos solo (tarda unos 5 segundos).
+## Comandos
 
 | Comando | Qué hace |
 |---|---|
-| `npm run dev` | Servidor de desarrollo con sincronización en vivo. Es la forma recomendada de usarlo. |
-| `npm run datos` | Vuelve a leer vaults, skills y agentes y reescribe `datos/`. |
-| `npm run traducir` | Traduce al español los textos nuevos que lo necesiten (ver [Todo en español](#todo-en-español)). |
-| `npm start` | Compila y sirve la versión optimizada en el puerto 5190 (sin vigilancia en vivo; usa el botón de actualizar). |
+| `bash instalar.sh` · `instalar.ps1` | Instalación o actualización completa: Node.js si falta, dependencias, detección, verificación y datos. |
+| `bash iniciar.sh` · `iniciar.ps1` | Abre el atlas con sincronización en vivo (si no está instalado, lo instala primero). |
+| `npm run instalar -- <opciones>` | El instalador sin el paso de Node.js; con opciones para ajustar vaults, skills, agentes, centro y puerto. |
+| `npm run detectar` | Vuelve a buscar vaults, skills y agentes nuevos y actualiza la configuración. |
+| `npm run datos` | Vuelve a leer todo y reescribe `datos/`. |
+| `npm run traducir` | Traduce al español los textos nuevos (ver [Todo en español](#todo-en-español)). |
+| `npm run verificar` | Prueba de humo en un equipo falso más una revisión de las instrucciones para IAs. No toca tus datos. |
+| `npm run dev` | Servidor de desarrollo (lo que usa `iniciar`). |
+| `npm start` | Compila y sirve la versión optimizada (sin vigilancia en vivo; usa el botón de actualizar). |
 | `npm run build` | Revisa tipos y compila en `dist/`. |
-| `npm run typecheck` | Solo revisión de tipos. |
 
 ---
 
 ## Cómo se mantiene sincronizado
 
-1. **En vivo:** con `npm run dev`, el servidor vigila el contenedor de Obsidian. Cuando cambia una nota `.md`, espera 8 segundos (para agrupar los guardados de Obsidian), regenera el atlas y avisa al navegador, que recarga los datos sin perder la vista.
+1. **En vivo:** mientras el atlas está abierto (`iniciar` o `npm run dev`), el servidor vigila tus vaults y `atlas.config.json`. Cuando algo cambia, espera 8 segundos para agrupar los guardados de Obsidian, regenera el atlas y avisa al navegador, que recarga los datos sin perder la vista.
 2. **Bajo pedido:** el botón de la barra superior (muestra «hace X min») vuelve a leer todo.
 3. **Desde la terminal:** `npm run datos`.
 
-Los datos generados viven en `datos/` y **no se suben a Git**: son contenido personal, cambian cada pocos minutos y ya están respaldados en el repositorio privado de Obsidian. El repositorio guarda el código que los genera y los dibuja.
-
----
-
-## De dónde lee los datos
-
-| Fuente | Ruta por defecto | Qué saca |
-|---|---|---|
-| Vaults | `~/Documents/OBSIDIAN/<VAULT>` | Notas, carpetas, propiedades, etiquetas, enlaces y adjuntos |
-| Registro de vaults | `~/Documents/OBSIDIAN/.memoria-system/config/vaults.json` | Orden, color, propósito, qué incluye, entradas, enrutado y complementos |
-| Motor | `~/Documents/OBSIDIAN/.memoria-system/bin` | Scripts y comandos `memoria` |
-| Categorías de skills | `~/Documents/OBSIDIAN/.memoria-system/data/memoria_index.json` | La categoría que el sistema ya asignó a cada skill |
-| Skills de Claude | `~/.claude/skills` | `SKILL.md`, referencias, scripts y recursos |
-| Skills de Codex | `~/.codex/skills` (incluye `.system`) | Ídem |
-| Skills de Antigravity | `~/.gemini/config/skills` | Ídem |
-| Agentes de Claude | `~/.claude/agents` y `~/Documents/CLAUDE/.claude/agents` | Descripción, herramientas, modelo e instrucciones |
-| Agentes de Codex | `~/.codex/agents` | Ídem |
-| Automatizaciones | `~/Library/LaunchAgents/com.anndre.*` y `com.codex.*` | Intervalo, rutas vigiladas, script y registros |
-
-Qué **no** carga: las ~35.000 notas que Graphify genera dentro de `<vault>/Graphify/<proyecto>/` (una por archivo de código). Se cuentan y se avisa, pero su resumen ya vive en las fichas de proyecto de PROGRAMACION.
-
-Las skills de los complementos de claude.ai (por ejemplo `anthropic-skills:*` o `marketing:*`) no están en disco, así que no aparecen.
-
-## Configuración
-
-Todo se ajusta con variables de entorno, sin tocar el código:
-
-| Variable | Por defecto | Uso |
-|---|---|---|
-| `ATLAS_OBSIDIAN` | `~/Documents/OBSIDIAN` | Contenedor de los vaults |
-| `ATLAS_SALIDA` | `./datos` | Dónde se escriben los datos generados |
-| `ATLAS_SKILLS_EXTRA` | — | Carpetas extra de skills, separadas por `:` |
-| `ATLAS_LAUNCH_PREFIJOS` | `com.anndre.,com.codex.` | Prefijos de los LaunchAgents a mostrar |
-| `ATLAS_VIGILAR` | `1` | `0` desactiva la sincronización en vivo |
-| `ATLAS_TRADUCIR_MANUALES` | `0` | `1` también marca para traducir los `SKILL.md` completos |
-
-Ejemplo:
-
-```bash
-ATLAS_OBSIDIAN=/Volumes/Respaldo/OBSIDIAN npm run dev
-```
+Los datos generados viven en `datos/` y **no se suben a Git**: son contenido personal y cambian a cada rato. El repositorio solo guarda el código que los genera y los dibuja.
 
 ---
 
 ## Todo en español
 
-Todo texto descriptivo se muestra **en español**: descripciones, «para qué sirve», «cuándo se activa», títulos y resúmenes de las secciones de cada manual, títulos de las referencias, instrucciones de los agentes, docstrings del motor y metadatos. En inglés solo quedan los **nombres** de vaults, skills y agentes (y el código, comandos y rutas).
+Todo texto descriptivo se muestra **en español**: descripciones, «para qué sirve», «cuándo se activa», títulos y resúmenes de las secciones de cada manual, títulos de las referencias, instrucciones de los agentes, docstrings y metadatos. En inglés solo quedan los **nombres** de vaults, skills y agentes, además del código, los comandos y las rutas.
 
 Cómo funciona:
 
-1. El generador detecta qué textos no están en español y busca su traducción en `traducciones/es.json` (versionado). La clave es la huella del texto original: si una skill cambia su descripción, ese texto vuelve a quedar pendiente.
+1. El generador detecta qué textos no están en español y busca su traducción en `traducciones/es.json`, que se versiona. La clave es la huella del texto original: si una skill cambia su descripción, ese texto vuelve a quedar pendiente.
 2. Lo que falta se anota en `datos/pendientes-traduccion.json` y se cuenta en «Cómo trabaja».
-3. `npm run traducir` lo traduce con tu Claude Code (`claude -p`, modelo Sonnet, 3 lotes a la vez) y regenera los datos.
+3. `npm run traducir` lo traduce con Claude Code (`claude -p`, modelo Sonnet, 3 lotes a la vez) y regenera los datos.
 
-```bash
-npm run traducir
-```
-
-`claude -p` no puede abrirse dentro de otra sesión de Claude Code: ejecútalo desde una terminal normal. Desde una sesión de Claude se usan las otras dos formas:
+`claude -p` no puede abrirse dentro de otra sesión de Claude Code. Desde una sesión de Claude (o desde Codex o Antigravity), la IA traduce los lotes ella misma:
 
 | Opción | Uso |
 |---|---|
-| `npm run traducir -- --lotes <carpeta>` | Parte lo pendiente en `lote-NN.json` para traducirlo aparte (por ejemplo, con agentes). |
+| `npm run traducir -- --lotes <carpeta>` | Parte lo pendiente en `lote-NN.json` para traducirlo aparte. |
 | `npm run traducir -- --importar <carpeta>` | Incorpora los `resultado-NN.json` (`{ clave: traducción }`) al diccionario y regenera. |
-| `--modelo opus` · `--paralelo 5` · `--tamano 20000` | Ajustes del traductor. |
+| `--modelo opus` · `--paralelo 5` · `--tamano 20000` | Ajustes del traductor automático. |
+
+Las traducciones se comparten: lo que ya se tradujo en un equipo sirve para todos los que tengan esas skills.
 
 **Manuales completos.** El texto íntegro de cada `SKILL.md` y de sus referencias es el documento que lee la IA; se muestra tal cual, marcado como «texto original», y su resumen en español aparece en la ficha. Para traducir también los manuales completos:
 
@@ -183,9 +183,10 @@ Las notas de los vaults son tus propios archivos: el atlas las muestra como est�
 
 ## Privacidad
 
-- Todo corre en tu Mac: no hay servidor externo ni analítica. El repositorio es privado.
-- Antes de escribir los datos, el generador **oculta** cualquier valor con forma de secreto (llaves privadas, tokens de Stripe/GitHub/AWS/Google/Slack/OpenAI/Anthropic, JWT y pares `password=…`, `token: …`). En la página aparecen como `[oculto]` y el total se muestra en «Cómo trabaja».
-- El servidor solo sirve archivos que estén dentro de `datos/` o de un vault (no se puede escapar con `../`).
+- Todo corre en tu equipo: no hay servidor externo ni analítica.
+- `datos/` y `atlas.config.json` no se suben a git.
+- Antes de escribir los datos, el generador **oculta** cualquier valor con forma de secreto: llaves privadas; tokens de Stripe, GitHub, AWS, Google, Slack, OpenAI y Anthropic; JWT; y pares `password=…` o `token: …`. En la página aparecen como `[oculto]` y el total se muestra en «Cómo trabaja».
+- El servidor solo sirve archivos que estén dentro de `datos/` o de un vault configurado (no se puede escapar con `../`).
 
 ---
 
@@ -193,48 +194,62 @@ Las notas de los vaults son tus propios archivos: el atlas las muestra como est�
 
 ```
 atlas-memoria/
+├── AGENTS.md · CLAUDE.md · GEMINI.md   # instrucciones para Codex, Antigravity, Claude Code y Gemini CLI
+├── .agents/skills/instalar-atlas/      # skill de instalación (Antigravity, Codex)
+├── .claude/skills/instalar-atlas/      # copia idéntica (Claude Code)
+├── INSTALAR.md                         # guía de instalación paso a paso
+├── instalar.sh · instalar.ps1          # instalación completa por sistema operativo
+├── iniciar.sh · iniciar.ps1            # abrir el atlas
+├── atlas.config.ejemplo.json           # formato de la configuración local
 ├── scripts/
-│   ├── generar-datos.mjs      # punto de entrada: escribe datos/
-│   ├── traducir.mjs           # completa las traducciones (claude -p, lotes o importación)
+│   ├── instalar.mjs                    # detección + configuración + verificación + datos
+│   ├── verificar.mjs                   # prueba de humo en un equipo falso
+│   ├── generar-datos.mjs               # escribe datos/
+│   ├── traducir.mjs                    # completa las traducciones (claude -p, lotes o importación)
+│   ├── entorno.sh                      # carga o instala Node.js (macOS/Linux)
 │   └── lib/
-│       ├── config.mjs         # rutas y límites (variables de entorno)
-│       ├── texto.mjs          # frontmatter, enlaces, extractos, ocultar secretos
-│       ├── vaults.mjs         # notas, carpetas, resolución de enlaces y puentes
-│       ├── skills.mjs         # inventario de skills de las tres IAs
-│       ├── agentes.mjs        # subagentes, LaunchAgents y motor
-│       └── traduccion.mjs     # diccionario al español y textos pendientes
+│       ├── detectar.mjs                # qué tiene este equipo
+│       ├── config.mjs                  # configuración efectiva (ATLAS_* > atlas.config.json > detección)
+│       ├── texto.mjs                   # frontmatter, enlaces, extractos, ocultar secretos
+│       ├── vaults.mjs                  # notas, carpetas, resolución de enlaces y puentes
+│       ├── skills.mjs                  # inventario de skills de todas las IAs y plugins
+│       ├── agentes.mjs                 # agentes, automatizaciones y motor de memoria
+│       └── traduccion.mjs              # diccionario al español y textos pendientes
 ├── src/
-│   ├── App.tsx                # barra, rutas y búsqueda
-│   ├── pantallas/             # Universo, Vault, Skills, SkillDetalle, Agentes, Sistema
-│   ├── componentes/           # Grafo, LectorNota, ArbolCarpetas, Buscador, Pipeline…
-│   ├── lib/                   # datos (caché), rutas (hash), markdown, tema, formato, tipos
-│   └── estilos/               # base (tokens y atmósfera), app, markdown
-├── traducciones/
-│   └── es.json                # traducciones al español (versionado)
-├── docs/
-│   ├── ARQUITECTURA.md        # cómo está hecho y por qué
-│   ├── DATOS.md               # formato de cada archivo generado
-│   └── FLUJO-GIT.md           # ramas, dev y main
-├── vite.config.ts             # complemento que sirve datos y adjuntos y vigila los vaults
-└── datos/                     # generado (no versionado)
+│   ├── App.tsx                         # barra, rutas y búsqueda
+│   ├── pantallas/                      # Universo, Vault, Skills, SkillDetalle, Agentes, Sistema
+│   ├── componentes/                    # Grafo, LectorNota, ArbolCarpetas, Buscador, Pipeline…
+│   ├── lib/                            # datos, rutas, atlas, markdown, tema, formato, tipos
+│   └── estilos/                        # tokens y atmósfera, app, markdown
+├── traducciones/es.json                # traducciones al español (versionado)
+├── docs/                               # ARQUITECTURA, DATOS, CONFIGURACION, FLUJO-GIT
+├── vite.config.ts                      # servidor: datos, adjuntos, regeneración y vigilancia en vivo
+├── atlas.config.json                   # configuración de este equipo (no versionado)
+└── datos/                              # generado (no versionado)
 ```
 
 ## Arquitectura
 
 ```mermaid
 flowchart LR
-  subgraph Mac
-    V[(6 vaults<br/>Obsidian)]
+  subgraph Equipo
+    O[(Registro de Obsidian)]
+    V[(Vaults)]
     S[(Skills<br/>Claude · Codex · Antigravity)]
-    A[(Agentes y<br/>LaunchAgents)]
+    A[(Agentes y automatizaciones)]
   end
-  G[scripts/generar-datos.mjs] -->|JSON| D[(datos/)]
+  D{{detectar.mjs}} --> C[atlas.config.json]
+  O --> D
+  S --> D
+  A --> D
+  C --> G[generar-datos.mjs]
   V --> G
   S --> G
   A --> G
-  W{{vigía de cambios<br/>vite.config.ts}} -->|regenera| G
+  G -->|JSON| DATOS[(datos/)]
+  W{{vigía · vite.config.ts}} -->|regenera| G
   V -.cambio en .md.-> W
-  D -->|/datos| P[Página React]
+  DATOS -->|/datos| P[Página React]
   V -->|/adjunto| P
   W -->|aviso HMR| P
 ```
@@ -247,7 +262,8 @@ Detalle de cada pieza, decisiones de diseño y cómo extenderlo en [docs/ARQUITE
 
 - Cada cambio va en su propia rama (`feat/<tema>` o `fix/<tema>`), creada desde el punto común de `dev` y `main`.
 - Commits con el formato `feat(<pantalla>): <explicación>` o `fix(<pantalla>): <explicación>`.
-- Al terminar: se sube la rama, se fusiona con `--no-ff` en `dev` y en `main`, y se suben ambas. `dev` y `main` siempre quedan con el mismo contenido.
+- Al terminar: `npm run verificar` y `npm run build` deben pasar; se sube la rama, se fusiona con `--no-ff` en `dev` y en `main`, y se suben ambas. `dev` y `main` siempre quedan iguales.
+- Todo cambio mantiene el proyecto **reutilizable**: nada fijo de un equipo en particular, compatible con las tres IAs y con la documentación al día.
 
 Comandos paso a paso en [docs/FLUJO-GIT.md](docs/FLUJO-GIT.md).
 
@@ -264,11 +280,13 @@ Comandos paso a paso en [docs/FLUJO-GIT.md](docs/FLUJO-GIT.md).
 
 | Síntoma | Causa y arreglo |
 |---|---|
-| «Todavía no hay mapa» | No existe `datos/atlas.json`. Ejecuta `npm run datos`. Si dice que no encuentra el contenedor, usa `ATLAS_OBSIDIAN`. |
-| Una nota nueva no aparece | Con `npm start` no hay vigilancia en vivo: usa el botón de actualizar. Con `npm run dev`, espera ~10 s. |
-| Una skill aparece sin descripción | Su `SKILL.md` no tiene `description` en el frontmatter. |
-| Aparece texto en inglés | Es nuevo y aún no tiene traducción: `npm run traducir` desde una terminal normal. |
-| `npm run traducir` dice que estás dentro de Claude Code | Ábrelo desde Terminal, fuera de la sesión de Claude, o usa `--lotes` / `--importar`. |
+| «Todavía no hay mapa» | No se generaron los datos: `bash instalar.sh` (o `npm run instalar`). |
+| «Todavía no hay vaults» | No se encontró ningún vault: `npm run instalar -- --vault "<ruta>"`. |
+| Falta un vault, una carpeta de skills o de agentes | `npm run detectar`; si sigue faltando, agrégalo con `--vault`, `--skills` o `--agentes`. |
+| Una nota nueva no aparece | Con `npm start` no hay vigilancia en vivo: usa el botón de actualizar. Con `iniciar` o `npm run dev`, espera unos 10 segundos. |
+| Aparece texto en inglés | Es nuevo y aún no tiene traducción: `npm run traducir` (o los lotes, desde una IA). |
 | Una imagen de una nota no carga | El adjunto no está dentro del mismo vault o tiene otro nombre. |
-| El grafo de PROGRAMACION se ve como un ovillo | Con más de 1.200 notas los enlaces entre notas se ocultan; actívalos con «Enlaces» o elige una carpeta. |
-| `EX_CONFIG 78` en LaunchAgents | No es de este proyecto: es la trampa de permisos (TCC) del sistema de memoria con `~/Documents/OBSIDIAN`. |
+| El grafo de un vault grande se ve como un ovillo | Con más de 1.200 notas los enlaces entre notas se ocultan; actívalos con «Enlaces» o elige una carpeta. |
+| `node: command not found` | Abre una terminal nueva o usa `bash iniciar.sh`, que carga Node aunque se haya instalado con fnm o nvm. |
+
+Más casos en [INSTALAR.md](INSTALAR.md#problemas-frecuentes).
