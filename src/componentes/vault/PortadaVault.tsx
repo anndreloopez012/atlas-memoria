@@ -1,4 +1,4 @@
-// Portada de un vault: carril para saltar a otros vaults, el vault como planeta,
+// Portada de un vault: carril para saltar a otros vaults, el vault como cerebro,
 // su propósito, cifras, pulso de actividad, puentes con otros vaults, etiquetas
 // principales y notas de entrada.
 import { ArrowUpRight, ChevronDown, Info } from 'lucide-react';
@@ -49,7 +49,7 @@ export default function PortadaVault({ atlas, vault, notas, porId, onEtiqueta }:
 
       <div className="portada-principal">
         <div className="portada-orbe">
-          <OrbeVault color={vault.color} tamano={112} carpetas={vault.carpetas.h} />
+          <OrbeVault color={vault.color} semilla={vault.slug} notas={vault.notas} tamano={112} carpetas={vault.carpetas.h} />
         </div>
 
         <div className="portada-texto">

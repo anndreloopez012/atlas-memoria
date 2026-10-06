@@ -520,7 +520,7 @@
 
 .orbita {
   fill: none;
-  stroke: var(--linea-fuerte);
+  stroke: color-mix(in oklab, var(--hud) 30%, var(--linea-fuerte));
   stroke-dasharray: 2 7;
 }
 
@@ -535,41 +535,80 @@
   stroke-dasharray: 1 5;
 }
 
+/* Puentes entre vaults: haces dorados con impulsos */
+.puente-haz {
+  transition: opacity 0.3s;
+}
+
+.puente-haz.atenuado {
+  opacity: 0.2;
+}
+
 .puente {
   fill: none;
   stroke: var(--laton);
-  stroke-opacity: 0.3;
+  stroke-opacity: 0.28;
   cursor: help;
   transition: stroke-opacity 0.3s;
 }
 
-.puente.activo {
-  stroke-opacity: 0.95;
+.puente-haz.activo .puente {
+  stroke-opacity: 0.9;
 }
 
-.puente.atenuado {
-  stroke-opacity: 0.06;
+.puente-impulso {
+  fill: none;
+  stroke: color-mix(in oklab, var(--laton) 55%, white);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 5 200;
+  stroke-dashoffset: 5;
+  pointer-events: none;
+  animation: impulso 4.5s linear infinite;
 }
 
-.rayo {
+/* Haces nerviosos del núcleo a cada vault */
+.haz {
   transition: opacity 0.3s;
 }
 
-.rayo line {
+.haz .fibra {
+  fill: none;
   stroke: currentColor;
-  stroke-opacity: 0.45;
+  stroke-opacity: 0.2;
+  transition: stroke-opacity 0.3s;
 }
 
-.rayo line.flujo {
-  stroke-opacity: 1;
-  stroke-width: 2;
-  stroke-dasharray: 2 16;
-  stroke-linecap: round;
-  animation: flujo 1.4s linear infinite;
+.haz .fibra.central {
+  stroke-opacity: 0.42;
 }
 
-.rayo.atenuado {
+.haz.activo .fibra {
+  stroke-opacity: 0.55;
+}
+
+.haz.activo .fibra.central {
+  stroke-opacity: 0.95;
+}
+
+.haz.atenuado {
   opacity: 0.25;
+}
+
+.haz-impulso {
+  fill: none;
+  stroke: color-mix(in oklab, currentColor 40%, white);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-dasharray: 7 200;
+  stroke-dashoffset: 7;
+  animation: impulso 3.2s linear infinite;
+}
+
+.haz-impulso.vuelta {
+  stroke-width: 1.8;
+  animation-direction: reverse;
+  animation-duration: 4.4s;
 }
 
 .rayo-cifra {
@@ -578,13 +617,17 @@
   fill: var(--tinta-2);
   text-anchor: middle;
   opacity: 0;
+  paint-order: stroke;
+  stroke: var(--fondo);
+  stroke-width: 4px;
   transition: opacity 0.3s;
 }
 
-.rayo.activo .rayo-cifra {
+.haz.activo .rayo-cifra {
   opacity: 1;
 }
 
+/* Núcleo */
 .sol {
   cursor: pointer;
 }
@@ -592,82 +635,214 @@
 .corona {
   transform-box: fill-box;
   transform-origin: center;
-  animation: latido 5s ease-in-out infinite;
-}
-
-.sol-anillo {
-  fill: none;
-  stroke: #6b70ff;
-  stroke-opacity: 0.5;
-  stroke-dasharray: 1 8;
-  stroke-linecap: round;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: girar 50s linear infinite;
-}
-
-.sol-anillo.lento {
-  stroke-opacity: 0.25;
-  stroke-dasharray: 18 10 2 10;
-  animation-duration: 120s;
-  animation-direction: reverse;
+  animation: latido 6s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .sol-nombre {
   font-family: var(--f-display);
   font-size: 38px;
-  letter-spacing: 0.06em;
-  fill: #fff;
+  letter-spacing: 0.08em;
+  fill: var(--tinta);
   text-anchor: middle;
   pointer-events: none;
+  paint-order: stroke;
+  stroke: color-mix(in oklab, var(--fondo) 75%, transparent);
+  stroke-width: 7px;
+  stroke-linejoin: round;
+  animation: fundido 1.2s ease 0.9s both;
 }
 
 .sol-dato {
   font-family: var(--f-mono);
   font-size: 11px;
-  fill: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.06em;
+  fill: var(--tinta-2);
   text-anchor: middle;
   pointer-events: none;
+  paint-order: stroke;
+  stroke: color-mix(in oklab, var(--fondo) 75%, transparent);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+  animation: fundido 1.2s ease 1.1s both;
 }
 
-.planeta {
+/* Interfaz holográfica (HUD) del núcleo */
+.hud {
+  pointer-events: none;
+  animation: fundido 1.4s ease 0.2s both;
+}
+
+.hud-barrido {
+  transform-box: view-box;
+  animation: girar 7s linear infinite;
+}
+
+.hud-barrido path {
+  fill: var(--hud);
+}
+
+.hud-fino {
+  fill: none;
+  stroke: var(--hud);
+  stroke-opacity: 0.32;
+  stroke-dasharray: 1 5;
+}
+
+.hud-marcas {
+  stroke: var(--hud);
+  stroke-opacity: 0.42;
+}
+
+.hud-segmentos {
+  fill: none;
+  stroke: var(--hud);
+  stroke-opacity: 0.32;
+  stroke-width: 3;
+  stroke-dasharray: 46 10 6 10;
+  transform-box: view-box;
+  animation: girar 90s linear infinite;
+}
+
+.hud-arcos {
+  transform-box: view-box;
+  animation: girar 24s linear infinite;
+}
+
+.hud-arcos path {
+  fill: none;
+  stroke: var(--hud);
+  stroke-width: 1.6;
+  stroke-opacity: 0.8;
+  stroke-linecap: round;
+}
+
+.hud-arcos.inverso {
+  animation-duration: 38s;
+  animation-direction: reverse;
+}
+
+.hud-arcos.inverso path {
+  stroke-width: 4;
+  stroke-opacity: 0.35;
+  stroke-dasharray: 2 3;
+  stroke-linecap: butt;
+}
+
+.hud-cruz {
+  stroke: var(--hud);
+  stroke-opacity: 0.6;
+  stroke-width: 1.4;
+}
+
+.hud-lectura {
+  animation: fundido 0.8s ease both;
+}
+
+.hud-lectura path {
+  fill: none;
+  stroke: var(--hud);
+  stroke-opacity: 0.55;
+}
+
+.hud-lectura circle {
+  fill: var(--hud);
+}
+
+.hud-lectura-etiqueta {
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  fill: var(--hud);
+  opacity: 0.85;
+}
+
+.hud-lectura-valor {
+  font-family: var(--f-mono);
+  font-size: 15px;
+  font-weight: 500;
+  fill: var(--tinta);
+}
+
+/* Cada vault: cerebro, aura y retícula */
+.vault-neuronal {
   cursor: pointer;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: aparecer 0.9s var(--ease) both;
+  animation: fundido 0.9s ease both;
   transition: opacity 0.3s;
 }
 
-.planeta.atenuado {
-  opacity: 0.35;
+.vault-neuronal.atenuado {
+  opacity: 0.32;
 }
 
 .planeta-zona {
   fill: transparent;
 }
 
-.planeta-cuerpo {
+.vault-aura {
+  pointer-events: none;
   transform-box: fill-box;
   transform-origin: center;
-  transition: transform 0.45s var(--ease), filter 0.45s;
+  transition: transform 0.6s var(--ease), opacity 0.4s;
+  opacity: 0.8;
 }
 
-.planeta:hover .planeta-cuerpo {
-  transform: scale(1.1);
-  filter: brightness(1.15) drop-shadow(0 0 22px rgba(255, 255, 255, 0.25));
+.vault-neuronal:hover .vault-aura,
+.vault-neuronal.activo .vault-aura {
+  transform: scale(1.15);
+  opacity: 1;
 }
 
-.lunas {
+.reticula {
+  fill: none;
+  stroke: var(--hud);
+  pointer-events: none;
   transform-box: view-box;
-  animation: girar 60s linear infinite;
+  transform: scale(1.14);
+  opacity: 0.4;
+  transition: transform 0.55s var(--ease), opacity 0.4s, stroke 0.4s;
+}
+
+.reticula-circulo {
+  stroke-opacity: 0.4;
+  stroke-dasharray: 2 6;
+  transform-box: view-box;
+  animation: girar 40s linear infinite;
+}
+
+.reticula-esquinas {
+  stroke-width: 1.4;
+  stroke-opacity: 0.8;
+}
+
+.vault-neuronal:hover .reticula,
+.vault-neuronal.activo .reticula {
+  transform: scale(1);
+  opacity: 1;
+  stroke: var(--c);
+}
+
+.vault-neuronal:hover .cerebro-sinapsis,
+.sol:hover .cerebro-sinapsis {
+  stroke-opacity: 0.5;
+}
+
+.vault-neuronal:hover .cerebro-neuronas circle,
+.sol:hover .cerebro-neuronas circle {
+  fill: color-mix(in oklab, var(--c) 30%, white);
 }
 
 .planeta-nombre {
   font-family: var(--f-ui);
   font-weight: 680;
   font-size: 17px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-anchor: middle;
+  paint-order: stroke;
+  stroke: color-mix(in oklab, var(--fondo) 70%, transparent);
+  stroke-width: 5px;
+  stroke-linejoin: round;
 }
 
 .planeta-dato {
@@ -675,6 +850,170 @@
   font-size: 11.5px;
   fill: var(--tinta-3);
   text-anchor: middle;
+}
+
+/* Cerebro de neuronas (Universo y portada de cada vault) */
+.cerebro {
+  pointer-events: none;
+}
+
+.cerebro-tejido {
+  fill: color-mix(in oklab, var(--c) 8%, transparent);
+  animation: fundido 1.6s ease both;
+  animation-delay: var(--entrada);
+}
+
+/* Resplandor del contorno: el cerebro se ve como un holograma */
+.cerebro-brillo {
+  fill: none;
+  stroke: var(--c);
+  stroke-opacity: 0.12;
+  stroke-linejoin: round;
+  animation: fundido 2s ease both;
+  animation-delay: calc(var(--entrada) + 0.4s);
+}
+
+.cerebro-contorno {
+  fill: none;
+  stroke: color-mix(in oklab, var(--c) 70%, white);
+  stroke-opacity: 0.55;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  animation: dibujar 2s var(--ease) both;
+  animation-delay: var(--entrada);
+}
+
+.cerebro-surcos {
+  fill: none;
+  stroke: var(--c);
+  stroke-opacity: 0.42;
+  stroke-linecap: round;
+  animation: fundido 1.4s ease both;
+  animation-delay: calc(var(--entrada) + 0.6s);
+}
+
+.cerebro-sinapsis {
+  fill: none;
+  stroke: color-mix(in oklab, var(--c) 72%, white);
+  stroke-opacity: 0.26;
+  transition: stroke-opacity 0.4s;
+  animation: fundido 1.6s ease both;
+  animation-delay: calc(var(--entrada) + 0.8s);
+}
+
+.cerebro-fibras {
+  fill: none;
+  stroke: var(--c);
+  stroke-opacity: 0.3;
+  stroke-dasharray: 0.012 0.018;
+  animation: fundido 1.6s ease both;
+  animation-delay: calc(var(--entrada) + 1s);
+}
+
+.cerebro-dendritas {
+  fill: none;
+  stroke: color-mix(in oklab, var(--c) 62%, white);
+  stroke-opacity: 0.32;
+  stroke-linecap: round;
+  animation: fundido 1.6s ease both;
+  animation-delay: calc(var(--entrada) + 0.9s);
+}
+
+.cerebro-neuronas circle {
+  fill: color-mix(in oklab, var(--c) 55%, white);
+  transition: fill 0.4s;
+  animation: encender 0.7s var(--ease) both;
+}
+
+.cerebro-chispas circle {
+  fill: color-mix(in oklab, var(--c) 45%, white);
+  opacity: 0;
+  animation: chispa 5s ease-out infinite;
+}
+
+.cerebro-impulsos path {
+  fill: none;
+  stroke: color-mix(in oklab, var(--c) 28%, white);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 9 200;
+  stroke-dashoffset: 9;
+  animation: impulso 3s linear infinite;
+}
+
+.cerebro-lobulo {
+  pointer-events: auto;
+  cursor: pointer;
+  animation: encender 0.9s var(--ease) both;
+}
+
+.cerebro-lobulo-halo {
+  fill: var(--c);
+  opacity: 0.16;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: latido 4s ease-in-out infinite;
+}
+
+.cerebro-lobulo-anillo {
+  fill: none;
+  stroke: color-mix(in oklab, var(--c) 60%, white);
+  stroke-opacity: 0.65;
+}
+
+.cerebro-lobulo-soma {
+  fill: color-mix(in oklab, var(--c) 30%, white);
+  transition: fill 0.25s;
+}
+
+.cerebro-lobulo-zona {
+  fill: transparent;
+}
+
+.cerebro-lobulo:hover .cerebro-lobulo-soma {
+  fill: #fff;
+}
+
+.cerebro-lobulo:hover .cerebro-lobulo-anillo {
+  stroke-opacity: 1;
+}
+
+.cerebro.icono .cerebro-tejido {
+  fill: color-mix(in oklab, var(--c) 32%, transparent);
+  animation: none;
+}
+
+.cerebro.icono .cerebro-contorno {
+  stroke: var(--c);
+  stroke-opacity: 1;
+  stroke-dasharray: none;
+  animation: none;
+}
+
+.cerebro.icono .cerebro-surcos {
+  stroke-opacity: 0.75;
+  animation: none;
+}
+
+:root[data-tema='claro'] .cerebro-neuronas circle,
+:root[data-tema='claro'] .cerebro-lobulo-soma {
+  fill: var(--c);
+}
+
+:root[data-tema='claro'] .cerebro-sinapsis,
+:root[data-tema='claro'] .cerebro-dendritas,
+:root[data-tema='claro'] .cerebro-contorno {
+  stroke: var(--c);
+}
+
+:root[data-tema='claro'] .cerebro-impulsos path,
+:root[data-tema='claro'] .haz-impulso {
+  stroke: color-mix(in oklab, var(--c, currentColor) 80%, black);
+}
+
+:root[data-tema='claro'] .cerebro-chispas circle {
+  fill: var(--c);
 }
 
 .signo {
@@ -729,6 +1068,10 @@
   color: var(--tinta-2);
 }
 
+.tip.a-la-izquierda {
+  transform: translate(calc(-100% - 16px), 16px);
+}
+
 .ficha-flotante {
   position: absolute;
   top: 24px;
@@ -745,6 +1088,11 @@
   font-size: 13.5px;
   pointer-events: none;
   animation: deslizar 0.3s var(--ease) both;
+}
+
+.ficha-flotante.izquierda {
+  right: auto;
+  left: 28px;
 }
 
 .ficha-flotante h2 {
@@ -1278,15 +1626,22 @@
   overflow: visible;
 }
 
-.orbe-vault .orbe-lunas {
-  transform-box: view-box;
-  transform-origin: 50px 50px;
-  animation: girar 70s linear infinite;
+.orbe-reticula {
+  fill: none;
+  stroke: var(--hud);
 }
 
-.orbe-vault .orbe-anillo {
+.orbe-reticula-circulo {
+  stroke-opacity: 0.35;
+  stroke-dasharray: 1.5 4;
   transform-box: view-box;
   transform-origin: 50px 50px;
+  animation: girar 50s linear infinite;
+}
+
+.orbe-reticula-esquinas {
+  stroke-width: 1.2;
+  stroke-opacity: 0.7;
 }
 
 .orbe-vault .orbe-halo {
@@ -3664,6 +4019,42 @@ a:hover > .caja rect {
   }
 }
 
+@keyframes dibujar {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@keyframes encender {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes chispa {
+  0% {
+    opacity: 0;
+  }
+  6% {
+    opacity: 0.8;
+  }
+  26%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Un trazo corto que recorre el camino de punta a punta y descansa. */
+@keyframes impulso {
+  0% {
+    stroke-dashoffset: 9;
+  }
+  60%,
+  100% {
+    stroke-dashoffset: -100;
+  }
+}
+
 @keyframes brillo {
   to {
     background-position: -200% 0;
@@ -3768,7 +4159,9 @@ a:hover > .caja rect {
   }
 
   .cielo-lienzo {
-    height: 62vh;
+    height: auto;
+    aspect-ratio: 1000 / 830;
+    overflow: hidden;
   }
 
   .ficha-flotante {
