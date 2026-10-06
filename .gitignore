@@ -2,6 +2,9 @@
 node_modules/
 dist/
 
+# Configuración de cada equipo (rutas locales). La escribe `npm run instalar`.
+atlas.config.json
+
 # Datos generados: contenido personal de los vaults. Se regeneran con `npm run datos`.
 datos/
 datos.nuevo*/

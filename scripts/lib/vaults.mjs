@@ -15,28 +15,46 @@ import {
   separarFrontmatter,
 } from './texto.mjs';
 
-const ORDEN_POR_DEFECTO = ['CORE', 'PROGRAMACION', 'MARKETING', 'TALLERES IA', 'GENERAL', 'PERSONAL (YO)'];
+// Colores para vaults sin color propio (el primero es el del centro).
+const COLORES = ['#1d24f7', '#0f9d8a', '#e0457b', '#f59e0b', '#64748b', '#8b5cf6', '#0ea5e9', '#ef4444', '#84cc16', '#d946ef', '#14b8a6', '#f97316'];
 
+/**
+ * Vaults a leer, en orden. Salen de la configuración de este equipo; si hay un
+ * sistema de memoria (`.memoria-system`), su registro aporta propósito, color,
+ * entradas, enrutado y complementos de cada vault.
+ */
 export function leerRegistroVaults() {
-  const archivo = path.join(CONFIG.obsidian, '.memoria-system/config/vaults.json');
-  if (fs.existsSync(archivo)) {
-    const registro = JSON.parse(fs.readFileSync(archivo, 'utf8'));
-    return { vaults: registro.vaults || [], routing: registro.routing || [], obsidian: registro.obsidian || {} };
+  let registro = { vaults: [], routing: [], obsidian: {} };
+  if (CONFIG.sistemaMemoria) {
+    try {
+      const datos = JSON.parse(fs.readFileSync(path.join(CONFIG.sistemaMemoria, 'config', 'vaults.json'), 'utf8'));
+      registro = { vaults: datos.vaults || [], routing: datos.routing || [], obsidian: datos.obsidian || {} };
+    } catch {
+      /* registro ilegible: se sigue con lo que hay en la configuración */
+    }
   }
-  // Sin registro: cada carpeta del contenedor que tenga .obsidian es un vault.
-  const vaults = fs
-    .readdirSync(CONFIG.obsidian, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && fs.existsSync(path.join(CONFIG.obsidian, d.name, '.obsidian')))
-    .map((d) => ({ name: d.name }))
-    .sort((a, b) => ORDEN_POR_DEFECTO.indexOf(a.name) - ORDEN_POR_DEFECTO.indexOf(b.name));
-  return { vaults, routing: [], obsidian: {} };
+  const porNombre = new Map(registro.vaults.map((v) => [v.name, v]));
+  const vaults = CONFIG.vaults.map((v, i) => {
+    const r = porNombre.get(v.nombre) || {};
+    return {
+      ...r,
+      name: v.nombre,
+      ruta: v.ruta,
+      color: v.color || r.color || COLORES[i % COLORES.length],
+      proposito: v.proposito ?? r.proposito ?? '',
+      incluye: v.incluye ?? r.incluye ?? [],
+      no_incluye: v.noIncluye ?? r.no_incluye ?? [],
+      home: v.inicio ?? r.home ?? null,
+    };
+  });
+  return { vaults, routing: registro.routing, obsidian: registro.obsidian };
 }
 
-// Graphify deja dentro de cada vault una carpeta con miles de notas generadas
-// (una por archivo de código). Se cuentan, pero no se cargan.
+// Herramientas como Graphify dejan dentro del vault una carpeta con miles de
+// notas generadas (una por archivo de código). Se cuentan, pero no se cargan.
 function esGenerado(rel) {
   const partes = rel.split('/');
-  if (partes[0] !== 'Graphify') return false;
+  if (!CONFIG.carpetasGeneradas.has(partes[0])) return false;
   if (partes.length > 2) return true;
   return partes[1]?.startsWith('_COMMUNITY_') ?? false;
 }
@@ -58,7 +76,7 @@ function recorrer(dirVault) {
       if (CONFIG.ignorar.has(e.name) || e.name.startsWith('.')) continue;
       const relHijo = nfc(rel ? `${rel}/${e.name}` : e.name);
       if (e.isDirectory()) {
-        if (relHijo.split('/')[0] === 'Graphify' && relHijo.includes('/')) {
+        if (CONFIG.carpetasGeneradas.has(relHijo.split('/')[0]) && relHijo.includes('/')) {
           generados += contarMd(path.join(dirVault, relHijo));
           continue;
         }
@@ -190,8 +208,11 @@ export function leerVaults(contadorSecretos) {
   const porVault = new Map();
 
   for (const info of registro) {
-    const dirVault = path.join(CONFIG.obsidian, info.name);
-    if (!fs.existsSync(dirVault)) continue;
+    const dirVault = info.ruta;
+    if (!fs.existsSync(dirVault)) {
+      console.warn(`  aviso: el vault «${info.name}» no está en ${dirVault} (se omite; revisa atlas.config.json o ejecuta npm run detectar)`);
+      continue;
+    }
     const { notas: rutas, adjuntos, generados } = recorrer(dirVault);
     const notas = [];
     for (const rel of rutas) {

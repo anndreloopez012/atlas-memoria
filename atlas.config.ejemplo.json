@@ -1,0 +1,56 @@
+{
+  "$comentario": "Ejemplo de configuración local. El instalador escribe atlas.config.json con lo que detecta en tu equipo; este archivo solo muestra el formato (ver docs/CONFIGURACION.md).",
+  "version": 1,
+  "centro": "Inicio",
+  "vaults": [
+    {
+      "nombre": "Inicio",
+      "ruta": "~/Documents/Obsidian/Inicio",
+      "proposito": "Mapa de todo y bandeja de entrada"
+    },
+    {
+      "nombre": "Trabajo",
+      "ruta": "~/Documents/Obsidian/Trabajo",
+      "color": "#0f9d8a"
+    }
+  ],
+  "sistemaMemoria": null,
+  "skills": [
+    {
+      "ia": "Claude",
+      "ruta": "~/.claude/skills"
+    },
+    {
+      "ia": "Codex",
+      "ruta": "~/.codex/skills"
+    },
+    {
+      "ia": "Antigravity",
+      "ruta": "~/.gemini/config/skills"
+    }
+  ],
+  "agentes": [
+    {
+      "ia": "Claude",
+      "ambito": "Usuario",
+      "ruta": "~/.claude/agents"
+    },
+    {
+      "ia": "Codex",
+      "ambito": "Usuario",
+      "ruta": "~/.codex/agents"
+    }
+  ],
+  "automatizaciones": {
+    "prefijos": [],
+    "relacionadasConVaults": true
+  },
+  "propias": {
+    "cuentas": [],
+    "patrones": []
+  },
+  "carpetasGeneradas": [
+    "Graphify"
+  ],
+  "puerto": 5190
+}
