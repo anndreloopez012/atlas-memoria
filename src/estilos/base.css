@@ -16,6 +16,8 @@
   --tinta-3: #6d6b65;
   --laton: #dcb56c;
   --laton-suave: rgba(220, 181, 108, 0.14);
+  /* holograma del núcleo (interfaz tipo JARVIS) */
+  --hud: #62e3ff;
   --peligro: #f4877a;
   --exito: #86efac;
   --sombra: 0 24px 60px -24px rgba(0, 0, 0, 0.7), 0 2px 0 rgba(255, 255, 255, 0.02) inset;
@@ -39,6 +41,7 @@
   --tinta-3: #8a867b;
   --laton: #94641a;
   --laton-suave: rgba(148, 100, 26, 0.12);
+  --hud: #0b6a99;
   --peligro: #b4412f;
   --exito: #23804a;
   --sombra: 0 24px 50px -28px rgba(60, 45, 20, 0.35);

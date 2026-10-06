@@ -1,5 +1,16 @@
 # Cambios
 
+## 1.4.0 · 2026-10-05
+
+### Una sola mente
+- Cada vault del Universo es ahora un **cerebro de neuronas** que crece con sus notas: silueta de cerebro humano con sus surcos, sinapsis, dendritas, chispas que se encienden e impulsos que recorren las conexiones. Las neuronas grandes son las carpetas principales: muestran su nombre al pasar el cursor y llevan directo a esa carpeta.
+- El vault central es el **núcleo**, dentro de una interfaz holográfica al estilo JARVIS: barrido de radar, marcas de escala, anillos segmentados que giran en sentidos opuestos y lecturas con neuronas, sinapsis, puentes, vaults y skills.
+- Los vaults nacen del núcleo por **haces nerviosos** con impulsos que van y vuelven; los puentes entre vaults también llevan impulsos.
+- Al pasar sobre un vault su retícula se fija y la ficha aparece del lado contrario, sin taparlo; el tooltip se abre hacia la izquierda cerca del borde.
+- La portada de cada vault muestra su cerebro dentro de una retícula, y el carril de vaults usa la silueta del cerebro de cada uno.
+- En el teléfono el Universo encuadra los cerebros para que se vean grandes.
+- Los cerebros se generan una sola vez por vault (con semilla, siempre iguales) y todo se anima con CSS: va fluido con todas las animaciones activas.
+
 ## 1.3.0 · 2026-10-05
 
 ### Vaults con otra cara

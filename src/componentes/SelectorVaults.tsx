@@ -19,7 +19,7 @@ export default function SelectorVaults({ atlas, actual }: { atlas: Atlas; actual
       onClick={() => navegar(rutaVault(v.slug))}
       aria-current={v.slug === actual ? 'page' : undefined}
     >
-      <OrbeVault color={v.color} tamano={v === core ? 22 : 18} simple activo={v.slug === actual} />
+      <OrbeVault color={v.color} semilla={v.slug} tamano={v === core ? 24 : 20} simple activo={v.slug === actual} />
       {v.nombre}
       <span className="mono">{v.notas.toLocaleString('es-GT')}</span>
     </button>
