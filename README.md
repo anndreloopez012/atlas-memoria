@@ -61,16 +61,17 @@ bash iniciar.sh
 ## Qué puedes hacer
 
 ### Universo (`#/`)
-El mapa completo. **Tu vault central es el sol** y los demás vaults orbitan a su alrededor, unidos a él por rayos que muestran que **nacen del centro**. El centro se elige solo: un vault llamado CORE, Inicio o Home; si no hay, el que más enlaces tiene con los otros. También se puede fijar.
+El mapa completo como **una sola mente**: cada vault es un **cerebro de neuronas** que crece con sus notas (más notas, cerebro más grande y más neuronas). **Tu vault central es el núcleo**, rodeado de una interfaz holográfica al estilo JARVIS (anillos que giran, marcas de escala, barrido de radar y lecturas con las cifras del atlas), y los demás vaults **nacen de él** unidos por haces nerviosos por los que viajan impulsos. El centro se elige solo: un vault llamado CORE, Inicio o Home; si no hay, el que más enlaces tiene con los otros. También se puede fijar.
 
-- El tamaño de cada planeta es proporcional a sus notas; las lunas que giran son sus carpetas principales.
+- Cada cerebro tiene su silueta y sus surcos, sinapsis entre neuronas vecinas, dendritas, chispas que se encienden al azar e impulsos que recorren las conexiones. Las **neuronas grandes son las carpetas principales** (lóbulos): pasa el cursor para ver cuál es y haz clic para entrar directo a esa carpeta.
+- Al pasar sobre un vault, su retícula se fija, los demás se atenúan y aparece su ficha del lado contrario.
 - Las curvas doradas son los **puentes**: enlaces de un vault a otro. Pasa el cursor para ver cuántos hay en cada sentido.
 - El **anillo exterior** es el zodiaco de tus skills (un punto por skill, agrupadas por categoría) y tus agentes (rombos). Los puntos con borde dorado son skills tuyas.
 - Debajo, el **árbol de vaults**: el centro como tronco y una rama por vault, con propósito, cifras y carpetas.
-- Funciona con un vault, con muchos o con ninguno (en ese caso muestra tus skills y agentes).
+- Funciona con un vault, con muchos o con ninguno (en ese caso muestra tus skills y agentes), en tema claro u oscuro y en el teléfono (se encuadran los cerebros).
 
 ### Vaults (`#/v/<vault>`)
-Cada vault tiene una **portada**: el vault dibujado como planeta (sus lunas son las carpetas principales), su lugar respecto al centro, su propósito, sus notas de entrada, sus etiquetas principales (un clic filtra por ellas) y un tablero con cifras, el **pulso** de las últimas 26 semanas y la barra de **puentes** con cada vault vecino. El carril de arriba salta a cualquier otro vault.
+Cada vault tiene una **portada**: el vault dibujado como su cerebro de neuronas dentro de una retícula (las neuronas grandes son las carpetas principales), su lugar respecto al centro, su propósito, sus notas de entrada, sus etiquetas principales (un clic filtra por ellas) y un tablero con cifras, el **pulso** de las últimas 26 semanas y la barra de **puentes** con cada vault vecino. El carril de arriba salta a cualquier otro vault.
 
 Debajo, el vault se puede ver de tres formas (la elegida se recuerda):
 
@@ -224,8 +225,9 @@ atlas-memoria/
 │   ├── App.tsx                         # barra, rutas y búsqueda
 │   ├── pantallas/                      # Universo, Vault, Skills, SkillDetalle, Agentes, Sistema
 │   ├── componentes/                    # Grafo, LectorNota, ArbolCarpetas, Buscador, Pipeline…
+│   │   ├── CerebroNeuronal.tsx         # un vault dibujado como cerebro de neuronas
 │   │   └── vault/                      # PortadaVault, OrbeVault, MapaCarpetas, Actividad, Vecindario
-│   ├── lib/                            # datos, rutas, atlas, actividad, markdown, tema, formato, tipos
+│   ├── lib/                            # datos, rutas, atlas, neuronas, actividad, markdown, tema, formato, tipos
 │   └── estilos/                        # tokens y atmósfera, app, markdown
 ├── traducciones/es.json                # traducciones al español (versionado)
 ├── docs/                               # ARQUITECTURA, DATOS, CONFIGURACION, FLUJO-GIT
