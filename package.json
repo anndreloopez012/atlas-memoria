@@ -1,10 +1,13 @@
 {
   "name": "atlas-memoria",
   "private": true,
-  "version": "1.1.0",
-  "description": "Atlas interactivo de la memoria: los 6 vaults de Obsidian con CORE al centro, las skills y los agentes, con su contenido navegable.",
+  "version": "1.2.0",
+  "description": "Atlas interactivo de tu memoria: vaults de Obsidian con un vault central, skills y agentes de Claude Code, Codex y Antigravity. Lo instala una IA en cualquier equipo.",
   "type": "module",
   "scripts": {
+    "instalar": "node scripts/instalar.mjs",
+    "detectar": "node scripts/instalar.mjs --solo-detectar",
+    "verificar": "node scripts/verificar.mjs",
     "datos": "node scripts/generar-datos.mjs",
     "traducir": "node scripts/traducir.mjs",
     "dev": "vite",
@@ -27,7 +30,8 @@
     "minisearch": "^7.2.0",
     "motion": "^14.0.0",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",
@@ -35,7 +39,6 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
     "typescript": "^7.0.2",
-    "vite": "^8.3.2",
-    "yaml": "^2.9.1"
+    "vite": "^8.3.2"
   }
 }
