@@ -99,15 +99,20 @@ Catálogo de todas las skills del equipo, de **Claude Code, Codex y Antigravity*
   - Las secciones del manual con su resumen, el `SKILL.md` completo y cada archivo de referencia legible en un visor.
   - Dónde está instalada, su repositorio en GitHub, skills con las que trabaja, agentes que la usan y las notas de tus vaults que hablan de ella.
 
-### Agentes (`#/agentes`)
-- **Agentes de IA** (subagentes de Claude Code, Codex y Antigravity, del usuario, de proyectos y de plugins): para qué sirven, cuándo se les delega, sus herramientas, modelo, skills que usan y sus instrucciones completas.
-- **Automatizaciones** que trabajan sobre tus vaults (launchd en macOS, systemd y cron en Linux): cada cuánto corren, qué vigilan, qué script ejecutan, dónde dejan registro y cómo pausarlas.
+### Sistema (`#/sistema`)
+Cómo funciona todo y quién lo hace, en pestañas:
 
-### Cómo trabaja (`#/sistema`)
-El flujo completo: de dónde **entra** el conocimiento, quién lo **procesa**, dónde **vive** y quién lo **consulta**, más la lista de **fuentes que el atlas encontró** en el equipo. Si usas un sistema de memoria multi-vault (`.memoria-system`), muestra además su motor, sus reglas de enrutado y sus comandos.
+- **Cómo trabaja**: el flujo completo, de dónde **entra** el conocimiento, quién lo **procesa**, dónde **vive** y quién lo **consulta**, más la lista de **fuentes que el atlas encontró** en el equipo. Si usas un sistema de memoria multi-vault (`.memoria-system`), muestra además su motor, sus reglas de enrutado y sus comandos.
+- **Agentes** (`#/sistema/agentes`):
+  - **Agentes de IA** (subagentes de Claude Code, Codex y Antigravity, del usuario, de proyectos y de plugins): para qué sirven, cuándo se les delega, sus herramientas, modelo, skills que usan y sus instrucciones completas.
+  - **Automatizaciones** que trabajan sobre tus vaults (launchd en macOS, systemd y cron en Linux): cada cuánto corren, qué vigilan, qué script ejecutan, dónde dejan registro y cómo pausarlas.
 
-### Búsqueda global
-`⌘K` (o `/`) busca entre todas las notas, las skills y los agentes a la vez.
+### Centro de mando
+El botón **Buscar o pedir** (o `⌘K`, o `/`) es el único lugar para hacer cosas, así la interfaz no se llena de botones:
+
+- Escribe y busca entre todas las notas, las skills y los agentes a la vez.
+- Sin escribir nada muestra lo **último que abriste**, a dónde ir y las **acciones** (cambiar el tema, actualizar los datos).
+- Las funciones nuevas se suman aquí como grupos o acciones.
 
 ---
 
@@ -164,7 +169,7 @@ Todo texto descriptivo se muestra **en español**: descripciones, «para qué si
 Cómo funciona:
 
 1. El generador detecta qué textos no están en español y busca su traducción en `traducciones/es.json`, que se versiona. La clave es la huella del texto original: si una skill cambia su descripción, ese texto vuelve a quedar pendiente.
-2. Lo que falta se anota en `datos/pendientes-traduccion.json` y se cuenta en «Cómo trabaja».
+2. Lo que falta se anota en `datos/pendientes-traduccion.json` y se cuenta en Sistema › Cómo trabaja.
 3. `npm run traducir` lo traduce con Claude Code (`claude -p`, modelo Sonnet, 3 lotes a la vez) y regenera los datos.
 
 `claude -p` no puede abrirse dentro de otra sesión de Claude Code. Desde una sesión de Claude (o desde Codex o Antigravity), la IA traduce los lotes ella misma:
@@ -191,7 +196,7 @@ Las notas de los vaults son tus propios archivos: el atlas las muestra como est�
 
 - Todo corre en tu equipo: no hay servidor externo ni analítica.
 - `datos/` y `atlas.config.json` no se suben a git.
-- Antes de escribir los datos, el generador **oculta** cualquier valor con forma de secreto: llaves privadas; tokens de Stripe, GitHub, AWS, Google, Slack, OpenAI y Anthropic; JWT; y pares `password=…` o `token: …`. En la página aparecen como `[oculto]` y el total se muestra en «Cómo trabaja».
+- Antes de escribir los datos, el generador **oculta** cualquier valor con forma de secreto: llaves privadas; tokens de Stripe, GitHub, AWS, Google, Slack, OpenAI y Anthropic; JWT; y pares `password=…` o `token: …`. En la página aparecen como `[oculto]` y el total se muestra en Sistema › Cómo trabaja.
 - El servidor solo sirve archivos que estén dentro de `datos/` o de un vault configurado (no se puede escapar con `../`).
 
 ---
@@ -224,7 +229,7 @@ atlas-memoria/
 ├── src/
 │   ├── App.tsx                         # barra, rutas y búsqueda
 │   ├── pantallas/                      # Universo, Vault, Skills, SkillDetalle, Agentes, Sistema
-│   ├── componentes/                    # Grafo, LectorNota, ArbolCarpetas, Buscador, Pipeline…
+│   ├── componentes/                    # CentroMando, Grafo, LectorNota, ArbolCarpetas, Pipeline…
 │   │   ├── CerebroNeuronal.tsx         # un vault dibujado como cerebro de neuronas
 │   │   └── vault/                      # PortadaVault, OrbeVault, MapaCarpetas, Actividad, Vecindario
 │   ├── lib/                            # datos, rutas, atlas, neuronas, actividad, markdown, tema, formato, tipos
@@ -279,9 +284,9 @@ Comandos paso a paso en [docs/FLUJO-GIT.md](docs/FLUJO-GIT.md).
 
 | Tecla | Acción |
 |---|---|
-| `⌘K` / `Ctrl K` / `/` | Buscar |
-| `↑` `↓` `↵` | Moverse y abrir en la búsqueda |
-| `Esc` | Cerrar búsqueda o visor |
+| `⌘K` / `Ctrl K` / `/` | Abrir el centro de mando |
+| `↑` `↓` `↵` | Moverse y abrir en el centro de mando |
+| `Esc` | Cerrar el centro de mando, el visor o la nota abierta |
 | Rueda / arrastrar | Zoom y desplazamiento en los grafos |
 
 ## Solución de problemas

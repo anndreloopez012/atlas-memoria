@@ -6,6 +6,8 @@ import Pipeline from '../componentes/Pipeline';
 import { vaultPorNombre } from '../lib/atlas';
 import { cargarAgentes, cargarSkills, useDatos } from '../lib/datos';
 import { colorIA, corto, intervalo } from '../lib/formato';
+import { useEffect } from 'react';
+import { registrarReciente } from '../lib/recientes';
 import { rutaAgente, rutaSkill, rutaVault } from '../lib/rutas';
 import type { Agente, AgenteIA, Atlas, Automatizacion } from '../lib/tipos';
 
@@ -96,6 +98,10 @@ function AgenteDetalle({ atlas, id }: { atlas: Atlas; id: string }) {
   const datos = useDatos('agentes', cargarAgentes);
   const skills = useDatos('skills', cargarSkills);
   const a: Agente | undefined = datos.datos?.agentes.find((x) => x.id === id);
+
+  useEffect(() => {
+    if (a) registrarReciente({ tipo: 'agente', id: a.id, titulo: a.nombre, contexto: `${a.tipo === 'ia' ? 'agente' : 'automatización'} · ${a.ia}`, destino: rutaAgente(a.id), color: '#86efac' });
+  }, [a]);
 
   if (!datos.datos) return <div className="pantalla-estado cargando"><p className="rotulo">Abriendo agente…</p></div>;
   if (!a)

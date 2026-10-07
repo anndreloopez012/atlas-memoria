@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Marca } from './componentes/BarraSuperior';
 import BarraSuperior from './componentes/BarraSuperior';
-import Buscador from './componentes/Buscador';
+import CentroMando from './componentes/CentroMando';
 import { cargarAtlas, recargarDatos, useDatos } from './lib/datos';
 import { useRuta } from './lib/rutas';
 import Universo from './pantallas/Universo';
@@ -15,19 +15,26 @@ const Sistema = lazy(() => import('./pantallas/Sistema'));
 export default function App() {
   const ruta = useRuta();
   const { datos: atlas, error } = useDatos('atlas', cargarAtlas);
-  const [buscando, setBuscando] = useState(false);
+  // Centro de mando: null = cerrado; un texto = abierto con eso escrito.
+  const [centro, setCentro] = useState<string | null>(null);
 
-  // ⌘K / Ctrl+K abre la búsqueda; «/» también, si no se está escribiendo.
+  // ⌘K / Ctrl+K abre el centro de mando; «/» también, si no se está escribiendo.
+  // Cualquier pantalla puede abrirlo con abrirCentro() (lib/recientes).
   useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
       const escribiendo = (e.target as HTMLElement)?.closest('input, textarea, [contenteditable]');
       if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.key === '/' && !escribiendo)) {
         e.preventDefault();
-        setBuscando(true);
+        setCentro('');
       }
     };
+    const pedido = (e: Event) => setCentro((e as CustomEvent<string>).detail ?? '');
     window.addEventListener('keydown', tecla);
-    return () => window.removeEventListener('keydown', tecla);
+    window.addEventListener('atlas:centro', pedido);
+    return () => {
+      window.removeEventListener('keydown', tecla);
+      window.removeEventListener('atlas:centro', pedido);
+    };
   }, []);
 
   // El servidor de desarrollo avisa cuando los vaults cambiaron y el atlas se regeneró.
@@ -45,13 +52,13 @@ export default function App() {
   }, [pagina]);
 
   useEffect(() => {
-    const titulos: Record<string, string> = { universo: 'Universo', vault: 'Vaults', skills: 'Skills', agentes: 'Agentes', sistema: 'Cómo trabaja' };
+    const titulos: Record<string, string> = { universo: 'Universo', vault: 'Vaults', skills: 'Skills', agentes: 'Agentes', sistema: 'Sistema' };
     document.title = `${titulos[ruta.vista]} · Atlas de memoria`;
   }, [ruta.vista]);
 
   return (
     <div className="app">
-      <BarraSuperior atlas={atlas} ruta={ruta} abrirBuscador={() => setBuscando(true)} />
+      <BarraSuperior atlas={atlas} ruta={ruta} abrirBuscador={() => setCentro('')} />
       <main className="contenido">
         {error && (
           <div className="pantalla-estado">
@@ -86,10 +93,10 @@ export default function App() {
         )}
         {atlas && ruta.vista === 'skills' && <Skills atlas={atlas} skill={ruta.skill} categoria={ruta.categoria} />}
         {atlas && ruta.vista === 'agentes' && <Agentes atlas={atlas} agente={ruta.agente} />}
-        {atlas && ruta.vista === 'sistema' && <Sistema atlas={atlas} />}
+        {atlas && ruta.vista === 'sistema' && <Sistema atlas={atlas} pestana={ruta.pestana} />}
         </Suspense>
       </main>
-      {atlas && <Buscador atlas={atlas} abierto={buscando} cerrar={() => setBuscando(false)} />}
+      {atlas && centro !== null && <CentroMando atlas={atlas} inicial={centro} cerrar={() => setCentro(null)} />}
     </div>
   );
 }
