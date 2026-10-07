@@ -41,6 +41,9 @@ Más funcional sin más botones (plan en [docs/PLAN-2.0.md](docs/PLAN-2.0.md)).
 - Arreglo: las notas con punto en el nombre (p. ej. `oms.case_event`) ya no se toman por adjuntos; ahora se enlazan bien en el lector.
 - Los enlaces a notas generadas que el atlas omite ya no cuentan como sin resolver.
 
+### Camino entre notas
+- Desde el vecindario de una nota: elige otra de cualquier vault y aparece el camino más corto de enlaces entre las dos, paso a paso.
+
 ## 1.4.0 · 2026-10-05
 
 ### Una sola mente

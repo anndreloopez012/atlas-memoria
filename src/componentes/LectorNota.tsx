@@ -12,6 +12,7 @@ import { tono, useTema } from '../lib/tema';
 import type { Atlas, DatosVault, Nota } from '../lib/tipos';
 import EstrellaFavorito from './EstrellaFavorito';
 import Markdown from './Markdown';
+import CaminoNotas from './vault/CaminoNotas';
 import Vecindario from './vault/Vecindario';
 
 interface Props {
@@ -201,6 +202,7 @@ export default function LectorNota({ atlas, nota, datos, porId, entrantes, carpe
 
         <footer className="relaciones">
           <Vecindario atlas={atlas} nota={nota} datos={datos} porId={porId} entrantes={entrantes} color={vault.color} onNota={irA} />
+          <CaminoNotas atlas={atlas} nota={nota} />
           <section>
             <h2 className="rotulo">
               <ArrowUpRight size={13} /> Enlaza a · {nota.o.length}

@@ -98,6 +98,7 @@ Debajo, el vault se puede ver de tres formas (la elegida se recuerda):
 - **Carpetas** a la izquierda (en el teléfono, una fila de chips) con una barra que muestra el peso de cada una. La carpeta elegida queda en la URL y manda en las tres vistas.
 - **Filtro** por título, carpeta o `#etiqueta`.
 - **Lector**: la nota renderizada (callouts, tablas, tareas, imágenes del vault), sus propiedades, índice, una barra de progreso de lectura y su **vecindario**: un mapa chico con quién la cita (izquierda), a qué enlaza (derecha) y sus puentes con otros vaults (abajo); cada punto lleva a esa nota. `Esc` lo cierra.
+- **Camino entre notas**: bajo el vecindario, «¿Cómo se conecta con otra nota?» busca cualquier nota de cualquier vault y muestra el camino más corto de enlaces entre las dos, paso a paso (cada paso se puede abrir). Si no hay camino, lo dice.
 - Los enlaces dentro de una nota llevan a la nota destino, **aunque esté en otro vault**.
 - «Abrir en Obsidian» abre la misma nota en la app.
 - Funciona igual en el teléfono (la página se desplaza y el lector ocupa la pantalla), en tema claro u oscuro y con vaults de miles de notas.
