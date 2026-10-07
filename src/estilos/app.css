@@ -5622,6 +5622,32 @@ a:hover > .caja rect {
     display: none;
   }
 
+  /* En el teléfono, actualizar y cambiar de tema se hacen desde el centro de mando:
+     así caben las cinco secciones. */
+  .estado-datos,
+  .boton-tema {
+    display: none;
+  }
+
+  .barra {
+    gap: 8px;
+    padding: 0 10px;
+  }
+
+  .navegacion {
+    mask-image: none;
+  }
+
+  .navegacion a {
+    padding: 7px 7px;
+    font-size: 12.5px;
+  }
+
+  .navegacion a.activa::after {
+    left: 7px;
+    right: 7px;
+  }
+
   .barra-acciones {
     gap: 2px;
   }
