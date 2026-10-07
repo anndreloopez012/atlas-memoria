@@ -3,9 +3,10 @@
 // que abriste, a dónde ir y las acciones disponibles. Las funciones nuevas se suman
 // aquí como grupos o acciones, no como botones sueltos por la interfaz.
 import MiniSearch from 'minisearch';
-import { ArrowRight, Bot, Clock, FileText, Moon, RefreshCw, Search, Sparkles, Sun, X, type LucideIcon } from 'lucide-react';
+import { ArrowRight, Bot, Clock, Compass, FileText, Moon, RefreshCw, Search, Sparkles, Star, Sun, X, type LucideIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cargarAgentes, cargarSkills, cargarVault, useVersionDatos } from '../lib/datos';
+import { useFavoritos } from '../lib/favoritos';
 import { leerRecientes, registrarReciente, type Reciente } from '../lib/recientes';
 import { navegar, rutaAgente, rutaSistema, rutaSkill, rutaVault } from '../lib/rutas';
 import { alternarTema, useTema } from '../lib/tema';
@@ -105,6 +106,7 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
   const entrada = useRef<HTMLInputElement>(null);
   const lista = useRef<HTMLDivElement>(null);
   const [recientes] = useState<Reciente[]>(leerRecientes);
+  const favoritos = useFavoritos();
 
   useEffect(() => {
     requestAnimationFrame(() => entrada.current?.select());
@@ -154,6 +156,17 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
         },
       },
       {
+        clave: 'accion:recorrido',
+        grupo: 'Acciones',
+        titulo: 'Ver el recorrido',
+        contexto: 'una guía corta de cómo usar el atlas',
+        icono: Compass,
+        ejecutar: () => {
+          cerrar();
+          window.dispatchEvent(new CustomEvent('atlas:recorrido'));
+        },
+      },
+      {
         clave: 'accion:actualizar',
         grupo: 'Acciones',
         titulo: 'Actualizar los datos ahora',
@@ -171,16 +184,29 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
   const filas: Fila[] = useMemo(() => {
     const q = consulta.trim();
     if (q.length < 2) {
-      const ultimos: Fila[] = recientes.slice(0, 6).map((r) => ({
+      const icono = (tipo: Reciente['tipo']) => (tipo === 'nota' ? FileText : tipo === 'skill' ? Sparkles : Bot);
+      const fijos: Fila[] = favoritos.slice(0, 6).map((r) => ({
+        clave: `fav:${r.tipo}:${r.id}`,
+        grupo: 'Favoritos',
+        titulo: r.titulo,
+        contexto: r.contexto,
+        icono: icono(r.tipo),
+        color: r.color,
+        ejecutar: () => abrir(r),
+      }));
+      const ultimos: Fila[] = recientes
+        .filter((r) => !favoritos.some((f) => f.tipo === r.tipo && f.id === r.id))
+        .slice(0, 5)
+        .map((r) => ({
         clave: `rec:${r.tipo}:${r.id}`,
         grupo: 'Recientes',
         titulo: r.titulo,
         contexto: r.contexto,
-        icono: r.tipo === 'nota' ? FileText : r.tipo === 'skill' ? Sparkles : Bot,
+        icono: icono(r.tipo),
         color: r.color,
         ejecutar: () => abrir(r),
       }));
-      return [...ultimos, ...destinos, ...acciones];
+      return [...fijos, ...ultimos, ...destinos, ...acciones];
     }
     const encontrados: Fila[] = [];
     if (listo) {
@@ -207,7 +233,7 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
     const coincide = (f: Fila) => sinAcentos(`${f.titulo} ${f.contexto ?? ''}`).includes(sinAcentos(q));
     return [...encontrados, ...destinos.filter(coincide), ...acciones.filter(coincide)];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [consulta, listo, recientes, destinos, acciones]);
+  }, [consulta, listo, recientes, favoritos, destinos, acciones]);
 
   // La fila activa siempre a la vista al moverse con el teclado.
   useEffect(() => {
@@ -259,7 +285,8 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
               <div key={f.clave}>
                 {cabecera && (
                   <p className="rotulo buscador-grupo">
-                    {cabecera === 'Recientes' && <Clock size={11} />} {cabecera}
+                    {cabecera === 'Recientes' && <Clock size={11} />}
+                    {cabecera === 'Favoritos' && <Star size={11} />} {cabecera}
                   </p>
                 )}
                 <button className={`resultado ${i === activo ? 'activo' : ''}`} role="option" aria-selected={i === activo} onMouseEnter={() => setActivo(i)} onClick={f.ejecutar}>

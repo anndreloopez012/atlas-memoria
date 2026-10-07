@@ -1,6 +1,7 @@
 // Agentes: subagentes de IA (Claude Code, Codex, Antigravity…) que envuelven
 // skills, y las automatizaciones del sistema que trabajan sobre los vaults.
 import { ArrowLeft, Bot, Clock, Cpu, Eye, FileText, Wrench } from 'lucide-react';
+import EstrellaFavorito from '../componentes/EstrellaFavorito';
 import Markdown from '../componentes/Markdown';
 import Pipeline from '../componentes/Pipeline';
 import { vaultPorNombre } from '../lib/atlas';
@@ -126,7 +127,10 @@ function AgenteDetalle({ atlas, id }: { atlas: Atlas; id: string }) {
           {a.tipo === 'ia' ? `Agente de ${a.ia}` : 'Automatización'} · {a.ambito}
         </p>
         <h1 className="display">{a.nombre}</h1>
-        <p className="ficha-id mono">{corto(a.ruta)}</p>
+        <p className="ficha-id mono">
+          {corto(a.ruta)}
+          <EstrellaFavorito item={{ tipo: 'agente', id: a.id, titulo: a.nombre, contexto: `${a.tipo === 'ia' ? 'agente' : 'automatización'} · ${a.ia}`, destino: rutaAgente(a.id), color: '#86efac' }} />
+        </p>
       </header>
 
       {a.tipo === 'ia' ? (

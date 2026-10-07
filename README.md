@@ -80,6 +80,10 @@ Lo que importa ahora, en una sola página tranquila:
 - **Proyectos**: los más activos en Hoy y todos en `#/hoy/proyectos`, cada uno con su última actividad y las entradas recientes de su historia (bitácora, decisiones, cambios). Un proyecto es una nota con `tipo: proyecto` (o `proyecto-moc`, `project`) y su historia son las notas con `proyecto: <nombre>`. Si tienes un sistema de memoria con semáforo, se muestra su estado (al día, por revisar, con problemas, archivado) y el motivo.
 - **Marcar como hecha** desde el atlas: el servidor cambia solo la casilla de esa línea (`[ ]` → `[x]`) después de comprobar que la línea sigue igual; si la nota cambió, no toca nada y lo avisa.
 
+### Favoritos y recorrido
+- La **estrella** junto a una nota (en el lector), una skill o un agente los guarda en favoritos: aparecen arriba en Hoy y en el centro de mando. Se guardan en el navegador.
+- La primera vez que abres el atlas, un **recorrido** de cinco pasos muestra cómo se usa (`Esc` para saltarlo). Se repite desde el centro de mando: «Ver el recorrido».
+
 ### Vaults (`#/v/<vault>`)
 Cada vault tiene una **portada**: el vault dibujado como su cerebro de neuronas dentro de una retícula (las neuronas grandes son las carpetas principales), su lugar respecto al centro, su propósito, sus notas de entrada, sus etiquetas principales (un clic filtra por ellas) y un tablero con cifras, el **pulso** de las últimas 26 semanas y la barra de **puentes** con cada vault vecino. El carril de arriba salta a cualquier otro vault.
 

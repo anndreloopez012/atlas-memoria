@@ -107,6 +107,8 @@ React 19 + TypeScript, sin enrutador ni gestor de estado externos. Todo lo que d
 | `pantallas/Hoy.tsx` | Lo que importa ahora. Novedades desde la última visita: notas propias por vault (con «nueva» si se creó en ese lapso), skills y agentes nuevos, y aparte, plegado, lo que actualizaron las herramientas solas. |
 | `pantallas/Tareas.tsx`, `componentes/FilaTarea.tsx` | Vista completa de pendientes (`#/hoy/tareas`) y la fila de cada tarea, que marca la casilla con `POST /__atlas/tarea`. |
 | `pantallas/Proyectos.tsx` | Tarjeta de Hoy con los proyectos más activos y la vista completa `#/hoy/proyectos` (buscador y filtro por estado). Los datos salen de `scripts/lib/proyectos.mjs`. |
+| `lib/favoritos.ts`, `componentes/EstrellaFavorito.tsx` | Favoritos en `localStorage` con aviso entre componentes (`useSyncExternalStore`) y entre pestañas (evento `storage`). |
+| `componentes/Recorrido.tsx` | Recorrido guiado de cinco pasos: se muestra solo la primera vez y se repite con el evento `atlas:recorrido` (acción del centro de mando). Ilumina cada parte con una caja y una sombra enorme; si la parte no está a la vista, la tarjeta va al centro. |
 | `lib/visita.ts` | Recuerda en el navegador cuándo fue la visita anterior: una visita termina tras 30 minutos sin usar el atlas, así recargar no borra las novedades. Sin almacenamiento, Hoy muestra los últimos 7 días. |
 | `lib/recientes.ts` | Lo último que abriste (notas, skills, agentes), en `localStorage` de este navegador; si no se puede guardar, no recuerda. |
 | `pantallas/Sistema.tsx` | Pestañas «Cómo trabaja» y «Agentes» (`#/sistema`, `#/sistema/agentes`; `#/agentes` lleva a la misma pestaña y la ficha de cada agente conserva `#/agentes/<id>`). |
