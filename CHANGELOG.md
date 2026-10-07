@@ -57,6 +57,9 @@ Más funcional sin más botones (plan en [docs/PLAN-2.0.md](docs/PLAN-2.0.md)).
 ### Exportar
 - Acción del centro de mando: «Exportar esta vista como imagen» guarda un PNG del Universo, del vault con su vista actual o de la página, con tipografías, cerebros y grafo.
 
+### Teléfono
+- La barra muestra las cinco secciones completas; actualizar y cambiar de tema quedan en el centro de mando.
+
 ## 1.4.0 · 2026-10-05
 
 ### Una sola mente

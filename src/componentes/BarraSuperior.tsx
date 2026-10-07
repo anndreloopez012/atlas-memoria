@@ -90,7 +90,7 @@ export default function BarraSuperior({ atlas, ruta, abrirBuscador }: { atlas: A
           <RefreshCw size={15} className={regenerando ? 'girando' : ''} />
           <span className="mono">{regenerando ? 'leyendo…' : atlas ? hace(atlas.generado) : '—'}</span>
         </button>
-        <button className="icono-boton" onClick={alternarTema} aria-label={tema === 'oscuro' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}>
+        <button className="icono-boton boton-tema" onClick={alternarTema} aria-label={tema === 'oscuro' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}>
           {tema === 'oscuro' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
       </div>
