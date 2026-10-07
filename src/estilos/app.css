@@ -1436,6 +1436,20 @@
   text-decoration: none;
 }
 
+/* Voz */
+.microfono.escuchando {
+  color: var(--peligro);
+  animation: latido 1.2s ease-in-out infinite;
+}
+
+.aviso-voz {
+  margin: 0;
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--linea);
+  color: var(--laton);
+  font-size: 13px;
+}
+
 .chip.interruptor {
   cursor: pointer;
 }

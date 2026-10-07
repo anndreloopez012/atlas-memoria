@@ -51,6 +51,9 @@ Más funcional sin más botones (plan en [docs/PLAN-2.0.md](docs/PLAN-2.0.md)).
 ### Capturar
 - Desde el centro de mando (o empezando con `+`): guarda una idea como nota nueva con `memoria capturar` si existe, o en `Bandeja/` del vault central. Dice dónde quedó y ofrece abrirla en Obsidian.
 
+### Voz
+- Micrófono en el centro de mando (si el navegador lo permite): «abre Programación», «ve a las tareas», «busca…», «qué skill uso para…», «pregúntale…», «anota…».
+
 ## 1.4.0 · 2026-10-05
 
 ### Una sola mente
