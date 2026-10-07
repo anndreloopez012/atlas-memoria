@@ -3,7 +3,7 @@
 // que abriste, a dónde ir y las acciones disponibles. Las funciones nuevas se suman
 // aquí como grupos o acciones, no como botones sueltos por la interfaz.
 import MiniSearch from 'minisearch';
-import { ArrowRight, Bot, Check, Clock, Compass, ExternalLink, FileText, MessageCircleQuestion, Mic, Moon, NotebookPen, RefreshCw, Search, Sparkles, Star, Sun, X, type LucideIcon } from 'lucide-react';
+import { ArrowRight, Bot, Check, Clock, Compass, ExternalLink, FileText, ImageDown, MessageCircleQuestion, Mic, Moon, NotebookPen, RefreshCw, Search, Sparkles, Star, Sun, X, type LucideIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cargarAgentes, cargarSkills, cargarVault, useVersionDatos } from '../lib/datos';
 import { useFavoritos } from '../lib/favoritos';
@@ -147,7 +147,7 @@ const sinAcentos = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toL
 const ICONO: Record<Doc['tipo'], LucideIcon> = { nota: FileText, skill: Sparkles, agente: Bot };
 const GRUPO: Record<Doc['tipo'], string> = { skill: 'Skills', agente: 'Agentes', nota: 'Notas' };
 
-export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; inicial: string; cerrar: () => void }) {
+export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: Atlas; vista: string; inicial: string; cerrar: () => void }) {
   const version = useVersionDatos();
   const tema = useTema();
   const [consulta, setConsulta] = useState(inicial);
@@ -293,6 +293,18 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
         },
       },
       {
+        clave: 'accion:exportar',
+        grupo: 'Acciones',
+        titulo: 'Exportar esta vista como imagen',
+        contexto: 'un PNG para compartir o guardar',
+        icono: ImageDown,
+        ejecutar: () => {
+          cerrar();
+          // Se espera a que se cierre el centro de mando para que no salga en la imagen.
+          setTimeout(() => import('../lib/exportar').then((m) => m.exportarVista(vista)), 250);
+        },
+      },
+      {
         clave: 'accion:recorrido',
         grupo: 'Acciones',
         titulo: 'Ver el recorrido',
@@ -315,7 +327,7 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
         },
       },
     ],
-    [tema, cerrar],
+    [tema, cerrar, vista],
   );
 
   const filas: Fila[] = useMemo(() => {
