@@ -132,6 +132,7 @@ El botón **Buscar o pedir** (o `⌘K`, o `/`) es el único lugar para hacer cos
 - Escribe y busca entre todas las notas, las skills y los agentes a la vez. Si describes una tarea, primero aparecen las **skills para eso**.
 - Sin escribir nada muestra lo **último que abriste**, a dónde ir y las **acciones** (cambiar el tema, actualizar los datos).
 - **Preguntar a tu memoria**: escribe una pregunta («¿qué decidimos sobre…?») y elige «Preguntar a tu memoria». El atlas busca las notas que mejor la responden y, si hay una IA instalada en el equipo (Claude Code, Codex o Gemini CLI, en ese orden, o la que fijes con `"preguntar": { "ia": "codex" }`), le pide que responda **solo con esas notas** y que las cite como [1], [2]… Se envían a esa IA la pregunta y esas notas, y la pantalla lo avisa. Si una IA no tiene la sesión iniciada se prueba la siguiente; sin IA, muestra las notas que responden. `"ia": "ninguna"` lo deja siempre en modo notas.
+- **Capturar**: escribe una idea y elige «Guardar … como nota nueva» (o empieza con `+` para ir directo). Si tienes un sistema de memoria con `memoria capturar`, la clasifica y la deja en su bandeja; si no, se guarda en `Bandeja/` del vault central (`"captura": { "vault": "…", "carpeta": "…" }` lo cambia). Dice dónde quedó, ofrece abrirla en Obsidian y aparece en el atlas en segundos.
 - Las funciones nuevas se suman aquí como grupos o acciones.
 
 ---

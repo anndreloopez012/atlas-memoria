@@ -50,6 +50,7 @@ Hay una copia en [atlas.config.ejemplo.json](../atlas.config.ejemplo.json).
 | `carpetasGeneradas` | lista | Carpetas de primer nivel de los vaults donde una herramienta genera notas en masa (p. ej. Graphify, que crea una nota por archivo de código). Sus subcarpetas se cuentan pero no se cargan. |
 | `puerto` | número | Puerto del servidor local (5190 por defecto). |
 | `preguntar` | objeto | `ia`: qué IA responde las preguntas a la memoria: `auto` (la primera instalada entre Claude Code, Codex y Gemini CLI), `claude`, `codex`, `gemini` o `ninguna` (solo muestra las notas). La pregunta y las notas que la responden se envían a esa IA. |
+| `captura` | objeto | Dónde guarda el centro de mando lo que capturas. `modo`: `auto` (usa `memoria capturar` si hay sistema de memoria; si no, un archivo) o `archivo`. `vault` (nombre; por defecto el central) y `carpeta` (`Bandeja` por defecto) para el modo archivo. |
 | `uso` | sí/no | Contar el uso de las skills en los historiales locales de Claude Code y Codex (solo conteos y fechas; `true` por defecto). `false` lo apaga. |
 | `novedades` | objeto | `dias`: cuántos días hacia atrás guarda las novedades que muestra Hoy (45 por defecto). |
 

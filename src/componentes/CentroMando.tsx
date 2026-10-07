@@ -3,7 +3,7 @@
 // que abriste, a dónde ir y las acciones disponibles. Las funciones nuevas se suman
 // aquí como grupos o acciones, no como botones sueltos por la interfaz.
 import MiniSearch from 'minisearch';
-import { ArrowRight, Bot, Clock, Compass, FileText, MessageCircleQuestion, Moon, RefreshCw, Search, Sparkles, Star, Sun, X, type LucideIcon } from 'lucide-react';
+import { ArrowRight, Bot, Check, Clock, Compass, ExternalLink, FileText, MessageCircleQuestion, Moon, NotebookPen, RefreshCw, Search, Sparkles, Star, Sun, X, type LucideIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cargarAgentes, cargarSkills, cargarVault, useVersionDatos } from '../lib/datos';
 import { useFavoritos } from '../lib/favoritos';
@@ -103,6 +103,26 @@ const iaDisponible = () =>
     .then((d: { ia?: string | null }) => d.ia)
     .catch(() => undefined));
 
+/** Dónde quedaría una captura (null: sin servidor). */
+let capturaCache: Promise<{ modo: string; destino: string | null } | null> | null = null;
+const destinoCaptura = () =>
+  (capturaCache ??= fetch('/__atlas/capturar')
+    .then((r) => (r.ok ? r.json() : null))
+    .catch(() => null));
+
+interface Captura {
+  texto: string;
+  guardando: boolean;
+  ok?: boolean;
+  error?: string;
+  duplicada?: boolean;
+  vault?: string;
+  slug?: string;
+  rel?: string;
+  id?: string;
+  obsidian?: string;
+}
+
 const ES_PREGUNTA = /^(qu[eé]|c[oó]mo|cu[aá]ndo|d[oó]nde|por ?qu[eé]|cu[aá]l(es)?|qui[eé]n(es)?|para qu[eé]|cu[aá]nt[oa]s?)\b/i;
 
 interface Fuente {
@@ -138,10 +158,23 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
   const favoritos = useFavoritos();
   const [ia, setIa] = useState<string | null | undefined>(undefined);
   const [respuesta, setRespuesta] = useState<Respuesta | null>(null);
+  const [destino, setDestino] = useState<{ modo: string; destino: string | null } | null>(null);
+  const [captura, setCaptura] = useState<Captura | null>(null);
 
   useEffect(() => {
     iaDisponible().then(setIa);
+    destinoCaptura().then(setDestino);
   }, []);
+
+  const guardar = async (texto: string) => {
+    setCaptura({ texto, guardando: true });
+    try {
+      const r = await fetch('/__atlas/capturar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ texto }) });
+      setCaptura({ texto, guardando: false, ...(await r.json()) });
+    } catch {
+      setCaptura({ texto, guardando: false, ok: false, error: 'El servidor no responde' });
+    }
+  };
 
   const preguntar = async (pregunta: string) => {
     setRespuesta({ pregunta, cargando: true, ia: ia ?? null, texto: null, error: null, fuentes: [] });
@@ -308,11 +341,29 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
             },
           ]
         : [];
+    // Capturar: con «+» al principio va primero; con tres palabras o más, al final.
+    const conMas = q.startsWith('+');
+    const textoCaptura = conMas ? q.slice(1).trim() : q;
+    const filaCaptura: Fila[] =
+      destino && textoCaptura.length >= 2 && (conMas || q.split(/\s+/).length >= 3)
+        ? [
+            {
+              clave: 'capturar',
+              grupo: 'Capturar',
+              titulo: `Guardar «${textoCaptura.length > 70 ? `${textoCaptura.slice(0, 68)}…` : textoCaptura}» como nota nueva`,
+              contexto: destino.destino ? `se guarda en ${destino.destino}` : 'se guarda en tu vault',
+              icono: NotebookPen,
+              color: 'var(--exito)',
+              ejecutar: () => guardar(textoCaptura),
+            },
+          ]
+        : [];
+    if (conMas) return filaCaptura;
     return esPregunta
-      ? [...filaPregunta, ...encontrados, ...destinos.filter(coincide), ...acciones.filter(coincide)]
-      : [...encontrados, ...destinos.filter(coincide), ...acciones.filter(coincide), ...filaPregunta];
+      ? [...filaPregunta, ...encontrados, ...destinos.filter(coincide), ...acciones.filter(coincide), ...filaCaptura]
+      : [...encontrados, ...destinos.filter(coincide), ...acciones.filter(coincide), ...filaPregunta, ...filaCaptura];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [consulta, listo, recientes, favoritos, destinos, acciones, ia]);
+  }, [consulta, listo, recientes, favoritos, destinos, acciones, ia, destino]);
 
   // La fila activa siempre a la vista al moverse con el teclado.
   useEffect(() => {
@@ -320,6 +371,15 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
   }, [activo]);
 
   const tecla = (e: React.KeyboardEvent) => {
+    // Con una captura a la vista: Esc (o Enter) vuelve a los resultados.
+    if (captura) {
+      if (e.key === 'Escape' || e.key === 'Enter') {
+        e.preventDefault();
+        setCaptura(null);
+        if (captura.ok) setConsulta('');
+      }
+      return;
+    }
     // Con una respuesta a la vista: Esc vuelve a los resultados y Enter pregunta de nuevo.
     if (respuesta) {
       if (e.key === 'Escape') setRespuesta(null);
@@ -359,7 +419,7 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
             <X size={16} />
           </button>
         </div>
-        {respuesta && (
+        {respuesta && !captura && (
           <div className="buscador-resultados respuesta" aria-live="polite">
             <p className="rotulo">Pregunta</p>
             <h3 className="respuesta-pregunta">{respuesta.pregunta}</h3>
@@ -403,7 +463,44 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
             )}
           </div>
         )}
-        <div className="buscador-resultados" ref={lista} id="centro-filas" role="listbox" hidden={Boolean(respuesta)}>
+        {captura && (
+          <div className="buscador-resultados respuesta captura" aria-live="polite">
+            <p className="rotulo">Captura</p>
+            <p className="captura-texto">{captura.texto}</p>
+            {captura.guardando && (
+              <p className="respuesta-pensando">
+                <span className="respuesta-girando" aria-hidden="true" /> Guardando…
+              </p>
+            )}
+            {captura.ok && (
+              <>
+                <p className="captura-ok">
+                  <Check size={16} /> {captura.duplicada ? 'Ya estaba capturada' : 'Guardada'} en <span className="mono">{captura.vault ? `${captura.vault} / ` : ''}{captura.rel}</span>
+                </p>
+                <p className="mono captura-nota">Aparece en el atlas en unos segundos.</p>
+                <div className="captura-acciones">
+                  {captura.obsidian && (
+                    <a className="boton-secundario" href={captura.obsidian}>
+                      <ExternalLink size={14} /> Abrir en Obsidian
+                    </a>
+                  )}
+                  <button
+                    className="boton-texto"
+                    onClick={() => {
+                      setCaptura(null);
+                      setConsulta('');
+                      requestAnimationFrame(() => entrada.current?.focus());
+                    }}
+                  >
+                    Capturar otra
+                  </button>
+                </div>
+              </>
+            )}
+            {captura.ok === false && <p className="respuesta-aviso">No se pudo guardar: {captura.error}</p>}
+          </div>
+        )}
+        <div className="buscador-resultados" ref={lista} id="centro-filas" role="listbox" hidden={Boolean(respuesta || captura)}>
           {q.length >= 2 && !listo && <p className="vacio">Preparando el índice de {atlas.totales.notas.toLocaleString('es-GT')} notas…</p>}
           {q.length >= 2 && listo && filas.length === 0 && <p className="vacio">Nada coincide con «{consulta}».</p>}
           {filas.map((f, i) => {
@@ -432,7 +529,9 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
           })}
         </div>
         <div className="buscador-pie mono">
-          {respuesta ? (
+          {captura ? (
+            <span>esc volver</span>
+          ) : respuesta ? (
             <>
               <span>↵ preguntar de nuevo</span>
               <span>esc volver</span>
