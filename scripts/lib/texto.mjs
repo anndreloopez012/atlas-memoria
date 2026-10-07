@@ -177,3 +177,8 @@ export function decodeSeguro(texto) {
     return texto;
   }
 }
+
+/** Fecha de creación de un archivo si el sistema la conoce (birthtime); si no, null. */
+export function creado(stat) {
+  return stat.birthtimeMs > 0 ? new Date(stat.birthtimeMs).toISOString() : null;
+}

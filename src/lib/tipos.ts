@@ -234,3 +234,13 @@ export interface Automatizacion extends AgenteBase {
 }
 
 export type Agente = AgenteIA | Automatizacion;
+
+/** Lo que cambió en las últimas semanas (datos/recientes.json). */
+export interface Recientes {
+  /** días hacia atrás que cubre */
+  dias: number;
+  /** notas modificadas, de la más reciente a la más antigua; `c` = creada, `g` = la reescribe una herramienta */
+  notas: { id: string; v: string; t: string; f: string; m: string; c: string | null; g?: 1 }[];
+  skills: { nombre: string; categoria: string; m: string | null; c: string | null }[];
+  agentes: { id: string; nombre: string; ia: string; m: string; c: string | null }[];
+}

@@ -48,7 +48,7 @@ Doce funciones nuevas para que el atlas no solo muestre la memoria, sino que ayu
 Se marca cada punto al fusionarlo.
 
 - [x] Paso 0 · centro de mando y navegación
-- [ ] 6 · novedades (Hoy)
+- [x] 6 · novedades (Hoy)
 - [ ] 2 · tareas
 - [ ] 4 · proyectos
 - [ ] 9 · favoritos y recorrido

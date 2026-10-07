@@ -70,6 +70,13 @@ El mapa completo como **una sola mente**: cada vault es un **cerebro de neuronas
 - Debajo, el **árbol de vaults**: el centro como tronco y una rama por vault, con propósito, cifras y carpetas.
 - Funciona con un vault, con muchos o con ninguno (en ese caso muestra tus skills y agentes), en tema claro u oscuro y en el teléfono (se encuadran los cerebros).
 
+### Hoy (`#/hoy`)
+Lo que importa ahora, en una sola página tranquila:
+
+- **Lo nuevo desde tu última visita**: las notas que escribiste o editaste, agrupadas por vault (con «nueva» si es recién creada), y las skills y agentes que llegaron o cambiaron. La primera vez muestra los últimos 7 días.
+- Lo que tus herramientas actualizaron solas (reportes, fichas, cambios en lote) queda aparte y plegado, para que no tape lo tuyo.
+- Un punto discreto junto a «Hoy» en la barra avisa cuando hay algo nuevo.
+
 ### Vaults (`#/v/<vault>`)
 Cada vault tiene una **portada**: el vault dibujado como su cerebro de neuronas dentro de una retícula (las neuronas grandes son las carpetas principales), su lugar respecto al centro, su propósito, sus notas de entrada, sus etiquetas principales (un clic filtra por ellas) y un tablero con cifras, el **pulso** de las últimas 26 semanas y la barra de **puentes** con cada vault vecino. El carril de arriba salta a cualquier otro vault.
 

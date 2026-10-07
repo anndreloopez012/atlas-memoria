@@ -6,7 +6,12 @@ Más funcional sin más botones (plan en [docs/PLAN-2.0.md](docs/PLAN-2.0.md)).
 
 ### Centro de mando y navegación más simple
 - El buscador pasa a ser el **centro de mando** (botón «Buscar o pedir» o `⌘K`): busca en todo y, sin escribir, muestra lo último que abriste, a dónde ir y las acciones (cambiar el tema, actualizar los datos).
-- La barra queda con secciones claras: Universo, Vaults, Skills y **Sistema**, que junta «Cómo trabaja» y «Agentes» en pestañas. Las direcciones anteriores (`#/agentes`, `#/agentes/<id>`) siguen funcionando.
+- La barra queda con secciones claras: Universo, Hoy, Vaults, Skills y **Sistema**, que junta «Cómo trabaja» y «Agentes» en pestañas. Las direcciones anteriores (`#/agentes`, `#/agentes/<id>`) siguen funcionando.
+
+### Hoy · novedades desde tu última visita
+- Pantalla **Hoy** con lo que escribiste o editaste por vault, las skills y agentes nuevos, y aparte lo que tus herramientas actualizaron solas (por frontmatter `generado: true` o por cambios en lote).
+- El navegador recuerda la visita anterior (recargar no cuenta como visita nueva) y un punto en la barra avisa cuando hay novedades.
+- Datos nuevos: `recientes.json`, y fechas `m`/`c` en skills y agentes.
 
 ## 1.4.0 · 2026-10-05
 

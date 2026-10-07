@@ -10,6 +10,7 @@ datos/
 ├── skills.json                # catálogo de skills
 ├── skills/<slug>.json         # SKILL.md y referencias de cada skill
 ├── agentes.json               # subagentes y automatizaciones
+├── recientes.json             # lo que cambió en las últimas semanas (Hoy)
 └── pendientes-traduccion.json # textos que aún no tienen traducción al español
 ```
 
@@ -114,10 +115,23 @@ Cada skill:
 | `notas[]` | Notas de cualquier vault que se llaman como la skill o como `<IA> - <skill>`: `{ id, v (vault), t (título) }`. |
 | `extras` | Resto del frontmatter (`license`, `version`, `user-invocable`…). |
 | `archivoDetalle` | Nombre del archivo en `skills/`. |
+| `m`, `c` | Última modificación y primera instalación (ISO) entre todas sus instalaciones; `c` es `null` si el sistema no da la fecha de creación. |
 
 ## `skills/<slug>.json`
 
 `{ "cuerpo": "<SKILL.md sin frontmatter>", "traducido": false, "referencias": { "<ruta>": "<texto>" } }`. Solo archivos `.md`/`.txt`, hasta 80 KB cada uno y ~1,2 MB por skill. `cuerpo` sale en español si el manual ya está traducido (`traducido: true`); si no, es el texto original.
+
+## `recientes.json`
+
+Lo que cambió en los últimos `dias` días (45 por defecto; `novedades.dias` en la configuración). La pantalla Hoy lo compara con la última visita guardada en el navegador.
+
+```json
+{ "dias": 45, "notas": [ { "id", "v", "t", "f", "m", "c", "g"? } ], "skills": [ { "nombre", "categoria", "m", "c" } ], "agentes": [ { "id", "nombre", "ia", "m", "c" } ] }
+```
+
+- `m` es la última modificación y `c` la creación (o `null` si el sistema no la da).
+- `g: 1` marca las notas que reescribe una herramienta: las que tienen `generado: true` (o `generated`, `autogenerado`) en el frontmatter y las que cambiaron **en lote** (20 o más del mismo vault con menos de 90 s de diferencia). Hoy las muestra aparte para que no tapen lo que escribió la persona.
+- Hasta 800 notas propias y 400 automáticas, de la más reciente a la más antigua.
 
 ## `pendientes-traduccion.json`
 

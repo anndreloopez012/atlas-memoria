@@ -72,7 +72,7 @@ for (const { info, notas, adjuntos, generados } of vaults) {
     }
   }
   escribir(`vault/${s}.json`, {
-    notas: notas.map(({ _enlaces, _contenido, _texto, nb, ...resto }) => resto),
+    notas: notas.map(({ _enlaces, _contenido, _texto, _creada, nb, ...resto }) => resto),
     externos,
   });
 
@@ -117,6 +117,39 @@ const motor = leerMotor();
 const usadaPor = new Map();
 for (const a of agentesIA) for (const s of a.skills) usadaPor.set(s, [...(usadaPor.get(s) || []), a.id]);
 for (const s of skills) s.agentes = usadaPor.get(s.nombre) || [];
+
+// --- Novedades ----------------------------------------------------------------------
+// Lo que cambió en las últimas semanas, para «Hoy · desde tu última visita». La
+// página compara estas fechas con la última visita guardada en el navegador.
+const desde = Date.now() - CONFIG.diasNovedades * 86_400_000;
+const reciente = (iso) => Boolean(iso) && Date.parse(iso) >= desde;
+// Notas que reescribe una herramienta (frontmatter `generado: true`): se muestran
+// aparte para que no tapen lo que escribió la persona.
+// También cuenta como automático un cambio en lote: 20 o más notas del mismo vault
+// modificadas con menos de 90 s de diferencia (nadie edita a mano a ese ritmo).
+const enLote = new Set();
+for (const v of new Set(todas.map((n) => n.v))) {
+  const lista = todas.filter((n) => n.v === v && reciente(n.m)).map((n) => ({ id: n.id, t: Date.parse(n.m) })).sort((a, b) => a.t - b.t);
+  let ini = 0;
+  for (let fin = 0; fin < lista.length; fin++) {
+    while (lista[fin].t - lista[ini].t > 90_000) ini += 1;
+    if (fin - ini + 1 >= 20) for (let k = ini; k <= fin; k++) enLote.add(lista[k].id);
+  }
+}
+const esGenerada = (n) => enLote.has(n.id) || [n.fm.generado, n.fm.generated, n.fm.autogenerado].some((v) => v === true || v === 'true');
+escribir('recientes.json', {
+  dias: CONFIG.diasNovedades,
+  // Las notas propias y las que reescribe una herramienta tienen topes separados:
+  // un refresco que toca cientos de notas no debe tapar lo que escribió la persona.
+  notas: [
+    ...todas.filter((n) => reciente(n.m) && !esGenerada(n)).sort((a, b) => b.m.localeCompare(a.m)).slice(0, 800),
+    ...todas.filter((n) => reciente(n.m) && esGenerada(n)).sort((a, b) => b.m.localeCompare(a.m)).slice(0, 400),
+  ]
+    .sort((a, b) => b.m.localeCompare(a.m))
+    .map((n) => ({ id: n.id, v: n.v, t: n.t, f: n.f, m: n.m, c: n._creada, ...(esGenerada(n) ? { g: 1 } : {}) })),
+  skills: skills.filter((s) => reciente(s.m) || reciente(s.c)).map((s) => ({ nombre: s.nombre, categoria: s.categoria, m: s.m, c: s.c })),
+  agentes: agentesIA.filter((a) => reciente(a.m) || reciente(a.c)).map((a) => ({ id: a.id, nombre: a.nombre, ia: a.ia, m: a.m, c: a.c })),
+});
 
 const categorias = [...new Set(skills.map((s) => s.categoria))].sort((a, b) => a.localeCompare(b, 'es'));
 escribir('skills.json', { skills, paquetes, categorias, ias, totalInstalaciones });
