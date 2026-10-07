@@ -1,6 +1,7 @@
 // Inventario de skills de todas las IAs: qué hacen, cuándo se activan, qué archivos
 // cargan y con qué otras piezas (skills, agentes, notas) se relacionan.
 import { execFileSync } from 'node:child_process';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -410,6 +411,8 @@ export function leerSkills(contadorSecretos, notasTodas) {
       extras,
       notas: (notasSkills.get(nombre) || []).slice(0, 6),
       ruta: principal.real,
+      // Cuántas versiones distintas del manual hay entre sus instalaciones (1 = todas iguales).
+      versiones: new Set(lista.map((i) => crypto.createHash('sha1').update(i.cuerpo.trim()).digest('hex'))).size,
       // Última modificación y primera instalación (entre todas las IAs).
       m: lista.map((i) => i.m).filter(Boolean).sort().at(-1) ?? null,
       c: lista.map((i) => i.c).filter(Boolean).sort()[0] ?? null,

@@ -12,6 +12,7 @@ import { rutaAgente, rutaSistema, rutaVault, type PestanaSistema } from '../lib/
 import { mezclar, tono, useTema } from '../lib/tema';
 import type { Atlas, Automatizacion } from '../lib/tipos';
 import Agentes from './Agentes';
+import Salud from './Salud';
 
 const ANCHO = 1200;
 const ALTO = 540;
@@ -41,6 +42,7 @@ const nombreCorto = (etiqueta: string) => etiqueta.replace(/^([a-z0-9-]+\.){2}/i
 const PESTANAS: { id: PestanaSistema; etiqueta: string; ayuda: string }[] = [
   { id: 'como', etiqueta: 'Cómo trabaja', ayuda: 'El flujo de tu memoria y lo que el atlas encontró en este equipo' },
   { id: 'agentes', etiqueta: 'Agentes', ayuda: 'Especialistas de IA y automatizaciones que trabajan por ti' },
+  { id: 'salud', etiqueta: 'Salud', ayuda: 'Enlaces rotos, notas sueltas, títulos repetidos y skills con problemas' },
 ];
 
 export default function Sistema({ atlas, pestana }: { atlas: Atlas; pestana: PestanaSistema }) {
@@ -55,7 +57,7 @@ export default function Sistema({ atlas, pestana }: { atlas: Atlas; pestana: Pes
           ))}
         </div>
       </nav>
-      {pestana === 'agentes' ? <Agentes atlas={atlas} agente={null} /> : <ComoTrabaja atlas={atlas} />}
+      {pestana === 'agentes' ? <Agentes atlas={atlas} agente={null} /> : pestana === 'salud' ? <Salud atlas={atlas} /> : <ComoTrabaja atlas={atlas} />}
     </>
   );
 }

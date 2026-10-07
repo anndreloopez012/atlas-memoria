@@ -38,7 +38,7 @@ try {
   );
   escribir(
     path.join(demo, 'Ideas', 'Idea.md'),
-    '# Idea\n\nUna idea con #etiqueta y enlace a [[Inicio]].\n\n- [ ] Revisar la idea 📅 2026-01-15 ⏫\n- [x] Escribirla\n\n```\n- [ ] esto es código\n```\n',
+    '# Idea\n\nUna idea con #etiqueta y enlace a [[Inicio]], a [[Nota que no existe]] y a ![[foto-perdida.png]].\n\n- [ ] Revisar la idea 📅 2026-01-15 ⏫\n- [x] Escribirla\n\n```\n- [ ] esto es código\n```\n',
   );
   escribir(path.join(demo, 'Templates', 'Diaria.md'), '# Plantilla\n\n- [ ] tarea de plantilla\n');
   escribir(path.join(trabajo, 'Proyecto.md'), '---\ntipo: proyecto\nestado: activo\n---\n# Proyecto\n\nVuelve al [inicio](obsidian://open?vault=Notas%20Demo&file=Inicio).\n');
@@ -132,6 +132,8 @@ try {
   ok(proyecto?.nombre === 'Proyecto' && proyecto.entradas[0]?.t === 'Usar el atlas' && proyecto.entradas[0]?.fecha === '2026-01-10', 'arma los proyectos con su historia');
   const usoDemo = skills.skills.find((x) => x.nombre === 'demo-skill')?.uso;
   ok(usoDemo?.total === 2 && usoDemo.ias.Claude === 1 && usoDemo.ias.Codex === 1 && !skills.skills.find((x) => x.nombre === 'otra-skill')?.uso, 'cuenta el uso real de las skills en Claude Code y Codex (solo conteos)');
+  const salud = leer('salud.json');
+  ok(salud.rotos.total === 1 && salud.rotos.items[0].destinos[0] === 'Nota que no existe' && salud.adjuntos.items[0]?.destinos[0] === 'foto-perdida.png', 'revisa la salud: enlaces rotos y adjuntos que faltan');
   const recientes = leer('recientes.json');
   ok(recientes.notas.length === 5 && recientes.skills.some((s) => s.nombre === 'demo-skill') && recientes.agentes.length === 1, 'lista las novedades (notas, skills y agentes recientes)');
 
