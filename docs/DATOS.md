@@ -11,6 +11,7 @@ datos/
 ├── skills/<slug>.json         # SKILL.md y referencias de cada skill
 ├── agentes.json               # subagentes y automatizaciones
 ├── recientes.json             # lo que cambió en las últimas semanas (Hoy)
+├── tareas.json                # tareas pendientes de todas las notas
 └── pendientes-traduccion.json # textos que aún no tienen traducción al español
 ```
 
@@ -132,6 +133,27 @@ Lo que cambió en los últimos `dias` días (45 por defecto; `novedades.dias` en
 - `m` es la última modificación y `c` la creación (o `null` si el sistema no la da).
 - `g: 1` marca las notas que reescribe una herramienta: las que tienen `generado: true` (o `generated`, `autogenerado`) en el frontmatter y las que cambiaron **en lote** (20 o más del mismo vault con menos de 90 s de diferencia). Hoy las muestra aparte para que no tapen lo que escribió la persona.
 - Hasta 800 notas propias y 400 automáticas, de la más reciente a la más antigua.
+
+## `tareas.json`
+
+```json
+{ "abiertas": 597, "hechas": 82, "tareas": [ { "id", "s", "v", "t", "r", "f", "m", "l", "x", "e", "d"?, "p"?, "g"?, "h" } ] }
+```
+
+Cada tarea pendiente (`[ ]` abierta o `[/]` en curso; las hechas y canceladas solo se cuentan):
+
+| Campo | Descripción |
+|---|---|
+| `id`, `s`, `v`, `t`, `r`, `f`, `m` | Nota de donde sale: id, slug y nombre del vault, título, ruta, carpeta y modificación. |
+| `l` | Línea en el archivo (desde 1). |
+| `x` | Texto limpio (sin fechas, prioridades ni marcas de enlace). |
+| `e` | `abierta` o `en-curso`. |
+| `d` | Fecha (`📅`, `due::` o, si no hay, `⏳`/`scheduled::`), `YYYY-MM-DD`. |
+| `p` | Prioridad: `alta` (🔺 ⏫), `media` (🔼) o `baja` (🔽 ⏬). |
+| `g` | `1` si la nota la reescribe una herramienta. |
+| `h` | Huella de la línea: el servidor la compara antes de marcar la tarea como hecha. |
+
+Orden: primero las que tienen fecha (de la más próxima a la más lejana) y luego por nota modificada más recientemente. Se omiten los bloques de código y las carpetas de plantillas (las de `.obsidian/templates.json`, Templater, `Templates` y `Plantillas`).
 
 ## `pendientes-traduccion.json`
 

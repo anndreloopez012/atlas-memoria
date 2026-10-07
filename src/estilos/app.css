@@ -401,6 +401,242 @@
   margin-top: 36px;
 }
 
+/* Escritorio: novedades a la izquierda y lo pendiente fijo a la derecha. En el
+   teléfono, lo pendiente va primero. */
+@media (min-width: 1100px) {
+  .hoy-rejilla {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+    grid-template-areas: 'novedades lateral';
+    align-items: start;
+  }
+
+  .hoy-lateral {
+    grid-area: lateral;
+    position: sticky;
+    top: 20px;
+  }
+
+  .hoy-novedades {
+    grid-area: novedades;
+  }
+}
+
+.hoy-lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hoy-lateral:empty {
+  display: none;
+}
+
+.hoy-tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  animation: aparecer-abajo 0.5s var(--ease) both;
+}
+
+.hoy-tarjeta header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--laton);
+}
+
+.hoy-tarjeta h2 {
+  margin: 0;
+  font-family: var(--f-ui);
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  color: var(--tinta);
+}
+
+.hoy-tarjeta header .mono {
+  color: var(--tinta-3);
+}
+
+/* Tareas */
+.lista-tareas {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tarea {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 7px 0;
+  transition: opacity 0.5s;
+}
+
+.tarea + .tarea {
+  border-top: 1px solid var(--linea);
+}
+
+.tarea-casilla {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  padding: 0;
+  border: 1.5px solid color-mix(in oklab, var(--c) 70%, var(--tinta-3));
+  border-radius: 6px;
+  background: none;
+  color: var(--fondo);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.tarea-casilla:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--c) 22%, transparent);
+  transform: scale(1.08);
+}
+
+.tarea.marcando .tarea-casilla {
+  border-style: dashed;
+  animation: girar 1.2s linear infinite;
+}
+
+.tarea.hecha .tarea-casilla {
+  background: var(--exito);
+  border-color: var(--exito);
+}
+
+.tarea.hecha {
+  opacity: 0.45;
+}
+
+.tarea.hecha .tarea-texto {
+  text-decoration: line-through;
+}
+
+.tarea-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.tarea-texto {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.tarea-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  color: var(--tinta-3);
+  font-size: 11px;
+}
+
+.tarea-nota {
+  color: var(--tinta-3);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in oklab, var(--c) 45%, transparent);
+}
+
+.tarea-nota:hover {
+  color: var(--tinta);
+}
+
+.tarea-fecha.vencida {
+  color: var(--peligro);
+}
+
+.tarea-fecha.hoy {
+  color: var(--laton);
+}
+
+.tarea-fecha.pronto {
+  color: var(--tinta-2);
+}
+
+.tarea-prioridad.alta {
+  color: var(--peligro);
+}
+
+.tarea-curso {
+  color: var(--laton);
+}
+
+.tarea-error {
+  color: var(--peligro);
+  font-size: 12px;
+}
+
+.tareas-grupo {
+  margin-top: 30px;
+}
+
+.tareas-grupo > h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+
+.tareas-notas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 14px;
+}
+
+.tareas-nota {
+  padding: 12px 16px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+
+.tareas-nota-titulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin-bottom: 4px;
+  color: var(--tinta);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tareas-nota-titulo .chip-punto {
+  background: var(--c);
+}
+
+.tareas-nota-titulo .mono {
+  flex-basis: 100%;
+  color: var(--tinta-3);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.chip.interruptor {
+  cursor: pointer;
+}
+
+.chip.interruptor input {
+  margin: 0;
+  accent-color: var(--laton);
+}
+
+.chip.derecha {
+  margin-left: auto;
+}
+
 .hoy-seccion {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));

@@ -36,7 +36,11 @@ try {
     path.join(demo, 'Inicio.md'),
     '---\ntags: [inicio]\n---\n# Inicio\n\nMira la [[Idea]] y el [proyecto](obsidian://open?vault=Trabajo&file=Proyecto).\n\nclave: sk_live_ABCDEFGHIJKLMNOPQRSTUV\n',
   );
-  escribir(path.join(demo, 'Ideas', 'Idea.md'), '# Idea\n\nUna idea con #etiqueta y enlace a [[Inicio]].\n');
+  escribir(
+    path.join(demo, 'Ideas', 'Idea.md'),
+    '# Idea\n\nUna idea con #etiqueta y enlace a [[Inicio]].\n\n- [ ] Revisar la idea 📅 2026-01-15 ⏫\n- [x] Escribirla\n\n```\n- [ ] esto es código\n```\n',
+  );
+  escribir(path.join(demo, 'Templates', 'Diaria.md'), '# Plantilla\n\n- [ ] tarea de plantilla\n');
   escribir(path.join(trabajo, 'Proyecto.md'), '# Proyecto\n\nVuelve al [inicio](obsidian://open?vault=Notas%20Demo&file=Inicio).\n');
 
   const skillDemo =
@@ -92,7 +96,7 @@ try {
   if (gen.status !== 0) console.log(gen.stdout, gen.stderr);
   const leer = (rel) => JSON.parse(fs.readFileSync(path.join(entorno.ATLAS_SALIDA, rel), 'utf8'));
   const atlas = leer('atlas.json');
-  ok(atlas.totales.vaults === 2 && atlas.totales.notas === 3, `lee 2 vaults y 3 notas (${atlas.totales.vaults} y ${atlas.totales.notas})`);
+  ok(atlas.totales.vaults === 2 && atlas.totales.notas === 4, `lee 2 vaults y 4 notas (${atlas.totales.vaults} y ${atlas.totales.notas})`);
   ok(atlas.totales.puentes === 2, `cuenta los puentes entre vaults (${atlas.totales.puentes})`);
   ok(atlas.centro === 'notas-demo', `elige un centro (${atlas.centro})`);
   const skills = leer('skills.json');
@@ -104,8 +108,15 @@ try {
   ok(bloques.includes('](atlas:'), 'reescribe los enlaces para navegar dentro del atlas');
   ok(bloques.includes('[oculto]') && !bloques.includes('sk_live_'), 'oculta los secretos');
   ok(leer('pendientes-traduccion.json').some((p) => p.texto.startsWith('Builds demo reports')), 'anota los textos en inglés para traducirlos');
+  const tareas = leer('tareas.json');
+  const tareaDemo = tareas.tareas.find((t) => t.x === 'Revisar la idea');
+  ok(tareas.abiertas === 1 && tareas.hechas === 1 && tareaDemo?.d === '2026-01-15' && tareaDemo?.p === 'alta', 'lee las tareas con su fecha y prioridad (y omite plantillas y código)');
+  const { marcarHecha } = await import('./lib/tareas.mjs');
+  const archivoIdea = path.join(demo, 'Ideas', 'Idea.md');
+  const marcada = marcarHecha(archivoIdea, tareaDemo.l, tareaDemo.h);
+  ok(marcada.ok && fs.readFileSync(archivoIdea, 'utf8').includes('- [x] Revisar la idea') && !marcarHecha(archivoIdea, tareaDemo.l, tareaDemo.h).ok, 'marca una tarea como hecha cambiando solo su casilla (y no la toca dos veces)');
   const recientes = leer('recientes.json');
-  ok(recientes.notas.length === 3 && recientes.skills.some((s) => s.nombre === 'demo-skill') && recientes.agentes.length === 1, 'lista las novedades (notas, skills y agentes recientes)');
+  ok(recientes.notas.length === 4 && recientes.skills.some((s) => s.nombre === 'demo-skill') && recientes.agentes.length === 1, 'lista las novedades (notas, skills y agentes recientes)');
 
   // --- Instrucciones para las IAs ---------------------------------------------
   console.log('\nInstrucciones para Claude Code, Codex y Antigravity');

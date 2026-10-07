@@ -47,7 +47,7 @@ export default function App() {
   }, []);
 
   // Al cambiar de página se vuelve arriba (dentro de un vault el desplazamiento es por panel).
-  const pagina = ruta.vista === 'skills' ? `s:${ruta.skill}` : ruta.vista === 'agentes' ? `a:${ruta.agente}` : ruta.vista === 'vault' ? 'vault' : ruta.vista;
+  const pagina = ruta.vista === 'hoy' ? `h:${ruta.seccion}` : ruta.vista === 'skills' ? `s:${ruta.skill}` : ruta.vista === 'agentes' ? `a:${ruta.agente}` : ruta.vista === 'vault' ? 'vault' : ruta.vista;
   useEffect(() => {
     document.querySelector('.contenido')?.scrollTo({ top: 0 });
   }, [pagina]);
@@ -83,7 +83,7 @@ export default function App() {
             </div>
           }
         >
-        {atlas && ruta.vista === 'hoy' && <Hoy atlas={atlas} />}
+        {atlas && ruta.vista === 'hoy' && <Hoy atlas={atlas} seccion={ruta.seccion} />}
         {atlas && ruta.vista === 'vault' && atlas.vaults.length > 0 && <Vault key={ruta.slug || 'centro'} atlas={atlas} slug={ruta.slug} notaId={ruta.nota} carpeta={ruta.carpeta} />}
         {atlas && ruta.vista === 'vault' && atlas.vaults.length === 0 && (
           <div className="pantalla-estado">

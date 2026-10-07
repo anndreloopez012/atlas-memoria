@@ -13,6 +13,11 @@ Más funcional sin más botones (plan en [docs/PLAN-2.0.md](docs/PLAN-2.0.md)).
 - El navegador recuerda la visita anterior (recargar no cuenta como visita nueva) y un punto en la barra avisa cuando hay novedades.
 - Datos nuevos: `recientes.json`, y fechas `m`/`c` en skills y agentes.
 
+### Pendientes
+- Las tareas (`- [ ]`) de todas las notas, con fecha y prioridad al estilo del complemento Tasks: las más urgentes en Hoy (dos por nota como máximo) y todas en `#/hoy/tareas`, agrupadas por vencimiento y por nota.
+- Se pueden marcar como hechas desde el atlas: el servidor cambia solo esa casilla y solo si la línea no cambió.
+- Se omiten plantillas y código; las tareas de notas que reescriben las herramientas quedan aparte.
+
 ## 1.4.0 · 2026-10-05
 
 ### Una sola mente

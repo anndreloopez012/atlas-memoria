@@ -5,6 +5,7 @@ import type { ServerResponse } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Connect, type Plugin, type ViteDevServer } from 'vite';
+import { marcarHecha } from './scripts/lib/tareas.mjs';
 
 const RAIZ = path.dirname(fileURLToPath(import.meta.url));
 const DATOS = process.env.ATLAS_SALIDA ? path.resolve(process.env.ATLAS_SALIDA) : path.join(RAIZ, 'datos');
@@ -67,6 +68,40 @@ function vaultsActuales(): Map<string, string> {
   return cacheVaults.porSlug;
 }
 
+/** Lee el cuerpo JSON de una petición (hasta 64 KB). */
+function leerJson(req: Connect.IncomingMessage): Promise<Record<string, unknown>> {
+  return new Promise((resolve, reject) => {
+    let cuerpo = '';
+    req.on('data', (trozo) => {
+      cuerpo += trozo;
+      if (cuerpo.length > 65_536) reject(new Error('demasiado grande'));
+    });
+    req.on('end', () => {
+      try {
+        resolve(JSON.parse(cuerpo || '{}'));
+      } catch (error) {
+        reject(error);
+      }
+    });
+  });
+}
+
+function responder(res: ServerResponse, estado: number, datos: unknown) {
+  res.statusCode = estado;
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.end(JSON.stringify(datos));
+}
+
+/** Marca una tarea como hecha en su nota (ver marcarHecha en scripts/lib/tareas.mjs). */
+function marcarTarea(datos: Record<string, unknown>): { ok: boolean; error?: string } {
+  const { s, r, l, h } = datos as { s?: string; r?: string; l?: number; h?: string };
+  if (!s || !r || !l || !h || !r.endsWith('.md')) return { ok: false, error: 'Faltan datos de la tarea' };
+  const raiz = vaultsActuales().get(s);
+  const abs = raiz ? dentroDe(raiz, r) : null;
+  if (!abs) return { ok: false, error: 'No encuentro la nota' };
+  return marcarHecha(abs, Number(l), String(h));
+}
+
 function generar(): Promise<{ ok: boolean; salida: string }> {
   return new Promise((resolve) => {
     execFile(process.execPath, [GENERADOR], { cwd: RAIZ, env: process.env, maxBuffer: 10_000_000 }, (error, stdout, stderr) => {
@@ -105,6 +140,16 @@ function atlas(): Plugin {
         return;
       }
       enviarArchivo(res, abs);
+    });
+
+    app.use('/__atlas/tarea', async (req, res) => {
+      if (req.method !== 'POST') return responder(res, 405, { ok: false });
+      try {
+        const resultado = marcarTarea(await leerJson(req));
+        responder(res, resultado.ok ? 200 : 409, resultado);
+      } catch (error) {
+        responder(res, 400, { ok: false, error: String(error) });
+      }
     });
 
     app.use('/__atlas/regenerar', async (req, res) => {
