@@ -105,10 +105,12 @@ Debajo, el vault se puede ver de tres formas (la elegida se recuerda):
 ### Skills (`#/skills`)
 Catálogo de todas las skills del equipo, de **Claude Code, Codex y Antigravity**: las instaladas, las de la carpeta compartida `~/.agents/skills`, las que traen los **plugins activos** y las de sistema. Se agrupan por nombre: una skill instalada en tres IAs aparece una vez, con las tres insignias.
 
-- Filtros por IA, origen (propias, instaladas, de plugins, sistema), categoría y paquete.
+- **¿Qué skill uso para…?** Escribe la tarea con tus palabras («un video de lanzamiento», «cobrar con tarjeta») y la lista se ordena por cuánto encaja cada skill, con el motivo (la frase de la skill que más se parece a lo que pides). Funciona sin internet y entiende pedidos en español aunque la skill esté descrita en inglés. Si nada encaja de verdad, no inventa.
+- Una fila de categorías; IA, origen (propias, instaladas, de plugins, sistema) y paquete quedan en «Más filtros».
 - Vista **Red**: qué skill menciona a cuál y qué agentes las usan.
 - **Ficha de cada skill** (`#/skills/<nombre>`):
   - **Para qué sirve**, **cuándo se activa** (con las frases que la despiertan) y **cuándo no usarla**.
+  - **Cómo pedirla**: el pedido listo para copiar en cualquier IA y, si está en Claude Code, su atajo `/<nombre>`.
   - **Cómo trabaja**, paso a paso: tu pedido → la IA la elige → lee el manual → consulta referencias → ejecuta scripts → usa plantillas → entrega.
   - Las secciones del manual con su resumen, el `SKILL.md` completo y cada archivo de referencia legible en un visor.
   - Dónde está instalada, su repositorio en GitHub, skills con las que trabaja, agentes que la usan y las notas de tus vaults que hablan de ella.
@@ -124,7 +126,7 @@ Cómo funciona todo y quién lo hace, en pestañas:
 ### Centro de mando
 El botón **Buscar o pedir** (o `⌘K`, o `/`) es el único lugar para hacer cosas, así la interfaz no se llena de botones:
 
-- Escribe y busca entre todas las notas, las skills y los agentes a la vez.
+- Escribe y busca entre todas las notas, las skills y los agentes a la vez. Si describes una tarea, primero aparecen las **skills para eso**.
 - Sin escribir nada muestra lo **último que abriste**, a dónde ir y las **acciones** (cambiar el tema, actualizar los datos).
 - Las funciones nuevas se suman aquí como grupos o acciones.
 

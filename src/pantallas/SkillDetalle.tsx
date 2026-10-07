@@ -1,6 +1,6 @@
 // Ficha de una skill: para qué sirve, cuándo se activa, cómo trabaja paso a paso,
 // qué archivos carga y con qué skills, agentes y notas se relaciona.
-import { ArrowLeft, BookOpen, ExternalLink, FileCode2, FileText, FolderTree, Package, Star } from 'lucide-react';
+import { ArrowLeft, BookOpen, Check, Copy, ExternalLink, FileCode2, FileText, FolderTree, Package, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import EstrellaFavorito from '../componentes/EstrellaFavorito';
 import Markdown from '../componentes/Markdown';
@@ -11,7 +11,8 @@ import { cargarAgentes, cargarDetalleSkill, cargarSkills, useDatos } from '../li
 import { colorIA, corto, inicialIA, n, tamano } from '../lib/formato';
 import { registrarReciente } from '../lib/recientes';
 import { rutaAgente, rutaSkill, rutaVault } from '../lib/rutas';
-import type { ArchivoSkill, Atlas } from '../lib/tipos';
+import { pedidoPara } from '../lib/recomendar';
+import type { ArchivoSkill, Atlas, Skill } from '../lib/tipos';
 import { InsigniasIA } from './Skills';
 
 // Las claves del frontmatter son identificadores en inglés: se muestran en español.
@@ -237,6 +238,7 @@ export default function SkillDetalle({ atlas, nombre }: { atlas: Atlas; nombre: 
         </div>
 
         <aside className="ficha-lateral">
+          <ComoPedirla skill={skill} />
           <section className="lateral-bloque">
             <h2 className="rotulo">Instalada en</h2>
             <ul className="instalaciones">
@@ -379,5 +381,37 @@ export default function SkillDetalle({ atlas, nombre }: { atlas: Atlas; nombre: 
 
       {visor && <Visor {...visor} cerrar={() => setVisor(null)} onRuta={abrirArchivo} />}
     </div>
+  );
+}
+
+/** El pedido listo para copiar en cualquier IA, y el atajo de Claude Code si aplica. */
+function ComoPedirla({ skill }: { skill: Skill }) {
+  const [copiado, setCopiado] = useState(false);
+  const tarea = skill.activadores[0] ?? skill.que[0]?.replace(/\.$/, '').toLowerCase() ?? '';
+  const pedido = pedidoPara(skill, tarea);
+  const copiar = async () => {
+    try {
+      await navigator.clipboard.writeText(pedido);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 1600);
+    } catch {
+      /* el navegador no dejó copiar */
+    }
+  };
+  const conBarra = skill.ias.includes('Claude') && skill.extras['user-invocable'] !== 'false';
+  return (
+    <section className="lateral-bloque como-pedirla">
+      <h2 className="rotulo">Cómo pedirla</h2>
+      <button className="pedido" onClick={copiar} title="Copiar el pedido">
+        <span>{pedido}</span>
+        {copiado ? <Check size={14} /> : <Copy size={14} />}
+      </button>
+      {conBarra && (
+        <p className="mono como-pedirla-nota">
+          En Claude Code también: <code>/{skill.nombre}</code>
+        </p>
+      )}
+      {skill.activadores.length > 1 && <p className="como-pedirla-nota">O con tus palabras: «{skill.activadores[1]}»</p>}
+    </section>
   );
 }

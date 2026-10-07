@@ -27,6 +27,11 @@ Más funcional sin más botones (plan en [docs/PLAN-2.0.md](docs/PLAN-2.0.md)).
 - Estrella en notas, skills y agentes: los favoritos aparecen arriba en Hoy y en el centro de mando.
 - Recorrido guiado de cinco pasos la primera vez; se repite desde el centro de mando.
 
+### ¿Qué skill uso para…?
+- Recomendación de skills a partir de una tarea descrita con palabras propias, con el motivo de cada una, en el centro de mando («Skills para eso») y en Skills («Las que mejor encajan»). Sin internet; si nada encaja de verdad, no recomienda.
+- Ficha de skill con «Cómo pedirla»: el pedido listo para copiar y el atajo de Claude Code.
+- Skills más tranquila: una fila de categorías y el resto de filtros en «Más filtros».
+
 ## 1.4.0 · 2026-10-05
 
 ### Una sola mente
