@@ -50,7 +50,7 @@ Se marca cada punto al fusionarlo.
 - [x] Paso 0 · centro de mando y navegación
 - [x] 6 · novedades (Hoy)
 - [x] 2 · tareas
-- [ ] 4 · proyectos
+- [x] 4 · proyectos
 - [ ] 9 · favoritos y recorrido
 - [ ] 1 · ¿qué skill uso para…?
 - [ ] 11 · uso real de skills

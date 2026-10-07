@@ -12,6 +12,7 @@ datos/
 ├── agentes.json               # subagentes y automatizaciones
 ├── recientes.json             # lo que cambió en las últimas semanas (Hoy)
 ├── tareas.json                # tareas pendientes de todas las notas
+├── proyectos.json             # proyectos con su estado e historia
 └── pendientes-traduccion.json # textos que aún no tienen traducción al español
 ```
 
@@ -154,6 +155,17 @@ Cada tarea pendiente (`[ ]` abierta o `[/]` en curso; las hechas y canceladas so
 | `h` | Huella de la línea: el servidor la compara antes de marcar la tarea como hecha. |
 
 Orden: primero las que tienen fecha (de la más próxima a la más lejana) y luego por nota modificada más recientemente. Se omiten los bloques de código y las carpetas de plantillas (las de `.obsidian/templates.json`, Templater, `Templates` y `Plantillas`).
+
+## `proyectos.json`
+
+```json
+{ "semaforo": true, "proyectos": [ { "nombre", "s", "id", "familia", "rol", "estado", "semaforo"?, "motivos"?, "actividad", "entradas": [ { "id", "s", "t", "tipo", "fecha" } ], "totalEntradas", "notas" } ] }
+```
+
+- Un proyecto es una nota con `tipo` (o `type`) `proyecto-moc`, `proyecto` o `project`; si hay varias para el mismo nombre (`proyecto:` o el título), gana `proyecto-moc`. `s` e `id` son su vault y su nota; `familia`, `rol` y `estado` salen de su frontmatter.
+- Su historia (`entradas`, las 5 más recientes) son las notas con `proyecto: <nombre>` que no reescribe una herramienta, ordenadas por `fecha` (o modificación). El título es su primer encabezado.
+- Con un sistema de memoria, `semaforo` (`verde`, `amarillo`, `rojo`, `archivado`) y `motivos` salen de `data/operational_status.json`.
+- `actividad` es lo más reciente entre su historia y el último cambio de su código (según el semáforo). Ordenados de más a menos activo.
 
 ## `pendientes-traduccion.json`
 
