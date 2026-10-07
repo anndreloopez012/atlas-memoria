@@ -347,7 +347,8 @@
   background: var(--superficie);
 }
 
-.conmutador button {
+.conmutador button,
+.conmutador a {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -360,7 +361,17 @@
   cursor: pointer;
 }
 
-.conmutador button.activo {
+.conmutador a {
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.conmutador a:hover {
+  color: var(--tinta);
+}
+
+.conmutador button.activo,
+.conmutador a.activo {
   background: var(--superficie-2);
   color: var(--tinta);
   box-shadow: inset 0 0 0 1px var(--linea-fuerte);
@@ -368,6 +379,19 @@
 
 .conmutador.derecha {
   margin-left: auto;
+}
+
+/* Pestañas de una sección (p. ej. Sistema): una fila fina y fija bajo la barra. */
+.subpestanas {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  display: flex;
+  justify-content: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--linea);
+  background: var(--velo);
+  backdrop-filter: blur(14px);
 }
 
 .filtro {
@@ -3842,6 +3866,9 @@ a:hover > .caja rect {
 }
 
 .buscador-grupo {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   margin: 0;
   padding: 10px 10px 4px;
 }

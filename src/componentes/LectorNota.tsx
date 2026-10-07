@@ -6,6 +6,7 @@ import { rutaEnDisco, vaultCentral } from '../lib/atlas';
 import { cargarBloque, useDatos } from '../lib/datos';
 import { formatoFecha, hace, minutosLectura, n } from '../lib/formato';
 import { slugTitulo } from '../lib/markdown';
+import { registrarReciente } from '../lib/recientes';
 import { navegar, rutaVault } from '../lib/rutas';
 import { tono, useTema } from '../lib/tema';
 import type { Atlas, DatosVault, Nota } from '../lib/tipos';
@@ -36,6 +37,8 @@ export default function LectorNota({ atlas, nota, datos, porId, entrantes, carpe
   useEffect(() => {
     cuerpo.current?.scrollTo({ top: 0 });
     setProgreso(0);
+    registrarReciente({ tipo: 'nota', id: nota.id, titulo: nota.t, contexto: `${nota.v}${nota.f ? ` / ${nota.f}` : ''}`, destino: rutaVault(vault.slug, nota.id), color: vault.color });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nota.id]);
 
   // Cuánto se ha leído (barra fina arriba del lector).

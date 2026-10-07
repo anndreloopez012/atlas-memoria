@@ -102,7 +102,9 @@ React 19 + TypeScript, sin enrutador ni gestor de estado externos. Todo lo que d
 | `componentes/vault/Vecindario.tsx` | Mapa SVG de una nota: la citan (izquierda), enlaza (derecha), puentes (abajo). |
 | `lib/actividad.ts` | Cálculos de fechas: día local, pulso semanal, calendario (semanas que empiezan en lunes), grupos «Hoy», «Ayer»… |
 | `pantallas/Sistema.tsx` | Diagrama del flujo y fuentes detectadas. Con `.memoria-system`, también su enrutado, motor y comandos. |
-| `componentes/Buscador.tsx` | MiniSearch sobre títulos, rutas, etiquetas, encabezados y extractos de todas las notas, más skills (también por su descripción original) y agentes. Las sugerencias salen del equipo. |
+| `componentes/CentroMando.tsx` | El centro de mando (⌘K): MiniSearch sobre títulos, rutas, etiquetas, encabezados y extractos de todas las notas, más skills (también por su descripción original) y agentes. Todo se arma como **filas** (resultado, destino o acción) agrupadas; sin texto muestra recientes, destinos y acciones. Las funciones nuevas entran como filas o grupos, no como botones en la interfaz. Cualquier pantalla puede abrirlo con `abrirCentro(texto)`. |
+| `lib/recientes.ts` | Lo último que abriste (notas, skills, agentes), en `localStorage` de este navegador; si no se puede guardar, no recuerda. |
+| `pantallas/Sistema.tsx` | Pestañas «Cómo trabaja» y «Agentes» (`#/sistema`, `#/sistema/agentes`; `#/agentes` lleva a la misma pestaña y la ficha de cada agente conserva `#/agentes/<id>`). |
 
 ### Diseño
 
