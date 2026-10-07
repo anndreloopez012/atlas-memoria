@@ -1026,6 +1026,135 @@
   --cat: var(--laton);
 }
 
+/* Salud */
+.rejilla-chequeos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 14px;
+  margin-top: 32px;
+  align-items: start;
+}
+
+.chequeo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  animation: aparecer-abajo 0.5s var(--ease) both;
+}
+
+.chequeo header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chequeo.bien header svg {
+  color: var(--exito);
+}
+
+.chequeo.revisar {
+  border-color: color-mix(in oklab, var(--laton) 35%, var(--linea));
+}
+
+.chequeo.revisar header svg {
+  color: var(--laton);
+}
+
+.chequeo h2 {
+  margin: 0;
+  font-family: var(--f-ui);
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.chequeo-total {
+  margin-left: auto;
+  color: var(--tinta-3);
+  font-size: 12px;
+}
+
+.chequeo.revisar .chequeo-total {
+  color: var(--laton);
+  font-size: 15px;
+}
+
+.chequeo > p {
+  margin: 0;
+  color: var(--tinta-2);
+  font-size: 13.5px;
+}
+
+.chequeo details summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--tinta-2);
+  font-size: 13px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.chequeo details summary::-webkit-details-marker {
+  display: none;
+}
+
+.chequeo details[open] summary svg {
+  transform: rotate(180deg);
+}
+
+.chequeo-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 420px;
+  margin: 10px 0 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.chequeo-lista li {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 0;
+  border-top: 1px solid var(--linea);
+  font-size: 13.5px;
+}
+
+.chequeo-lista a {
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.chequeo-lista a:hover {
+  text-decoration: underline;
+}
+
+.chequeo-lista .mono {
+  color: var(--tinta-3);
+  font-size: 11px;
+}
+
+.chequeo-destinos {
+  color: var(--peligro) !important;
+}
+
+.chequeo-mas {
+  color: var(--tinta-3);
+}
+
+.chequeo-accion {
+  align-self: flex-start;
+  color: var(--laton);
+  font-size: 12.5px;
+  text-decoration: none;
+}
+
 .chip.interruptor {
   cursor: pointer;
 }

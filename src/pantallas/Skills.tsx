@@ -32,7 +32,7 @@ export function InsigniasIA({ ias, todas }: { ias: string[]; todas: string[] }) 
   );
 }
 
-export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skill: string | null; categoria: string | null }) {
+export default function Skills({ atlas, skill, categoria, usoInicial = null }: { atlas: Atlas; skill: string | null; categoria: string | null; usoInicial?: 'usadas' | 'nunca' | null }) {
   const tema = useTema();
   const colores = coloresCanvas(tema);
   const datos = useDatos('skills', cargarSkills);
@@ -45,9 +45,10 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
   const [vista, setVista] = useState<'tarjetas' | 'red'>('tarjetas');
   const [verPlugins, setVerPlugins] = useState(false);
   const [masFiltros, setMasFiltros] = useState(false);
-  const [uso, setUso] = useState<'usadas' | 'nunca' | null>(null);
+  const [uso, setUso] = useState<'usadas' | 'nunca' | null>(usoInicial);
 
   useEffect(() => setCat(categoria), [categoria]);
+  useEffect(() => setUso(usoInicial), [usoInicial]);
 
   const colorCategoria = useMemo(() => {
     const m = new Map<string, string>();

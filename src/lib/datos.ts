@@ -1,7 +1,7 @@
 // Carga perezosa de los datos del atlas con caché. Cada archivo se pide una sola
 // vez; `recargarDatos()` vacía la caché y avisa a los componentes.
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import type { Agente, Atlas, DatosProyectos, DatosSkills, DatosTareas, DatosVault, DetalleSkill, Recientes, Tarea } from './tipos';
+import type { Agente, Atlas, DatosProyectos, DatosSalud, DatosSkills, DatosTareas, DatosVault, DetalleSkill, Recientes, Tarea } from './tipos';
 
 const cache = new Map<string, Promise<unknown>>();
 let version = 0;
@@ -28,6 +28,7 @@ export const cargarAgentes = () => pedir<{ agentes: Agente[] }>('agentes.json');
 export const cargarRecientes = () => pedir<Recientes>('recientes.json');
 export const cargarTareas = () => pedir<DatosTareas>('tareas.json');
 export const cargarProyectos = () => pedir<DatosProyectos>('proyectos.json');
+export const cargarSalud = () => pedir<DatosSalud>('salud.json');
 
 /** Marca una tarea como hecha en su nota (el servidor cambia solo esa casilla). */
 export async function marcarTareaHecha(t: Tarea): Promise<{ ok: boolean; error?: string }> {

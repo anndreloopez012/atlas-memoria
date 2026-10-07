@@ -63,6 +63,8 @@ function esGenerado(rel) {
 function recorrer(dirVault) {
   const notas = [];
   const adjuntos = [];
+  // Nombres de las notas generadas que se omiten: existen, así que enlazarlas no es un enlace roto.
+  const omitidas = new Set();
   let generados = 0;
   const pila = [''];
   while (pila.length) {
@@ -78,22 +80,24 @@ function recorrer(dirVault) {
       const relHijo = nfc(rel ? `${rel}/${e.name}` : e.name);
       if (e.isDirectory()) {
         if (CONFIG.carpetasGeneradas.has(relHijo.split('/')[0]) && relHijo.includes('/')) {
-          generados += contarMd(path.join(dirVault, relHijo));
+          generados += contarMd(path.join(dirVault, relHijo), omitidas);
           continue;
         }
         pila.push(relHijo);
       } else if (e.name.endsWith('.md')) {
-        if (esGenerado(relHijo)) generados += 1;
-        else notas.push(relHijo);
+        if (esGenerado(relHijo)) {
+          generados += 1;
+          omitidas.add(e.name.slice(0, -3).toLowerCase());
+        } else notas.push(relHijo);
       } else if (e.isFile()) {
         adjuntos.push(relHijo);
       }
     }
   }
-  return { notas: notas.sort((a, b) => a.localeCompare(b, 'es')), adjuntos, generados };
+  return { notas: notas.sort((a, b) => a.localeCompare(b, 'es')), adjuntos, generados, omitidas };
 }
 
-function contarMd(dir) {
+function contarMd(dir, omitidas) {
   let total = 0;
   const pila = [dir];
   while (pila.length) {
@@ -106,7 +110,10 @@ function contarMd(dir) {
     }
     for (const e of entradas) {
       if (e.isDirectory()) pila.push(path.join(actual, e.name));
-      else if (e.name.endsWith('.md')) total += 1;
+      else if (e.name.endsWith('.md')) {
+        total += 1;
+        omitidas.add(nfc(e.name.slice(0, -3)).toLowerCase());
+      }
     }
   }
   return total;
@@ -147,6 +154,9 @@ function arbolCarpetas(notas, adjuntos) {
 }
 
 const IMAGEN = /\.(png|jpe?g|gif|webp|svg|avif|bmp)$/i;
+// Un enlace es a un adjunto solo si termina en una extensión de archivo conocida:
+// las notas también pueden llevar puntos en el nombre (p. ej. «oms.case_event»).
+const ADJUNTO = /\.(png|jpe?g|gif|webp|svg|avif|bmp|pdf|mp4|mov|webm|mkv|mp3|wav|m4a|ogg|flac|xlsx?|csv|docx?|pptx?|odt|ods|zip|canvas|base|excalidraw|json|txt|html?|epub)$/i;
 const escaparTexto = (t) => t.replace(/([\[\]])/g, '\\$1');
 
 function vaultSlug(nombre) {
@@ -169,8 +179,7 @@ function reescribirEnlaces(markdown, nota, resolver, adjuntos) {
         const objetivo = destino.trim().replace(/\\$/, '');
         const etiqueta = (alias || '').trim();
         const nombre = objetivo.split('/').pop();
-        const extension = nombre.includes('.') ? nombre.split('.').pop().toLowerCase() : 'md';
-        if (extension !== 'md' && nombre.includes('.')) {
+        if (ADJUNTO.test(nombre)) {
           const rel = adjuntos?.get(nombre.toLowerCase());
           if (rel && IMAGEN.test(nombre)) {
             return `![${escaparTexto(etiqueta || nombre)}](/adjunto/${vaultSlug(nota.v)}/${rel.split('/').map(encodeURIComponent).join('/')})`;
@@ -207,6 +216,7 @@ export function leerVaults(contadorSecretos) {
   const vaults = [];
   const todas = []; // notas de todos los vaults, para resolver puentes
   const porVault = new Map();
+  const omitidasPorVault = new Map();
 
   for (const info of registro) {
     const dirVault = info.ruta;
@@ -214,7 +224,8 @@ export function leerVaults(contadorSecretos) {
       console.warn(`  aviso: el vault «${info.name}» no está en ${dirVault} (se omite; revisa atlas.config.json o ejecuta npm run detectar)`);
       continue;
     }
-    const { notas: rutas, adjuntos, generados } = recorrer(dirVault);
+    const { notas: rutas, adjuntos, generados, omitidas } = recorrer(dirVault);
+    omitidasPorVault.set(info.name, omitidas);
     const notas = [];
     for (const rel of rutas) {
       const abs = path.join(dirVault, rel);
@@ -306,10 +317,16 @@ export function leerVaults(contadorSecretos) {
     const salida = new Set();
     const cruces = new Set();
     const { wiki, obsidian: obs, relativos } = nota._enlaces;
+    nota._rotos = [];
     for (const destino of wiki) {
+      // Los adjuntos (![[imagen.png]]) se revisan aparte, contra los archivos del vault.
+      if (ADJUNTO.test(destino.split('/').pop())) continue;
       const n = resolver(nota.v, destino, nota.f);
       if (n && n.id !== nota.id) salida.add(n.id);
-      else if (!n) sinResolver += 1;
+      else if (!n && !omitidasPorVault.get(nota.v)?.has(nfc(destino.split('/').pop()).toLowerCase())) {
+        sinResolver += 1;
+        if (!nota._rotos.includes(destino)) nota._rotos.push(destino);
+      }
     }
     for (const destino of relativos) {
       const n = resolver(nota.v, destino, nota.f);
@@ -347,6 +364,15 @@ export function leerVaults(contadorSecretos) {
   }
   for (const nota of todas) {
     nota._contenido = reescribirEnlaces(nota._contenido, nota, resolver, adjuntosPorVault.get(nota.v));
+    // Adjuntos citados que no están en el vault.
+    const mapa = adjuntosPorVault.get(nota.v);
+    nota._adjuntosFaltan = [
+      ...new Set(
+        nota._enlaces.wiki
+          .map((d) => d.split('/').pop())
+          .filter((nombre) => ADJUNTO.test(nombre) && !mapa?.has(nombre.toLowerCase())),
+      ),
+    ];
   }
 
   return { vaults, todas, puentes, totalEnlaces, sinResolver, routing, obsidian, arbolCarpetas };

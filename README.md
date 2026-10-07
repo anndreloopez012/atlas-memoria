@@ -120,6 +120,7 @@ Catálogo de todas las skills del equipo, de **Claude Code, Codex y Antigravity*
 Cómo funciona todo y quién lo hace, en pestañas:
 
 - **Cómo trabaja**: el flujo completo, de dónde **entra** el conocimiento, quién lo **procesa**, dónde **vive** y quién lo **consulta**, más la lista de **fuentes que el atlas encontró** en el equipo. Si usas un sistema de memoria multi-vault (`.memoria-system`), muestra además su motor, sus reglas de enrutado y sus comandos.
+- **Salud** (`#/sistema/salud`): chequeos para mantener todo en orden, cada uno en verde si está bien o con su lista para revisar: enlaces rotos, adjuntos que faltan, títulos repetidos, notas vacías, notas sueltas (sin enlaces), notas olvidadas (más de un año sin cambios y sin citas), skills con versiones distintas entre IAs, skills sin descripción, skills sin uso y textos sin traducir. Las notas que mantienen tus herramientas no se revisan.
 - **Agentes** (`#/sistema/agentes`):
   - **Agentes de IA** (subagentes de Claude Code, Codex y Antigravity, del usuario, de proyectos y de plugins): para qué sirven, cuándo se les delega, sus herramientas, modelo, skills que usan y sus instrucciones completas.
   - **Automatizaciones** que trabajan sobre tus vaults (launchd en macOS, systemd y cron en Linux): cada cuánto corren, qué vigilan, qué script ejecutan, dónde dejan registro y cómo pausarlas.
