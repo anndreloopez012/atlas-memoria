@@ -36,6 +36,11 @@ Más funcional sin más botones (plan en [docs/PLAN-2.0.md](docs/PLAN-2.0.md)).
 - Cuántas veces usaron Claude Code y Codex cada skill en los últimos 180 días y cuándo fue la última: «Las que más usas» arriba en Skills, el conteo en cada tarjeta, el filtro «Nunca usadas» y un bloque «Uso» en la ficha.
 - Solo conteos y fechas; nada del contenido de las conversaciones. Lectura incremental con caché local y tope de tiempo. Se apaga con `"uso": false` o `ATLAS_USO=0`.
 
+### Salud de la memoria
+- Pestaña **Salud** en Sistema: enlaces rotos, adjuntos que faltan, títulos repetidos, notas vacías, sueltas y olvidadas, skills con versiones distintas entre IAs, sin descripción y sin uso, y textos sin traducir.
+- Arreglo: las notas con punto en el nombre (p. ej. `oms.case_event`) ya no se toman por adjuntos; ahora se enlazan bien en el lector.
+- Los enlaces a notas generadas que el atlas omite ya no cuentan como sin resolver.
+
 ## 1.4.0 · 2026-10-05
 
 ### Una sola mente

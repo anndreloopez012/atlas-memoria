@@ -7,6 +7,7 @@ import path from 'node:path';
 import { leerAgentesIA, leerAutomatizaciones, leerMotor, notaPorRuta } from './lib/agentes.mjs';
 import { abreviar, CONFIG } from './lib/config.mjs';
 import { leerProyectos } from './lib/proyectos.mjs';
+import { revisarSalud } from './lib/salud.mjs';
 import { leerSkills } from './lib/skills.mjs';
 import { leerUso } from './lib/uso.mjs';
 import { carpetasDePlantillas, extraerTareas } from './lib/tareas.mjs';
@@ -75,7 +76,7 @@ for (const { info, notas, adjuntos, generados } of vaults) {
     }
   }
   escribir(`vault/${s}.json`, {
-    notas: notas.map(({ _enlaces, _contenido, _texto, _creada, nb, ...resto }) => resto),
+    notas: notas.map(({ _enlaces, _contenido, _texto, _creada, _rotos, _adjuntosFaltan, nb, ...resto }) => resto),
     externos,
   });
 
@@ -183,6 +184,9 @@ escribir('proyectos.json', proyectos);
 // --- Uso real de las skills (historiales locales de las IAs; solo conteos) ----------
 const { porSkill: usoPorSkill, resumen: usoResumen } = leerUso(new Set(skills.map((s) => s.nombre)));
 for (const s of skills) s.uso = usoPorSkill.get(s.nombre) ?? null;
+
+// --- Salud de la memoria -----------------------------------------------------------
+escribir('salud.json', revisarSalud(todas, skills, slug, esGenerada));
 
 const categorias = [...new Set(skills.map((s) => s.categoria))].sort((a, b) => a.localeCompare(b, 'es'));
 escribir('skills.json', { skills, paquetes, categorias, ias, totalInstalaciones });

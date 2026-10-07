@@ -13,6 +13,7 @@ datos/
 ├── recientes.json             # lo que cambió en las últimas semanas (Hoy)
 ├── tareas.json                # tareas pendientes de todas las notas
 ├── proyectos.json             # proyectos con su estado e historia
+├── salud.json                 # chequeos de salud de notas y skills
 └── pendientes-traduccion.json # textos que aún no tienen traducción al español
 ```
 
@@ -167,6 +168,24 @@ Orden: primero las que tienen fecha (de la más próxima a la más lejana) y lue
 - Su historia (`entradas`, las 5 más recientes) son las notas con `proyecto: <nombre>` que no reescribe una herramienta, ordenadas por `fecha` (o modificación). El título es su primer encabezado.
 - Con un sistema de memoria, `semaforo` (`verde`, `amarillo`, `rojo`, `archivado`) y `motivos` salen de `data/operational_status.json`.
 - `actividad` es lo más reciente entre su historia y el último cambio de su código (según el semáforo). Ordenados de más a menos activo.
+
+## `salud.json`
+
+Chequeos sobre las notas propias (no las que reescriben las herramientas) y las skills. Cada chequeo es `{ total, items[] }` con hasta 300 elementos:
+
+| Chequeo | Qué señala |
+|---|---|
+| `rotos` | Notas con enlaces `[[…]]` a notas que no existen (`destinos[]`, `n`). No cuentan los enlaces a notas generadas que el atlas omite (siguen existiendo). |
+| `adjuntos` | Notas que citan imágenes o archivos que no están en el vault. Un enlace es a un adjunto solo si termina en una extensión de archivo conocida: las notas pueden llevar puntos en el nombre. |
+| `repetidos` | Grupos de notas con el mismo título (sin importar mayúsculas ni acentos), sin contar títulos genéricos a propósito (numerados, «Parte 3», «Índice», «Léeme»…). |
+| `vacias` | Menos de cinco palabras y sin enlaces. |
+| `sueltas` | Sin enlaces hacia ni desde otras notas. |
+| `olvidadas` | Más de un año sin cambios y nadie las cita. |
+| `skillsVersiones` | Skills instaladas en varias IAs con manuales distintos (`versiones`). |
+| `skillsSinDescripcion` | Skills sin descripción. |
+| `skillsSinUso` | Cuántas skills no tuvieron uso en los últimos 180 días (si el conteo de uso está activo). |
+
+Cada skill de `skills.json` lleva además `versiones` (cuántos manuales distintos hay entre sus instalaciones).
 
 ## `pendientes-traduccion.json`
 

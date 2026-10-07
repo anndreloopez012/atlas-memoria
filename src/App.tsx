@@ -94,7 +94,7 @@ export default function App() {
             <pre className="mono">npm run instalar -- --vault "/ruta/a/tu/vault"</pre>
           </div>
         )}
-        {atlas && ruta.vista === 'skills' && <Skills atlas={atlas} skill={ruta.skill} categoria={ruta.categoria} />}
+        {atlas && ruta.vista === 'skills' && <Skills atlas={atlas} skill={ruta.skill} categoria={ruta.categoria} usoInicial={ruta.uso} />}
         {atlas && ruta.vista === 'agentes' && <Agentes atlas={atlas} agente={ruta.agente} />}
         {atlas && ruta.vista === 'sistema' && <Sistema atlas={atlas} pestana={ruta.pestana} />}
         </Suspense>

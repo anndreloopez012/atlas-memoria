@@ -319,3 +319,35 @@ export interface DatosProyectos {
   semaforo: boolean;
   proyectos: Proyecto[];
 }
+
+/** Nota señalada por un chequeo de salud. */
+export interface NotaSalud {
+  id: string;
+  s: string;
+  v: string;
+  t: string;
+  f: string;
+  m: string;
+  /** enlaces o adjuntos que faltan (en «rotos» y «adjuntos») */
+  destinos?: string[];
+  n?: number;
+}
+
+interface Chequeo<T> {
+  total: number;
+  items: T[];
+}
+
+/** datos/salud.json */
+export interface DatosSalud {
+  notasRevisadas: number;
+  rotos: Chequeo<NotaSalud>;
+  adjuntos: Chequeo<NotaSalud>;
+  sueltas: Chequeo<NotaSalud>;
+  vacias: Chequeo<NotaSalud>;
+  olvidadas: Chequeo<NotaSalud>;
+  repetidos: Chequeo<{ t: string; notas: NotaSalud[] }>;
+  skillsVersiones: Chequeo<{ nombre: string; versiones: number; ias: string[] }>;
+  skillsSinDescripcion: Chequeo<{ nombre: string; ias: string[] }>;
+  skillsSinUso: number;
+}
