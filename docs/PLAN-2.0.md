@@ -51,7 +51,7 @@ Se marca cada punto al fusionarlo.
 - [x] 6 · novedades (Hoy)
 - [x] 2 · tareas
 - [x] 4 · proyectos
-- [ ] 9 · favoritos y recorrido
+- [x] 9 · favoritos y recorrido
 - [ ] 1 · ¿qué skill uso para…?
 - [ ] 11 · uso real de skills
 - [ ] 3 · salud de la memoria

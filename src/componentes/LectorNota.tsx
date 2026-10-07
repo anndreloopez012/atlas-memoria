@@ -10,6 +10,7 @@ import { registrarReciente } from '../lib/recientes';
 import { navegar, rutaVault } from '../lib/rutas';
 import { tono, useTema } from '../lib/tema';
 import type { Atlas, DatosVault, Nota } from '../lib/tipos';
+import EstrellaFavorito from './EstrellaFavorito';
 import Markdown from './Markdown';
 import Vecindario from './vault/Vecindario';
 
@@ -128,6 +129,7 @@ export default function LectorNota({ atlas, nota, datos, porId, entrantes, carpe
               <ListTree size={15} />
             </button>
           )}
+          <EstrellaFavorito item={{ tipo: 'nota', id: nota.id, titulo: nota.t, contexto: `${nota.v}${nota.f ? ` / ${nota.f}` : ''}`, destino: rutaVault(vault.slug, nota.id), color: vault.color }} />
           <button className="icono-boton" onClick={copiar} title="Copiar ruta del archivo">
             {copiado ? <Check size={15} /> : <Copy size={15} />}
           </button>

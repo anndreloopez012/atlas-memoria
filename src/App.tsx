@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { Marca } from './componentes/BarraSuperior';
 import BarraSuperior from './componentes/BarraSuperior';
 import CentroMando from './componentes/CentroMando';
+import Recorrido from './componentes/Recorrido';
 import { cargarAtlas, recargarDatos, useDatos } from './lib/datos';
 import { useRuta } from './lib/rutas';
 import Universo from './pantallas/Universo';
@@ -99,6 +100,7 @@ export default function App() {
         </Suspense>
       </main>
       {atlas && centro !== null && <CentroMando atlas={atlas} inicial={centro} cerrar={() => setCentro(null)} />}
+      <Recorrido listo={Boolean(atlas)} />
     </div>
   );
 }

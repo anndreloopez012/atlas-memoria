@@ -2,6 +2,7 @@
 // qué archivos carga y con qué skills, agentes y notas se relaciona.
 import { ArrowLeft, BookOpen, ExternalLink, FileCode2, FileText, FolderTree, Package, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import EstrellaFavorito from '../componentes/EstrellaFavorito';
 import Markdown from '../componentes/Markdown';
 import Pipeline, { type Paso } from '../componentes/Pipeline';
 import Visor from '../componentes/Visor';
@@ -167,6 +168,7 @@ export default function SkillDetalle({ atlas, nombre }: { atlas: Atlas; nombre: 
           {skill.origen === 'sistema' && <span className="insignia">sistema</span>}
           {skill.origen === 'plugin' && <span className="insignia">plugin</span>}
           <InsigniasIA ias={skill.ias} todas={datos.datos.ias} />
+          <EstrellaFavorito item={{ tipo: 'skill', id: skill.id, titulo: skill.nombre, contexto: `skill · ${skill.categoria}`, destino: rutaSkill(skill.nombre), color: '#dcb56c' }} />
         </p>
       </header>
 
