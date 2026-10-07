@@ -7,6 +7,7 @@ import path from 'node:path';
 import { leerAgentesIA, leerAutomatizaciones, leerMotor, notaPorRuta } from './lib/agentes.mjs';
 import { abreviar, CONFIG } from './lib/config.mjs';
 import { leerSkills } from './lib/skills.mjs';
+import { carpetasDePlantillas, extraerTareas } from './lib/tareas.mjs';
 import { pendientesDeTraduccion } from './lib/traduccion.mjs';
 import { leerVaults } from './lib/vaults.mjs';
 
@@ -150,6 +151,28 @@ escribir('recientes.json', {
   skills: skills.filter((s) => reciente(s.m) || reciente(s.c)).map((s) => ({ nombre: s.nombre, categoria: s.categoria, m: s.m, c: s.c })),
   agentes: agentesIA.filter((a) => reciente(a.m) || reciente(a.c)).map((a) => ({ id: a.id, nombre: a.nombre, ia: a.ia, m: a.m, c: a.c })),
 });
+
+// --- Tareas -------------------------------------------------------------------------
+// Casillas pendientes de todos los vaults (las hechas solo se cuentan). Las de notas
+// que reescribe una herramienta van marcadas con `g` para mostrarlas aparte.
+const tareas = [];
+let tareasHechas = 0;
+for (const { info, notas, dirVault } of vaults) {
+  const plantillas = carpetasDePlantillas(dirVault);
+  const s = slug(info.name);
+  for (const n of notas) {
+    if (!n._texto.includes('[') || plantillas.has(n.f.split('/')[0]) || plantillas.has(n.f)) continue;
+    for (const t of extraerTareas(n._texto)) {
+      if (t.e === 'hecha' || t.e === 'cancelada') {
+        tareasHechas += 1;
+        continue;
+      }
+      tareas.push({ id: n.id, s, v: n.v, t: n.t, r: n.r, f: n.f, m: n.m, ...t, ...(esGenerada(n) ? { g: 1 } : {}) });
+    }
+  }
+}
+tareas.sort((a, b) => (a.d && b.d ? a.d.localeCompare(b.d) : a.d ? -1 : b.d ? 1 : b.m.localeCompare(a.m) || a.l - b.l));
+escribir('tareas.json', { abiertas: tareas.length, hechas: tareasHechas, tareas });
 
 const categorias = [...new Set(skills.map((s) => s.categoria))].sort((a, b) => a.localeCompare(b, 'es'));
 escribir('skills.json', { skills, paquetes, categorias, ias, totalInstalaciones });
