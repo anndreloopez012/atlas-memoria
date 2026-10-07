@@ -18,6 +18,11 @@ Más funcional sin más botones (plan en [docs/PLAN-2.0.md](docs/PLAN-2.0.md)).
 - Se pueden marcar como hechas desde el atlas: el servidor cambia solo esa casilla y solo si la línea no cambió.
 - Se omiten plantillas y código; las tareas de notas que reescriben las herramientas quedan aparte.
 
+### Proyectos
+- Los proyectos más activos en Hoy y todos en `#/hoy/proyectos`, con su última actividad y su historia reciente (bitácora, decisiones, cambios).
+- Salen del frontmatter de las notas (`tipo: proyecto` y `proyecto: <nombre>`); con un sistema de memoria se suma su semáforo y el motivo.
+- Datos nuevos: `proyectos.json`.
+
 ## 1.4.0 · 2026-10-05
 
 ### Una sola mente

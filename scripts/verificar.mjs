@@ -41,7 +41,8 @@ try {
     '# Idea\n\nUna idea con #etiqueta y enlace a [[Inicio]].\n\n- [ ] Revisar la idea 📅 2026-01-15 ⏫\n- [x] Escribirla\n\n```\n- [ ] esto es código\n```\n',
   );
   escribir(path.join(demo, 'Templates', 'Diaria.md'), '# Plantilla\n\n- [ ] tarea de plantilla\n');
-  escribir(path.join(trabajo, 'Proyecto.md'), '# Proyecto\n\nVuelve al [inicio](obsidian://open?vault=Notas%20Demo&file=Inicio).\n');
+  escribir(path.join(trabajo, 'Proyecto.md'), '---\ntipo: proyecto\nestado: activo\n---\n# Proyecto\n\nVuelve al [inicio](obsidian://open?vault=Notas%20Demo&file=Inicio).\n');
+  escribir(path.join(trabajo, 'Bitacora', 'Decision.md'), '---\ntipo: decision\nproyecto: Proyecto\nfecha: 2026-01-10\n---\n# Usar el atlas\n\nDecidimos usarlo.\n');
 
   const skillDemo =
     '---\nname: demo-skill\ndescription: Builds demo reports for the atlas check. Use when the user asks for a demo report.\n---\n# Demo skill\n\n## Steps\n\nRun the script.\n';
@@ -96,7 +97,7 @@ try {
   if (gen.status !== 0) console.log(gen.stdout, gen.stderr);
   const leer = (rel) => JSON.parse(fs.readFileSync(path.join(entorno.ATLAS_SALIDA, rel), 'utf8'));
   const atlas = leer('atlas.json');
-  ok(atlas.totales.vaults === 2 && atlas.totales.notas === 4, `lee 2 vaults y 4 notas (${atlas.totales.vaults} y ${atlas.totales.notas})`);
+  ok(atlas.totales.vaults === 2 && atlas.totales.notas === 5, `lee 2 vaults y 5 notas (${atlas.totales.vaults} y ${atlas.totales.notas})`);
   ok(atlas.totales.puentes === 2, `cuenta los puentes entre vaults (${atlas.totales.puentes})`);
   ok(atlas.centro === 'notas-demo', `elige un centro (${atlas.centro})`);
   const skills = leer('skills.json');
@@ -115,8 +116,10 @@ try {
   const archivoIdea = path.join(demo, 'Ideas', 'Idea.md');
   const marcada = marcarHecha(archivoIdea, tareaDemo.l, tareaDemo.h);
   ok(marcada.ok && fs.readFileSync(archivoIdea, 'utf8').includes('- [x] Revisar la idea') && !marcarHecha(archivoIdea, tareaDemo.l, tareaDemo.h).ok, 'marca una tarea como hecha cambiando solo su casilla (y no la toca dos veces)');
+  const proyecto = leer('proyectos.json').proyectos[0];
+  ok(proyecto?.nombre === 'Proyecto' && proyecto.entradas[0]?.t === 'Usar el atlas' && proyecto.entradas[0]?.fecha === '2026-01-10', 'arma los proyectos con su historia');
   const recientes = leer('recientes.json');
-  ok(recientes.notas.length === 4 && recientes.skills.some((s) => s.nombre === 'demo-skill') && recientes.agentes.length === 1, 'lista las novedades (notas, skills y agentes recientes)');
+  ok(recientes.notas.length === 5 && recientes.skills.some((s) => s.nombre === 'demo-skill') && recientes.agentes.length === 1, 'lista las novedades (notas, skills y agentes recientes)');
 
   // --- Instrucciones para las IAs ---------------------------------------------
   console.log('\nInstrucciones para Claude Code, Codex y Antigravity');

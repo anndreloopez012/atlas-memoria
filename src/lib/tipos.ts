@@ -278,3 +278,29 @@ export interface DatosTareas {
   hechas: number;
   tareas: Tarea[];
 }
+
+/** Un proyecto (datos/proyectos.json). */
+export interface Proyecto {
+  nombre: string;
+  /** slug del vault y id de su nota principal */
+  s: string;
+  id: string;
+  familia: string | null;
+  rol: string | null;
+  estado: string | null;
+  /** semáforo del sistema de memoria, si lo hay */
+  semaforo?: 'verde' | 'amarillo' | 'rojo' | 'archivado' | null;
+  motivos?: string[];
+  /** última actividad (bitácora o código), ISO */
+  actividad: string | null;
+  entradas: { id: string; s: string; t: string; tipo: string | null; fecha: string }[];
+  totalEntradas: number;
+  /** notas que lo nombran */
+  notas: number;
+}
+
+export interface DatosProyectos {
+  /** hay semáforo de un sistema de memoria */
+  semaforo: boolean;
+  proyectos: Proyecto[];
+}
