@@ -244,3 +244,37 @@ export interface Recientes {
   skills: { nombre: string; categoria: string; m: string | null; c: string | null }[];
   agentes: { id: string; nombre: string; ia: string; m: string; c: string | null }[];
 }
+
+/** Una tarea pendiente de una nota (datos/tareas.json). */
+export interface Tarea {
+  /** id de la nota */
+  id: string;
+  /** slug del vault */
+  s: string;
+  v: string;
+  /** título de la nota */
+  t: string;
+  /** ruta de la nota en el vault */
+  r: string;
+  f: string;
+  /** modificación de la nota */
+  m: string;
+  /** línea (desde 1) */
+  l: number;
+  /** texto de la tarea */
+  x: string;
+  e: 'abierta' | 'en-curso';
+  /** fecha (YYYY-MM-DD), si tiene */
+  d?: string;
+  p?: 'alta' | 'media' | 'baja';
+  /** de una nota que reescribe una herramienta */
+  g?: 1;
+  /** huella de la línea */
+  h: string;
+}
+
+export interface DatosTareas {
+  abiertas: number;
+  hechas: number;
+  tareas: Tarea[];
+}

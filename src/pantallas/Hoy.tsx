@@ -2,14 +2,16 @@
 // las notas que escribiste o editaste (por vault), las skills y agentes nuevos y,
 // aparte y en silencio, lo que tu sistema actualizó solo. Las demás secciones de
 // Hoy se suman aquí, no como botones en la barra.
-import { ArrowRight, Bot, ChevronDown, Sparkles } from 'lucide-react';
+import { ArrowRight, Bot, CheckSquare, ChevronDown, Sparkles } from 'lucide-react';
 import { useMemo } from 'react';
+import FilaTarea from '../componentes/FilaTarea';
 import OrbeVault from '../componentes/vault/OrbeVault';
-import { cargarRecientes, useDatos } from '../lib/datos';
+import { cargarRecientes, cargarTareas, useDatos } from '../lib/datos';
 import { hace, n } from '../lib/formato';
-import { rutaAgente, rutaSkill, rutaVault } from '../lib/rutas';
+import { rutaAgente, rutaSkill, rutaVault, type SeccionHoy } from '../lib/rutas';
 import type { Atlas, Recientes } from '../lib/tipos';
 import { desdeNovedades, visitaAnterior } from '../lib/visita';
+import Tareas from './Tareas';
 
 const FECHA = new Intl.DateTimeFormat('es-GT', { weekday: 'long', day: 'numeric', month: 'long' });
 const POR_VAULT = 5;
@@ -27,7 +29,48 @@ export function novedades(datos: Recientes | null, desde: number) {
   };
 }
 
-export default function Hoy({ atlas }: { atlas: Atlas }) {
+export default function Hoy({ atlas, seccion }: { atlas: Atlas; seccion: SeccionHoy }) {
+  if (seccion === 'tareas') return <Tareas atlas={atlas} />;
+  return <PortadaHoy atlas={atlas} />;
+}
+
+/** Tarjeta lateral: las tareas propias más urgentes (con fecha primero). */
+function Pendientes({ atlas }: { atlas: Atlas }) {
+  const datos = useDatos('tareas', cargarTareas);
+  const propias = (datos.datos?.tareas ?? []).filter((t) => !t.g);
+  // Variedad: como mucho dos tareas por nota, así una lista larga no lo llena todo.
+  const porNota = new Map<string, number>();
+  const destacadas = propias.filter((t) => {
+    const k = porNota.get(t.id) ?? 0;
+    porNota.set(t.id, k + 1);
+    return k < 2;
+  });
+  const colorDe = (v: string) => atlas.vaults.find((x) => x.nombre === v)?.color ?? '#64748b';
+  if (!datos.datos || datos.datos.tareas.length === 0) return null;
+  return (
+    <article className="hoy-tarjeta">
+      <header>
+        <CheckSquare size={16} />
+        <h2>Pendientes</h2>
+        <span className="mono">{n(propias.length)}</span>
+      </header>
+      {propias.length ? (
+        <ul className="lista-tareas">
+          {destacadas.slice(0, 7).map((t) => (
+            <FilaTarea key={`${t.id}:${t.l}`} tarea={t} color={colorDe(t.v)} />
+          ))}
+        </ul>
+      ) : (
+        <p className="hoy-meta">No tienes tareas pendientes en tus notas.</p>
+      )}
+      <a className="hoy-mas mono" href="#/hoy/tareas">
+        {propias.length > 7 ? `Ver las ${n(propias.length)} tareas` : 'Ver todas las tareas'} →
+      </a>
+    </article>
+  );
+}
+
+function PortadaHoy({ atlas }: { atlas: Atlas }) {
   const recientes = useDatos('recientes', cargarRecientes);
   const desde = useMemo(() => desdeNovedades(7), []);
   const nov = useMemo(() => novedades(recientes.datos, desde), [recientes.datos, desde]);
@@ -62,6 +105,9 @@ export default function Hoy({ atlas }: { atlas: Atlas }) {
       {recientes.error && <p className="vacio">{recientes.error}</p>}
 
       <div className="hoy-rejilla">
+        <aside className="hoy-lateral" aria-label="Lo pendiente">
+          <Pendientes atlas={atlas} />
+        </aside>
         <section className="hoy-seccion hoy-novedades" aria-label="Novedades">
           {porVault.map(({ v, notas }) => (
             <article key={v.slug} className="hoy-vault" style={{ ['--vault' as string]: v.color }}>

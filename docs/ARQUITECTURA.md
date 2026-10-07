@@ -73,6 +73,7 @@ Un complemento de Vite (`atlas-datos`) que funciona igual en `vite dev` y `vite 
 | `GET /datos/*` | Sirve `datos/` leyendo del disco en cada pedido (evita el 404 que Vite da en carpetas sincronizadas recién creadas). |
 | `GET /adjunto/<vault>/<ruta>` | Sirve imágenes y archivos de un vault. Las rutas de los vaults salen de `datos/atlas.json`. Rechaza rutas que escapen del vault. |
 | `POST /__atlas/regenerar` | Ejecuta el generador (una sola corrida a la vez) y devuelve su salida. |
+| `POST /__atlas/tarea` | Marca una tarea como hecha: `{ s: slug del vault, r: ruta de la nota, l: línea, h: huella }`. Solo cambia la casilla de esa línea y solo si la huella coincide (busca hasta 30 líneas arriba y abajo por si la nota se movió); si no, responde 409 sin tocar nada. La lógica está en `scripts/lib/tareas.mjs` (`marcarHecha`) y la prueba `npm run verificar`. |
 
 En desarrollo además:
 
@@ -104,6 +105,7 @@ React 19 + TypeScript, sin enrutador ni gestor de estado externos. Todo lo que d
 | `pantallas/Sistema.tsx` | Diagrama del flujo y fuentes detectadas. Con `.memoria-system`, también su enrutado, motor y comandos. |
 | `componentes/CentroMando.tsx` | El centro de mando (⌘K): MiniSearch sobre títulos, rutas, etiquetas, encabezados y extractos de todas las notas, más skills (también por su descripción original) y agentes. Todo se arma como **filas** (resultado, destino o acción) agrupadas; sin texto muestra recientes, destinos y acciones. Las funciones nuevas entran como filas o grupos, no como botones en la interfaz. Cualquier pantalla puede abrirlo con `abrirCentro(texto)`. |
 | `pantallas/Hoy.tsx` | Lo que importa ahora. Novedades desde la última visita: notas propias por vault (con «nueva» si se creó en ese lapso), skills y agentes nuevos, y aparte, plegado, lo que actualizaron las herramientas solas. |
+| `pantallas/Tareas.tsx`, `componentes/FilaTarea.tsx` | Vista completa de pendientes (`#/hoy/tareas`) y la fila de cada tarea, que marca la casilla con `POST /__atlas/tarea`. |
 | `lib/visita.ts` | Recuerda en el navegador cuándo fue la visita anterior: una visita termina tras 30 minutos sin usar el atlas, así recargar no borra las novedades. Sin almacenamiento, Hoy muestra los últimos 7 días. |
 | `lib/recientes.ts` | Lo último que abriste (notas, skills, agentes), en `localStorage` de este navegador; si no se puede guardar, no recuerda. |
 | `pantallas/Sistema.tsx` | Pestañas «Cómo trabaja» y «Agentes» (`#/sistema`, `#/sistema/agentes`; `#/agentes` lleva a la misma pestaña y la ficha de cada agente conserva `#/agentes/<id>`). |
