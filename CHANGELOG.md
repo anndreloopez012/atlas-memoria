@@ -23,6 +23,10 @@ Más funcional sin más botones (plan en [docs/PLAN-2.0.md](docs/PLAN-2.0.md)).
 - Salen del frontmatter de las notas (`tipo: proyecto` y `proyecto: <nombre>`); con un sistema de memoria se suma su semáforo y el motivo.
 - Datos nuevos: `proyectos.json`.
 
+### Favoritos y recorrido
+- Estrella en notas, skills y agentes: los favoritos aparecen arriba en Hoy y en el centro de mando.
+- Recorrido guiado de cinco pasos la primera vez; se repite desde el centro de mando.
+
 ## 1.4.0 · 2026-10-05
 
 ### Una sola mente

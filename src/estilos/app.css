@@ -783,6 +783,150 @@
   font-size: 11px;
 }
 
+/* Favoritos */
+.estrella-favorito {
+  vertical-align: middle;
+}
+
+.estrella-favorito.activa {
+  color: var(--laton);
+}
+
+.ficha-id .estrella-favorito {
+  margin-left: 4px;
+}
+
+.lista-favoritos {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista-favoritos a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0 10px;
+  margin: 0 -8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: var(--tinta);
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.lista-favoritos a:hover {
+  background: var(--superficie-2);
+}
+
+.favorito-titulo {
+  overflow: hidden;
+  font-weight: 560;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lista-favoritos .hoy-meta-linea {
+  grid-column: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Recorrido guiado */
+.recorrido {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+
+.recorrido-velo {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 5, 8, 0.62);
+  backdrop-filter: blur(3px);
+  animation: fundido 0.3s both;
+}
+
+.recorrido-foco {
+  position: absolute;
+  border-radius: 14px;
+  box-shadow: 0 0 0 9999px rgba(4, 5, 8, 0.62), 0 0 0 2px var(--laton), 0 0 32px 4px color-mix(in oklab, var(--laton) 35%, transparent);
+  pointer-events: none;
+  transition: top 0.45s var(--ease), left 0.45s var(--ease), width 0.45s var(--ease), height 0.45s var(--ease);
+}
+
+.recorrido-tarjeta {
+  position: absolute;
+  width: min(340px, calc(100vw - 32px));
+  padding: 18px 20px 16px;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  box-shadow: var(--sombra);
+  animation: aparecer-abajo 0.35s var(--ease) both;
+}
+
+.recorrido-tarjeta.centro {
+  top: 50%;
+  left: 50%;
+  width: min(420px, calc(100vw - 32px));
+  transform: translate(-50%, -50%);
+  animation: fundido 0.35s both;
+}
+
+.recorrido-tarjeta h2 {
+  margin: 4px 0 8px;
+  font-size: 28px;
+}
+
+.recorrido-tarjeta p:not(.rotulo) {
+  margin: 0 0 16px;
+  color: var(--tinta-2);
+  font-size: 14.5px;
+}
+
+.recorrido-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.recorrido-puntos {
+  display: flex;
+  gap: 5px;
+}
+
+.recorrido-puntos span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--linea-fuerte);
+  transition: background 0.3s, transform 0.3s;
+}
+
+.recorrido-puntos span.activo {
+  background: var(--laton);
+  transform: scale(1.3);
+}
+
+.boton-texto {
+  padding: 6px 4px;
+  border: 0;
+  background: none;
+  color: var(--tinta-3);
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.boton-texto:hover {
+  color: var(--tinta);
+}
+
 .chip.interruptor {
   cursor: pointer;
 }

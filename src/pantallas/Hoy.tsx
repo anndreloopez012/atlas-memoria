@@ -2,11 +2,12 @@
 // las notas que escribiste o editaste (por vault), las skills y agentes nuevos y,
 // aparte y en silencio, lo que tu sistema actualizó solo. Las demás secciones de
 // Hoy se suman aquí, no como botones en la barra.
-import { ArrowRight, Bot, CheckSquare, ChevronDown, Sparkles } from 'lucide-react';
+import { ArrowRight, Bot, CheckSquare, ChevronDown, FileText, Sparkles, Star } from 'lucide-react';
 import { useMemo } from 'react';
 import FilaTarea from '../componentes/FilaTarea';
 import OrbeVault from '../componentes/vault/OrbeVault';
 import { cargarRecientes, cargarTareas, useDatos } from '../lib/datos';
+import { useFavoritos } from '../lib/favoritos';
 import { hace, n } from '../lib/formato';
 import { rutaAgente, rutaSkill, rutaVault, type SeccionHoy } from '../lib/rutas';
 import type { Atlas, Recientes } from '../lib/tipos';
@@ -34,6 +35,35 @@ export default function Hoy({ atlas, seccion }: { atlas: Atlas; seccion: Seccion
   if (seccion === 'tareas') return <Tareas atlas={atlas} />;
   if (seccion === 'proyectos') return <Proyectos />;
   return <PortadaHoy atlas={atlas} />;
+}
+
+/** Tarjeta lateral: lo que marcaste con la estrella. */
+function Favoritos() {
+  const favoritos = useFavoritos();
+  if (!favoritos.length) return null;
+  return (
+    <article className="hoy-tarjeta">
+      <header>
+        <Star size={16} />
+        <h2>Favoritos</h2>
+        <span className="mono">{n(favoritos.length)}</span>
+      </header>
+      <ul className="lista-favoritos">
+        {favoritos.slice(0, 10).map((f) => {
+          const Icono = f.tipo === 'nota' ? FileText : f.tipo === 'skill' ? Sparkles : Bot;
+          return (
+            <li key={`${f.tipo}:${f.id}`}>
+              <a href={f.destino}>
+                <Icono size={14} style={{ color: f.color }} />
+                <span className="favorito-titulo">{f.titulo}</span>
+                <span className="mono hoy-meta-linea">{f.contexto}</span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </article>
+  );
 }
 
 /** Tarjeta lateral: las tareas propias más urgentes (con fecha primero). */
@@ -108,6 +138,7 @@ function PortadaHoy({ atlas }: { atlas: Atlas }) {
 
       <div className="hoy-rejilla">
         <aside className="hoy-lateral" aria-label="Lo pendiente">
+          <Favoritos />
           <Pendientes atlas={atlas} />
           <TarjetaProyectos />
         </aside>
