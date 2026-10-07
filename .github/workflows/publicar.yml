@@ -1,0 +1,29 @@
+# Publica una versión descargable en GitHub cada vez que se sube una etiqueta v*
+# (por ejemplo v2.2.0): un zip con la app y los instaladores de doble clic.
+name: Publicar versión
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Armar el zip descargable
+        run: git archive --format=zip --prefix="Atlas de memoria/" -o "atlas-memoria-${GITHUB_REF_NAME}.zip" HEAD
+      - name: Notas de la versión
+        run: node scripts/notas-version.mjs "${GITHUB_REF_NAME}" > notas.md
+      - name: Publicar en GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "atlas-memoria-${GITHUB_REF_NAME}.zip" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "atlas-memoria-${GITHUB_REF_NAME}.zip" --title "Atlas de memoria ${GITHUB_REF_NAME}" --notes-file notas.md --latest
+          fi

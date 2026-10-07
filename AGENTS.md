@@ -28,8 +28,8 @@ Objetivo: que la persona termine con el atlas abierto en el navegador y sepa có
 4. **Traducir lo pendiente.** Regla del proyecto: todo texto descriptivo en español. Si `totales.sinTraducir` > 0:
    - Fuera de una sesión de Claude Code: `npm run traducir`.
    - Desde cualquier IA (incluida Claude Code): `npm run traducir -- --lotes <carpeta-temporal>`; traduce cada `lote-NN.json` (lista de `{ clave, tipo, texto }`) a `resultado-NN.json` (`{ "<clave>": "<traducción>" }`, todas las claves, JSON válido) con las reglas de «Traducción»; luego `npm run traducir -- --importar <carpeta-temporal>`. Si son muchos lotes y puedes, repártelos entre subagentes.
-5. **Abrirlo.** `bash iniciar.sh` (Windows: `powershell -ExecutionPolicy Bypass -File iniciar.ps1`) levanta el servidor en `siguiente.url` (por defecto http://localhost:5190). Déjalo en segundo plano si tu herramienta lo permite y abre la URL en el navegador. Si no puedes dejar procesos corriendo, dile a la persona que ejecute ese comando cuando quiera usar el atlas.
-6. **Confirmar y contar.** `npm run verificar` debe terminar en «Todo en orden». Resume a la persona qué encontró (vaults y su centro, skills por IA, agentes, automatizaciones) y cómo abrir el atlas después.
+5. **Abrirlo.** El instalador ya creó el acceso de doble clic «Atlas de memoria» (lista en `lanzadores` del resumen; macOS: `~/Applications` y el Escritorio; Windows: Escritorio y menú Inicio; Linux: menú de aplicaciones y Escritorio). Ábrelo una vez para la persona con `npm run abrir` (o `bash iniciar.sh` / `iniciar.ps1`): busca cambios, deja el servidor en segundo plano y abre `siguiente.url`. No hace falta dejar ningún proceso tuyo corriendo.
+6. **Confirmar y contar.** `npm run verificar` debe terminar en «Todo en orden». Resume a la persona qué encontró (vaults y su centro, skills por IA, agentes, automatizaciones) y dile, con el texto de `siguiente.dobleClic`, que desde ahora abre el atlas con **doble clic** en «Atlas de memoria»: cada vez que lo abre busca cambios en sus vaults, skills y agentes, y se apaga solo al cerrar la pestaña.
 
 **Actualizar una instalación existente:** `git pull`, luego `bash instalar.sh --json` (o `instalar.ps1`). Conserva su configuración y agrega lo nuevo que encuentre.
 
@@ -38,7 +38,8 @@ Objetivo: que la persona termine con el atlas abierto en el navegador y sepa có
 | Comando | Para qué |
 |---|---|
 | `bash instalar.sh` · `instalar.ps1` | Instalación completa (también para actualizar) |
-| `bash iniciar.sh` · `iniciar.ps1` | Abrir el atlas (instala primero si hace falta) |
+| `bash iniciar.sh` · `iniciar.ps1` · `npm run abrir` | Abrir la app (instala primero si hace falta; `--dev` / `-Dev` para el modo desarrollo) |
+| `npm run lanzador` | Volver a crear el acceso de doble clic «Atlas de memoria» |
 | `npm run instalar -- <opciones>` | Instalador sin el paso de Node.js (`--vault`, `--quitar-vault`, `--centro`, `--skills IA=ruta`, `--agentes IA=ruta`, `--cuenta`, `--propia`, `--puerto`, `--redetectar`, `--solo-detectar`, `--json`) |
 | `npm run detectar` | Volver a buscar vaults, skills y agentes nuevos sin generar datos |
 | `npm run datos` | Regenerar los datos |
@@ -81,6 +82,8 @@ Al traducir lotes (paso 4):
 | Ruta | Qué hay |
 |---|---|
 | `instalar.sh`, `instalar.ps1`, `iniciar.sh`, `iniciar.ps1` | Arranque por sistema operativo |
+| `Instalar en Mac.command`, `Instalar en Windows.cmd`, `Instalar en Linux.sh` | Instaladores de doble clic de la descarga (copian la app a una ubicación fija, instalan, crean el acceso y la abren) |
+| `scripts/abrir.mjs`, `scripts/lanzador.mjs`, `instalador/` | La app de doble clic: arranque, acceso por sistema operativo e íconos |
 | `scripts/instalar.mjs` | Detección + configuración + verificación + datos |
 | `scripts/lib/detectar.mjs` | Qué tiene cada equipo |
 | `scripts/lib/config.mjs` | Configuración efectiva (`ATLAS_*` > `atlas.config.json` > detección) |
