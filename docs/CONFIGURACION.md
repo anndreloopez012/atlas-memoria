@@ -49,6 +49,7 @@ Hay una copia en [atlas.config.ejemplo.json](../atlas.config.ejemplo.json).
 | `propias` | objeto | Qué skills son de la persona. Además de las que viven fuera de las carpetas de las IAs (por ejemplo, en un repositorio enlazado): `cuentas` (dueños en GitHub) y `patrones` (texto en el nombre). |
 | `carpetasGeneradas` | lista | Carpetas de primer nivel de los vaults donde una herramienta genera notas en masa (p. ej. Graphify, que crea una nota por archivo de código). Sus subcarpetas se cuentan pero no se cargan. |
 | `puerto` | número | Puerto del servidor local (5190 por defecto). |
+| `uso` | sí/no | Contar el uso de las skills en los historiales locales de Claude Code y Codex (solo conteos y fechas; `true` por defecto). `false` lo apaga. |
 | `novedades` | objeto | `dias`: cuántos días hacia atrás guarda las novedades que muestra Hoy (45 por defecto). |
 
 ## Variables de entorno
@@ -62,5 +63,6 @@ Hay una copia en [atlas.config.ejemplo.json](../atlas.config.ejemplo.json).
 | `ATLAS_LAUNCH_PREFIJOS` | Prefijos de automatizaciones a mostrar, separados por coma. |
 | `ATLAS_PUERTO` o `PORT` | Puerto del servidor. |
 | `ATLAS_VIGILAR=0` | Desactiva la sincronización en vivo. |
+| `ATLAS_USO=0` | No lee los historiales de las IAs (sin conteo de uso de skills). |
 | `ATLAS_TRADUCIR_MANUALES=1` | Marca también para traducir los `SKILL.md` completos. |
 | `CODEX_HOME`, `CLAUDE_CONFIG_DIR` | Si usas carpetas de configuración no estándar para Codex o Claude Code, la detección las respeta. |

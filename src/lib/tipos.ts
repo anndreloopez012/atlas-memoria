@@ -98,6 +98,8 @@ export interface Atlas {
     salud: string | null;
     routing: { vault: string; seccion: string; palabras: string[] }[];
     motor: { scripts: { nombre: string; resumen: string }[]; comandos: { comando: string; ayuda: string }[] };
+    /** lectura del uso de skills: si está activa, cuántos días cubre y si ya se leyó todo */
+    uso?: { activo: boolean; dias: number; fuentes: { ia: string; archivos: number }[]; completo: boolean; leidos: number; total: number };
   };
 }
 
@@ -178,6 +180,19 @@ export interface Skill {
   ruta: string;
   archivoDetalle: string;
   agentes: string[];
+  /** última modificación y primera instalación (ISO) */
+  m?: string | null;
+  c?: string | null;
+  /** uso real en los historiales locales de las IAs (últimos 180 días), o null */
+  uso?: UsoSkill | null;
+}
+
+export interface UsoSkill {
+  total: number;
+  /** último uso (ISO) */
+  ultimo: string;
+  /** usos por IA */
+  ias: Record<string, number>;
 }
 
 export interface DatosSkills {

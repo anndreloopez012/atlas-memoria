@@ -8,6 +8,7 @@ import { leerAgentesIA, leerAutomatizaciones, leerMotor, notaPorRuta } from './l
 import { abreviar, CONFIG } from './lib/config.mjs';
 import { leerProyectos } from './lib/proyectos.mjs';
 import { leerSkills } from './lib/skills.mjs';
+import { leerUso } from './lib/uso.mjs';
 import { carpetasDePlantillas, extraerTareas } from './lib/tareas.mjs';
 import { pendientesDeTraduccion } from './lib/traduccion.mjs';
 import { leerVaults } from './lib/vaults.mjs';
@@ -179,6 +180,10 @@ escribir('tareas.json', { abiertas: tareas.length, hechas: tareasHechas, tareas 
 const proyectos = leerProyectos(todas, slug, esGenerada);
 escribir('proyectos.json', proyectos);
 
+// --- Uso real de las skills (historiales locales de las IAs; solo conteos) ----------
+const { porSkill: usoPorSkill, resumen: usoResumen } = leerUso(new Set(skills.map((s) => s.nombre)));
+for (const s of skills) s.uso = usoPorSkill.get(s.nombre) ?? null;
+
 const categorias = [...new Set(skills.map((s) => s.categoria))].sort((a, b) => a.localeCompare(b, 'es'));
 escribir('skills.json', { skills, paquetes, categorias, ias, totalInstalaciones });
 escribir('agentes.json', { agentes: [...agentesIA, ...automatizaciones] });
@@ -237,6 +242,7 @@ const atlas = {
     salud: notaCentro('Reportes/Salud del Sistema.md'),
     routing: routing.map((r) => ({ vault: r.vault, seccion: r.seccion, palabras: r.palabras || [] })),
     motor,
+    uso: usoResumen,
     // De dónde salió cada cosa en este equipo (se muestra en «Cómo trabaja»).
     fuentes: {
       vaults: resumenVaults.map((v) => ({ nombre: v.nombre, ruta: abreviar(v.ruta), notas: v.notas })),
