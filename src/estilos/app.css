@@ -1393,6 +1393,49 @@
   flex-basis: 100%;
 }
 
+/* Captura (centro de mando) */
+.captura-texto {
+  margin: 4px 0 12px;
+  padding: 10px 12px;
+  border-left: 2px solid var(--exito);
+  background: var(--superficie-2);
+  color: var(--tinta);
+  white-space: pre-wrap;
+}
+
+.captura-ok {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--exito);
+}
+
+.captura-ok .mono {
+  color: var(--tinta-2);
+  font-size: 12px;
+}
+
+.captura-nota {
+  margin: 4px 0 12px;
+  color: var(--tinta-3);
+  font-size: 11.5px;
+}
+
+.captura-acciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.captura-acciones .boton-secundario {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
 .chip.interruptor {
   cursor: pointer;
 }
