@@ -80,7 +80,7 @@ Un complemento de Vite (`atlas-datos`) que funciona igual en `vite dev` y `vite 
 En desarrollo además:
 
 - Si no hay datos al arrancar, los genera antes de servir.
-- Vigila **cada vault** con `fs.watch` recursivo (FSEvents en macOS, ReadDirectoryChangesW en Windows, inotify en Linux) y `atlas.config.json` con `fs.watchFile`. Ignora carpetas ocultas y las generadas. Agrupa cambios 8 s, regenera, vuelve a armar los vigías si cambió la lista de vaults y manda el evento HMR `atlas:datos`; la página vacía su caché y vuelve a pedir los datos sin recargar.
+- Vigila **cada vault** y las carpetas de skills y agentes detectadas (de `atlas.json › sistema.fuentes`: en skills cuenta solo un `SKILL.md` o una carpeta nueva, en agentes cualquier `.md`; ignora `node_modules` y `.git`) con `fs.watch` recursivo (FSEvents en macOS, ReadDirectoryChangesW en Windows, inotify en Linux) y `atlas.config.json` con `fs.watchFile`. Ignora carpetas ocultas y las generadas. Agrupa cambios 8 s, regenera, vuelve a armar los vigías si cambió la lista de vaults y manda el evento HMR `atlas:datos`; la página vacía su caché y vuelve a pedir los datos sin recargar.
 
 ## 4. Página (`src/`)
 

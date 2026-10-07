@@ -177,9 +177,10 @@ Lo que no se detecta se agrega con una opción: `--vault`, `--skills`, `--agente
 
 ## Cómo se mantiene sincronizado
 
-1. **En vivo:** mientras el atlas está abierto (`iniciar` o `npm run dev`), el servidor vigila tus vaults y `atlas.config.json`. Cuando algo cambia, espera 8 segundos para agrupar los guardados de Obsidian, regenera el atlas y avisa al navegador, que recarga los datos sin perder la vista.
-2. **Bajo pedido:** el botón de la barra superior (muestra «hace X min») vuelve a leer todo.
-3. **Desde la terminal:** `npm run datos`.
+1. **En vivo:** mientras el atlas está abierto (`iniciar` o `npm run dev`), el servidor vigila tus vaults, las carpetas de **skills** (un `SKILL.md` nuevo o editado) y de **agentes** de todas las IAs detectadas, y `atlas.config.json`. Cuando algo cambia, espera 8 segundos para agrupar los guardados, regenera el atlas y avisa al navegador, que recarga los datos sin perder la vista. Una nota, skill o agente nuevo aparece solo en unos 15-20 segundos.
+2. **Bajo pedido:** el botón de la barra superior (muestra «hace X min») o «Actualizar los datos ahora» en el centro de mando vuelve a leer todo.
+3. **Ubicaciones nuevas** (un vault nuevo, otra IA o un plugin recién activado con su propia carpeta de skills): `npm run detectar` las agrega.
+4. **Desde la terminal:** `npm run datos`.
 
 Los datos generados viven en `datos/` y **no se suben a Git**: son contenido personal y cambian a cada rato. El repositorio solo guarda el código que los genera y los dibuja.
 
