@@ -1155,6 +1155,161 @@
   text-decoration: none;
 }
 
+/* Camino entre notas */
+.camino-abrir {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 14px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--tinta-3);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.camino-abrir:hover {
+  color: var(--laton);
+}
+
+.camino {
+  margin: 6px 0 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+
+.camino header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: var(--tinta-2);
+  font-size: 13px;
+}
+
+.camino header .icono-boton {
+  margin-left: auto;
+}
+
+.camino-entrada {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: var(--radio-s);
+  background: var(--fondo-alto);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.camino-entrada:focus {
+  border-color: var(--laton);
+}
+
+.camino-sugerencias {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.camino-sugerencias button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--tinta);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.camino-sugerencias button:hover {
+  background: var(--superficie-2);
+}
+
+.camino-sugerencias .mono {
+  grid-column: 2;
+  overflow: hidden;
+  color: var(--tinta-3);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.camino-titulo {
+  overflow: hidden;
+  font-size: 13.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.camino-resumen {
+  margin: 0 0 8px;
+  color: var(--tinta-2);
+  font-size: 12.5px;
+}
+
+.camino-pasos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.camino-pasos li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.camino-flecha {
+  color: var(--tinta-3);
+}
+
+.camino-paso {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 260px;
+  padding: 5px 10px;
+  border: 1px solid color-mix(in oklab, var(--c) 45%, var(--linea));
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--c) 10%, transparent);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 12.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.camino-paso .chip-punto {
+  background: var(--c);
+}
+
+.camino-paso.origen {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.camino-paso:not(.origen):hover {
+  border-color: var(--c);
+}
+
 .chip.interruptor {
   cursor: pointer;
 }

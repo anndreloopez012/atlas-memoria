@@ -55,7 +55,7 @@ Se marca cada punto al fusionarlo.
 - [x] 1 · ¿qué skill uso para…?
 - [x] 11 · uso real de skills
 - [x] 3 · salud de la memoria
-- [ ] 8 · camino entre notas
+- [x] 8 · camino entre notas
 - [ ] 5 · preguntar a la memoria
 - [ ] 7 · capturar
 - [ ] 10 · voz
