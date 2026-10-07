@@ -5,6 +5,7 @@ import type { ServerResponse } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Connect, type Plugin, type ViteDevServer } from 'vite';
+import { capturar, modoDeCaptura } from './scripts/lib/capturar.mjs';
 import { armarPedido, fuentesPara, iasParaPreguntar, responder as responderIA } from './scripts/lib/preguntar.mjs';
 import { marcarHecha } from './scripts/lib/tareas.mjs';
 
@@ -17,6 +18,7 @@ interface ConfigLocal {
   puerto?: number;
   carpetasGeneradas?: string[];
   preguntar?: { ia?: string };
+  captura?: { modo?: string; vault?: string; carpeta?: string };
 }
 
 function leerConfig(): ConfigLocal {
@@ -70,6 +72,16 @@ function vaultsActuales(): Map<string, string> {
   return cacheVaults.porSlug;
 }
 
+/** Vaults, centro y sistema de memoria de este equipo (de los datos generados). */
+function contextoDeCaptura() {
+  const atlas = JSON.parse(fs.readFileSync(path.join(DATOS, 'atlas.json'), 'utf8')) as {
+    centro: string | null;
+    vaults: { nombre: string; slug: string; ruta: string }[];
+    sistema: { memoria: boolean };
+  };
+  return { vaults: atlas.vaults.filter((v) => v.ruta), centro: atlas.centro, memoria: atlas.sistema.memoria, config: leerConfig().captura ?? {} };
+}
+
 /** Lee el cuerpo JSON de una petición (hasta 64 KB). */
 function leerJson(req: Connect.IncomingMessage): Promise<Record<string, unknown>> {
   return new Promise((resolve, reject) => {
@@ -118,6 +130,8 @@ function generar(): Promise<{ ok: boolean; salida: string }> {
  */
 function atlas(): Plugin {
   let generando: Promise<{ ok: boolean; salida: string }> | null = null;
+  // En desarrollo, avisa al navegador que hay datos nuevos (se define en configureServer).
+  let avisarDatos: (() => void) | null = null;
   const regenerar = () => (generando ??= generar().finally(() => (generando = null)));
 
   const middlewares = (app: Connect.Server) => {
@@ -174,6 +188,25 @@ function atlas(): Plugin {
       }
     });
 
+    // Capturar una idea: GET dice dónde quedaría; POST la guarda y vuelve a leer los datos.
+    app.use('/__atlas/capturar', async (req, res) => {
+      try {
+        const contexto = contextoDeCaptura();
+        if (req.method === 'GET') {
+          const modo = modoDeCaptura(contexto);
+          const central = contexto.vaults.find((v) => v.nombre === contexto.config.vault) ?? contexto.vaults.find((v) => v.slug === contexto.centro) ?? contexto.vaults[0];
+          return responder(res, 200, { modo, destino: modo === 'memoria' ? 'la bandeja de capturas de tu sistema de memoria' : central ? `${central.nombre} / ${contexto.config.carpeta ?? 'Bandeja'}` : null });
+        }
+        if (req.method !== 'POST') return responder(res, 405, { ok: false });
+        const cuerpo = (await leerJson(req)) as { texto?: string; titulo?: string };
+        const resultado = capturar({ texto: String(cuerpo.texto ?? ''), titulo: cuerpo.titulo }, contexto);
+        if (resultado.ok) void regenerar().then(() => avisarDatos?.());
+        responder(res, resultado.ok ? 200 : 400, resultado);
+      } catch (error) {
+        responder(res, 400, { ok: false, error: String(error) });
+      }
+    });
+
     app.use('/__atlas/regenerar', async (req, res) => {
       if (req.method !== 'POST') {
         res.statusCode = 405;
@@ -194,6 +227,7 @@ function atlas(): Plugin {
         execFileSync(process.execPath, [GENERADOR], { cwd: RAIZ, stdio: 'inherit' });
       }
       middlewares(server.middlewares);
+      avisarDatos = () => server.ws.send({ type: 'custom', event: 'atlas:datos', data: { ok: true } });
       if (process.env.ATLAS_VIGILAR === '0') return;
 
       // Sincronización en vivo: un cambio en cualquier vault (o en la

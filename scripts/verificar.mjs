@@ -139,6 +139,12 @@ try {
   ok(fuentes[0]?.t === 'Idea' && fuentes[0].texto.includes('Revisar la idea') && armarPedido('x', fuentes).includes('[1] «Idea»') && iasParaPreguntar('ninguna').length === 0, 'encuentra las notas que responden una pregunta (sin llamar a ninguna IA)');
   const recientes = leer('recientes.json');
   ok(recientes.notas.length === 5 && recientes.skills.some((s) => s.nombre === 'demo-skill') && recientes.agentes.length === 1, 'lista las novedades (notas, skills y agentes recientes)');
+  const { capturar } = await import('./lib/capturar.mjs');
+  const vaultsDemo = atlas.vaults.map((v) => ({ nombre: v.nombre, slug: v.slug, ruta: v.ruta }));
+  const captura = capturar({ texto: 'Probar el atlas en otro equipo' }, { vaults: vaultsDemo, centro: atlas.centro, memoria: false, config: {} });
+  correr('generar-datos.mjs');
+  const capturada = Object.values(JSON.parse(fs.readFileSync(path.join(entorno.ATLAS_SALIDA, 'vault', `${captura.slug}.json`), 'utf8')).notas).find((x) => x.id === captura.id);
+  ok(captura.ok && captura.via === 'archivo' && captura.rel?.startsWith('Bandeja/') && capturada?.h?.[0]?.t === 'Probar el atlas en otro equipo', 'captura una idea como nota nueva en la bandeja del vault central');
 
   // --- Instrucciones para las IAs ---------------------------------------------
   console.log('\nInstrucciones para Claude Code, Codex y Antigravity');

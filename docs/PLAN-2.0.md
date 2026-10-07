@@ -57,6 +57,6 @@ Se marca cada punto al fusionarlo.
 - [x] 3 · salud de la memoria
 - [x] 8 · camino entre notas
 - [x] 5 · preguntar a la memoria
-- [ ] 7 · capturar
+- [x] 7 · capturar
 - [ ] 10 · voz
 - [ ] 12 · exportar

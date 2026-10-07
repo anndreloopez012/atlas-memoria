@@ -48,6 +48,9 @@ Más funcional sin más botones (plan en [docs/PLAN-2.0.md](docs/PLAN-2.0.md)).
 - Desde el centro de mando: el atlas busca las notas que responden la pregunta y la IA instalada (Claude Code, Codex o Gemini CLI) responde solo con ellas y las cita. Avisa qué se envía y a quién.
 - Si una IA no tiene la sesión iniciada, prueba la siguiente; sin IA, muestra las notas que responden. Configurable con `preguntar.ia`.
 
+### Capturar
+- Desde el centro de mando (o empezando con `+`): guarda una idea como nota nueva con `memoria capturar` si existe, o en `Bandeja/` del vault central. Dice dónde quedó y ofrece abrirla en Obsidian.
+
 ## 1.4.0 · 2026-10-05
 
 ### Una sola mente
