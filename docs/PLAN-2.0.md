@@ -59,4 +59,4 @@ Se marca cada punto al fusionarlo.
 - [x] 5 · preguntar a la memoria
 - [x] 7 · capturar
 - [x] 10 · voz
-- [ ] 12 · exportar
+- [x] 12 · exportar

@@ -1450,6 +1450,35 @@
   font-size: 13px;
 }
 
+/* Mientras se exporta una imagen: sin animaciones, todo en su estado final */
+.exportando *,
+.exportando *::before,
+.exportando *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Avisos breves */
+.avisos {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 70;
+  pointer-events: none;
+}
+
+.aviso {
+  margin: 0;
+  padding: 10px 16px;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: 999px;
+  background: var(--superficie);
+  box-shadow: var(--sombra);
+  color: var(--tinta);
+  font-size: 13.5px;
+  animation: aparecer-abajo 0.25s var(--ease) both;
+}
+
 .chip.interruptor {
   cursor: pointer;
 }

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Marca } from './componentes/BarraSuperior';
 import BarraSuperior from './componentes/BarraSuperior';
+import Avisos from './componentes/Avisos';
 import CentroMando from './componentes/CentroMando';
 import Recorrido from './componentes/Recorrido';
 import { cargarAtlas, recargarDatos, useDatos } from './lib/datos';
@@ -99,8 +100,9 @@ export default function App() {
         {atlas && ruta.vista === 'sistema' && <Sistema atlas={atlas} pestana={ruta.pestana} />}
         </Suspense>
       </main>
-      {atlas && centro !== null && <CentroMando atlas={atlas} inicial={centro} cerrar={() => setCentro(null)} />}
+      {atlas && centro !== null && <CentroMando atlas={atlas} vista={ruta.vista} inicial={centro} cerrar={() => setCentro(null)} />}
       <Recorrido listo={Boolean(atlas)} />
+      <Avisos />
     </div>
   );
 }
