@@ -1,6 +1,6 @@
 import { Moon, RefreshCw, Search, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { cargarRecientes, recargarDatos, regenerarEnServidor, useDatos } from '../lib/datos';
+import { cargarRecientes, recargarDatos, regenerarEnServidor, useBuscandoCambios, useDatos } from '../lib/datos';
 import { hace } from '../lib/formato';
 import { rutaVault, type Ruta } from '../lib/rutas';
 import { alternarTema, useTema } from '../lib/tema';
@@ -31,7 +31,10 @@ export function Marca() {
 
 export default function BarraSuperior({ atlas, ruta, abrirBuscador }: { atlas: Atlas | null; ruta: Ruta; abrirBuscador: () => void }) {
   const tema = useTema();
-  const [regenerando, setRegenerando] = useState(false);
+  const [actualizando, setRegenerando] = useState(false);
+  // También gira mientras el servidor busca cambios por su cuenta (al abrir la app).
+  const buscando = useBuscandoCambios();
+  const regenerando = actualizando || buscando;
   // Un punto discreto en «Hoy» cuando hay notas tuyas nuevas desde la última visita.
   const recientes = useDatos('recientes', cargarRecientes);
   const hayNovedades = (recientes.datos?.notas ?? []).some((x) => !x.g && Date.parse(x.m) > desdeNovedades(7));
@@ -88,7 +91,7 @@ export default function BarraSuperior({ atlas, ruta, abrirBuscador }: { atlas: A
         </button>
         <button className="icono-boton estado-datos" onClick={actualizar} disabled={regenerando} title={aviso ?? 'Volver a leer vaults, skills y agentes'}>
           <RefreshCw size={15} className={regenerando ? 'girando' : ''} />
-          <span className="mono">{regenerando ? 'leyendo…' : atlas ? hace(atlas.generado) : '—'}</span>
+          <span className="mono">{regenerando ? 'buscando cambios…' : atlas ? hace(atlas.generado) : '—'}</span>
         </button>
         <button className="icono-boton boton-tema" onClick={alternarTema} aria-label={tema === 'oscuro' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}>
           {tema === 'oscuro' ? <Sun size={16} /> : <Moon size={16} />}

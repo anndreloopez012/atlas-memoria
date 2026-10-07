@@ -162,6 +162,20 @@ try {
   const skillAgents = leerRepo('.agents/skills/instalar-atlas/SKILL.md');
   ok(skillAgents && skillAgents === leerRepo('.claude/skills/instalar-atlas/SKILL.md'), 'la skill instalar-atlas está en .agents/ y .claude/ y es idéntica');
   ok(Boolean(leerRepo('INSTALAR.md')) && Boolean(leerRepo('instalar.sh')) && Boolean(leerRepo('instalar.ps1')), 'existen INSTALAR.md, instalar.sh e instalar.ps1');
+  const ejecutable = (rel) => (fs.statSync(path.join(RAIZ, rel)).mode & 0o111) !== 0;
+  ok(
+    ['Instalar en Mac.command', 'Instalar en Linux.sh', 'iniciar.sh', 'instalar.sh'].every(ejecutable) &&
+      fs.readFileSync(path.join(RAIZ, 'Instalar en Windows.cmd'), 'utf8').includes('\r\n') &&
+      ['atlas.icns', 'atlas.ico', 'atlas.png'].every((f) => fs.existsSync(path.join(RAIZ, 'instalador', f))),
+    'trae los instaladores de doble clic (ejecutables) y los íconos de cada sistema',
+  );
+  if (process.platform !== 'win32') {
+    const l = correr('lanzador.mjs', ['--json']);
+    const creados = JSON.parse((l.stdout || '{}').trim().split('\n').pop() || '{}').lanzadores || [];
+    const app = creados.find((c) => c.endsWith('.app') || c.endsWith('.desktop'));
+    const listo = process.platform === 'darwin' ? app && fs.existsSync(path.join(app, 'Contents', 'MacOS', 'atlas')) : app && fs.readFileSync(app, 'utf8').includes('iniciar.sh');
+    ok(Boolean(listo) && creados.every((c) => c.startsWith(home)), 'crea el acceso de doble clic «Atlas de memoria» en la carpeta personal');
+  }
 } finally {
   fs.rmSync(base, { recursive: true, force: true });
 }

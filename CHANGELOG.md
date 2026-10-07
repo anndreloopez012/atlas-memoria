@@ -1,5 +1,15 @@
 # Cambios
 
+## 2.2.0 · 2026-10-07
+
+### App de doble clic para macOS, Windows y Linux
+- **Instaladores de doble clic** en la descarga (`Instalar en Mac.command`, `Instalar en Windows.cmd`, `Instalar en Linux.sh`): copian la app a una carpeta fija, instalan Node.js si falta, detectan todo, crean el acceso y lo abren.
+- **Acceso «Atlas de memoria» con ícono**: `.app` en Aplicaciones y Escritorio (macOS), acceso directo en Escritorio y menú Inicio (Windows), entrada de menú y Escritorio (Linux). También lo deja la instalación por IA (`npm run lanzador` lo recrea).
+- **Cada apertura busca cambios**: ubicaciones nuevas de vaults, skills y agentes, y vuelve a leer todo en segundo plano mientras la página ya está abierta («buscando cambios…» en la barra); después los sigue vigilando.
+- **Sin ventanas técnicas**: el servidor corre en segundo plano y se apaga solo a los 3 minutos sin uso. Si ya estaba abierto, el doble clic solo abre el navegador.
+- La app usa la versión preparada (más rápida) y se vuelve a preparar sola tras una actualización; la versión de producción ahora también vigila vaults, skills y agentes.
+- **Releases**: cada versión (`v*`) publica en GitHub un zip descargable con los instaladores.
+
 ## 2.1.0 · 2026-10-07
 
 - El servidor también vigila las carpetas de skills y agentes de todas las IAs: una skill o un agente nuevo (o editado, o borrado) aparece solo en unos segundos, sin tocar ninguna nota ni actualizar a mano.

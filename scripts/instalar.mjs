@@ -18,6 +18,8 @@
 //   --redetectar              vuelve a detectar todo (conserva centro, colores, propósitos y puerto)
 //   --solo-detectar           actualiza la configuración sin generar datos
 //   --sin-verificar           no corre la prueba de humo
+//   --sin-lanzador            no crea el acceso de doble clic «Atlas de memoria»
+//   --abrir                   al terminar, abre la app en el navegador
 //   --json                    resumen final en JSON
 import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -192,7 +194,20 @@ try {
   /* sin datos */
 }
 resumen.totales = totales;
+
+// --- 6. Acceso de doble clic ----------------------------------------------------
+// Así quien instala (o la IA que instala por la persona) deja la app lista para
+// abrirse con doble clic desde el Escritorio o las Aplicaciones.
+if (!bandera('--sin-lanzador')) {
+  const l = spawnSync(process.execPath, [path.join(RAIZ, 'scripts', 'lanzador.mjs'), '--json'], { cwd: RAIZ, encoding: 'utf8' });
+  try {
+    resumen.lanzadores = JSON.parse((l.stdout || '').trim().split('\n').pop()).lanzadores;
+  } catch {
+    resumen.avisos = [...(resumen.avisos || []), 'No se pudo crear el acceso de doble clic: npm run lanzador lo reintenta.'];
+  }
+}
 resumen.siguiente = {
+  dobleClic: resumen.lanzadores?.length ? `Abre «Atlas de memoria» con doble clic (${process.platform === 'darwin' ? 'en Aplicaciones o el Escritorio' : process.platform === 'win32' ? 'en el Escritorio o el menú Inicio' : 'en el menú de aplicaciones o el Escritorio'})` : null,
   iniciar: process.platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File iniciar.ps1' : 'bash iniciar.sh',
   url: `http://localhost:${config.puerto}`,
   traducir: totales.sinTraducir ? 'npm run traducir   (o, desde una IA: npm run traducir -- --lotes <carpeta> y luego --importar <carpeta>)' : null,
@@ -210,8 +225,16 @@ if (comoJSON) {
 } else {
   log('');
   log('Listo. Para abrir el atlas:');
+  if (resumen.siguiente.dobleClic) {
+    log(`  ${resumen.siguiente.dobleClic}.`);
+    for (const l of resumen.lanzadores) log(`    · ${abreviar(l)}`);
+    log('  o desde la terminal:');
+  }
   log(`  ${resumen.siguiente.iniciar}`);
   log(`  y entra a ${resumen.siguiente.url}`);
   if (resumen.siguiente.traducir) log(`  ${totales.sinTraducir} textos esperan traducción al español: ${resumen.siguiente.traducir}`);
   for (const a of resumen.avisos || []) log(`  aviso: ${a}`);
 }
+
+// Abrir la app al terminar (lo piden los instaladores de doble clic).
+if (bandera('--abrir')) spawnSync(process.execPath, [path.join(RAIZ, 'scripts', 'abrir.mjs')], { cwd: RAIZ, stdio: comoJSON ? 'ignore' : 'inherit' });
