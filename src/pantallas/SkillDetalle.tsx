@@ -8,7 +8,7 @@ import Pipeline, { type Paso } from '../componentes/Pipeline';
 import Visor from '../componentes/Visor';
 import { vaultPorNombre } from '../lib/atlas';
 import { cargarAgentes, cargarDetalleSkill, cargarSkills, useDatos } from '../lib/datos';
-import { colorIA, corto, inicialIA, n, tamano } from '../lib/formato';
+import { colorIA, corto, hace, inicialIA, n, tamano } from '../lib/formato';
 import { registrarReciente } from '../lib/recientes';
 import { rutaAgente, rutaSkill, rutaVault } from '../lib/rutas';
 import { pedidoPara } from '../lib/recomendar';
@@ -239,6 +239,22 @@ export default function SkillDetalle({ atlas, nombre }: { atlas: Atlas; nombre: 
 
         <aside className="ficha-lateral">
           <ComoPedirla skill={skill} />
+          {atlas.sistema.uso?.activo && (
+            <section className="lateral-bloque">
+              <h2 className="rotulo">Uso</h2>
+              {skill.uso ? (
+                <p className="uso-skill">
+                  <strong>
+                    {n(skill.uso.total)} {skill.uso.total === 1 ? 'vez' : 'veces'}
+                  </strong>{' '}
+                  en los últimos {atlas.sistema.uso.dias} días · la última {hace(skill.uso.ultimo)}
+                  <span className="mono">{Object.entries(skill.uso.ias).map(([ia, k]) => `${ia} ${k}`).join(' · ')}</span>
+                </p>
+              ) : (
+                <p className="uso-skill">Ninguna IA la usó en los últimos {atlas.sistema.uso.dias} días.</p>
+              )}
+            </section>
+          )}
           <section className="lateral-bloque">
             <h2 className="rotulo">Instalada en</h2>
             <ul className="instalaciones">

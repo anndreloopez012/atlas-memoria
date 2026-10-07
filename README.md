@@ -106,7 +106,8 @@ Debajo, el vault se puede ver de tres formas (la elegida se recuerda):
 Catálogo de todas las skills del equipo, de **Claude Code, Codex y Antigravity**: las instaladas, las de la carpeta compartida `~/.agents/skills`, las que traen los **plugins activos** y las de sistema. Se agrupan por nombre: una skill instalada en tres IAs aparece una vez, con las tres insignias.
 
 - **¿Qué skill uso para…?** Escribe la tarea con tus palabras («un video de lanzamiento», «cobrar con tarjeta») y la lista se ordena por cuánto encaja cada skill, con el motivo (la frase de la skill que más se parece a lo que pides). Funciona sin internet y entiende pedidos en español aunque la skill esté descrita en inglés. Si nada encaja de verdad, no inventa.
-- Una fila de categorías; IA, origen (propias, instaladas, de plugins, sistema) y paquete quedan en «Más filtros».
+- Una fila de categorías; IA, origen (propias, instaladas, de plugins, sistema), paquete y uso quedan en «Más filtros».
+- **Uso real**: cuántas veces usaron tus IAs cada skill en los últimos 180 días y cuándo fue la última, leyendo los historiales locales de Claude Code (cada llamada a la herramienta Skill o `/<skill>`) y Codex (cada sesión que lee su `SKILL.md`). Arriba aparecen **las que más usas**, cada tarjeta lleva su conteo y «Más filtros › Nunca usadas» ayuda a limpiar. Solo se guardan conteos y fechas, nunca el contenido de las conversaciones, y nada sale del equipo. Se desactiva con `"uso": false` en `atlas.config.json` o `ATLAS_USO=0`.
 - Vista **Red**: qué skill menciona a cuál y qué agentes las usan.
 - **Ficha de cada skill** (`#/skills/<nombre>`):
   - **Para qué sirve**, **cuándo se activa** (con las frases que la despiertan) y **cuándo no usarla**.

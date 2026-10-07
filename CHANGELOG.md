@@ -32,6 +32,10 @@ Más funcional sin más botones (plan en [docs/PLAN-2.0.md](docs/PLAN-2.0.md)).
 - Ficha de skill con «Cómo pedirla»: el pedido listo para copiar y el atajo de Claude Code.
 - Skills más tranquila: una fila de categorías y el resto de filtros en «Más filtros».
 
+### Uso real de skills
+- Cuántas veces usaron Claude Code y Codex cada skill en los últimos 180 días y cuándo fue la última: «Las que más usas» arriba en Skills, el conteo en cada tarjeta, el filtro «Nunca usadas» y un bloque «Uso» en la ficha.
+- Solo conteos y fechas; nada del contenido de las conversaciones. Lectura incremental con caché local y tope de tiempo. Se apaga con `"uso": false` o `ATLAS_USO=0`.
+
 ## 1.4.0 · 2026-10-05
 
 ### Una sola mente

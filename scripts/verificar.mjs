@@ -55,6 +55,18 @@ try {
   );
   escribir(path.join(home, '.claude', 'agents', 'revisor.md'), '---\nname: revisor\ndescription: Revisa cambios con la demo-skill.\ntools: Read, Grep\n---\n\nRevisa con cuidado.\n');
 
+  // Historiales de IAs: un uso en Claude Code y uno en Codex; la lista de skills
+  // disponibles de Codex (sin herramienta) no cuenta.
+  escribir(
+    path.join(home, '.claude', 'projects', 'demo', 'sesion.jsonl'),
+    '{"type":"assistant","timestamp":"2026-02-01T10:00:00.000Z","message":{"content":[{"type":"tool_use","name":"Skill","input":{"skill":"demo-skill"}}]}}\n',
+  );
+  escribir(
+    path.join(home, '.codex', 'sessions', '2026', '02', '02', 'sesion.jsonl'),
+    '{"timestamp":"2026-02-02T09:00:00.000Z","type":"response_item","payload":{"type":"message","content":"skills/otra-skill/SKILL.md"}}\n' +
+      '{"timestamp":"2026-02-02T10:00:00.000Z","type":"response_item","payload":{"type":"function_call","name":"exec_command","arguments":"{\\"cmd\\":\\"cat skills/demo-skill/SKILL.md\\"}"}}\n',
+  );
+
   // Obsidian registra los dos primeros vaults; «Viejo» debe quedar como sugerencia.
   const entorno = {
     ...process.env,
@@ -118,6 +130,8 @@ try {
   ok(marcada.ok && fs.readFileSync(archivoIdea, 'utf8').includes('- [x] Revisar la idea') && !marcarHecha(archivoIdea, tareaDemo.l, tareaDemo.h).ok, 'marca una tarea como hecha cambiando solo su casilla (y no la toca dos veces)');
   const proyecto = leer('proyectos.json').proyectos[0];
   ok(proyecto?.nombre === 'Proyecto' && proyecto.entradas[0]?.t === 'Usar el atlas' && proyecto.entradas[0]?.fecha === '2026-01-10', 'arma los proyectos con su historia');
+  const usoDemo = skills.skills.find((x) => x.nombre === 'demo-skill')?.uso;
+  ok(usoDemo?.total === 2 && usoDemo.ias.Claude === 1 && usoDemo.ias.Codex === 1 && !skills.skills.find((x) => x.nombre === 'otra-skill')?.uso, 'cuenta el uso real de las skills en Claude Code y Codex (solo conteos)');
   const recientes = leer('recientes.json');
   ok(recientes.notas.length === 5 && recientes.skills.some((s) => s.nombre === 'demo-skill') && recientes.agentes.length === 1, 'lista las novedades (notas, skills y agentes recientes)');
 

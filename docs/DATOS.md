@@ -118,6 +118,7 @@ Cada skill:
 | `extras` | Resto del frontmatter (`license`, `version`, `user-invocable`…). |
 | `archivoDetalle` | Nombre del archivo en `skills/`. |
 | `m`, `c` | Última modificación y primera instalación (ISO) entre todas sus instalaciones; `c` es `null` si el sistema no da la fecha de creación. |
+| `uso` | `{ total, ultimo, ias: { Claude, Codex } }` con el uso en los historiales locales de los últimos 180 días, o `null`. En Claude Code cuenta cada llamada a la herramienta Skill y cada `/<skill>`; en Codex, cada sesión que lee su `SKILL.md` con una herramienta. `atlas.json › sistema.uso` dice si la lectura está activa, cuántos historiales hay y si ya se leyeron todos (se leen de a tandas de 6 s y se recuerdan en `.atlas-cache/uso.json`). |
 
 ## `skills/<slug>.json`
 
