@@ -104,6 +104,8 @@ try {
   ok(bloques.includes('](atlas:'), 'reescribe los enlaces para navegar dentro del atlas');
   ok(bloques.includes('[oculto]') && !bloques.includes('sk_live_'), 'oculta los secretos');
   ok(leer('pendientes-traduccion.json').some((p) => p.texto.startsWith('Builds demo reports')), 'anota los textos en inglés para traducirlos');
+  const recientes = leer('recientes.json');
+  ok(recientes.notas.length === 3 && recientes.skills.some((s) => s.nombre === 'demo-skill') && recientes.agentes.length === 1, 'lista las novedades (notas, skills y agentes recientes)');
 
   // --- Instrucciones para las IAs ---------------------------------------------
   console.log('\nInstrucciones para Claude Code, Codex y Antigravity');

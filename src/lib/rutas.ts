@@ -4,6 +4,7 @@ import { useSyncExternalStore } from 'react';
 
 export type Ruta =
   | { vista: 'universo' }
+  | { vista: 'hoy' }
   | { vista: 'vault'; slug: string; nota: string | null; carpeta: string | null }
   | { vista: 'skills'; skill: string | null; categoria: string | null }
   | { vista: 'agentes'; agente: string }
@@ -35,6 +36,8 @@ function leer(): Ruta {
     case 'agentes':
       // La lista de agentes vive en Sistema; la ficha de cada uno conserva su URL.
       return partes[1] ? { vista: 'agentes', agente: partes[1] } : { vista: 'sistema', pestana: 'agentes' };
+    case 'hoy':
+      return { vista: 'hoy' };
     case 'sistema':
       return { vista: 'sistema', pestana: partes[1] === 'agentes' ? 'agentes' : 'como' };
     default:

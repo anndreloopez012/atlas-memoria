@@ -4,6 +4,7 @@ import path from 'node:path';
 import { CONFIG } from './config.mjs';
 import {
   contarPalabras,
+  creado,
   encabezados,
   enlaces,
   etiquetasEnLinea,
@@ -251,6 +252,7 @@ export function leerVaults(contadorSecretos) {
         ex: extracto(cuerpo),
         w: contarPalabras(cuerpo),
         m: stat.mtime.toISOString(),
+        _creada: creado(stat),
         xb: [],
         _enlaces: enlaces(cuerpo),
         _contenido: contenido,

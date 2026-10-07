@@ -133,6 +133,7 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
     });
     return [
       ir('Universo', 'el mapa de todo', '#/'),
+      ir('Hoy', 'lo nuevo desde tu última visita', '#/hoy'),
       ...(central ? [ir('Vaults', `empezar por ${central.nombre}`, rutaVault(central.slug))] : []),
       ir('Skills', `${atlas.totales.skills} skills de tus IAs`, '#/skills'),
       ir('Sistema', 'cómo trabaja tu memoria', rutaSistema('como')),

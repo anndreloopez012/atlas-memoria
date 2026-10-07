@@ -1,15 +1,17 @@
 import { Moon, RefreshCw, Search, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { recargarDatos, regenerarEnServidor } from '../lib/datos';
+import { cargarRecientes, recargarDatos, regenerarEnServidor, useDatos } from '../lib/datos';
 import { hace } from '../lib/formato';
 import { rutaVault, type Ruta } from '../lib/rutas';
 import { alternarTema, useTema } from '../lib/tema';
 import type { Atlas } from '../lib/tipos';
+import { desdeNovedades } from '../lib/visita';
 
 // Cinco secciones como máximo: cada una con un propósito claro. Lo demás se hace
 // desde el centro de mando (⌘K), así la barra no se llena de botones.
 const secciones = (atlas: Atlas | null): { vistas: Ruta['vista'][]; hash: string; etiqueta: string }[] => [
   { vistas: ['universo'], hash: '#/', etiqueta: 'Universo' },
+  { vistas: ['hoy'], hash: '#/hoy', etiqueta: 'Hoy' },
   { vistas: ['vault'], hash: rutaVault(atlas?.centro ?? ''), etiqueta: 'Vaults' },
   { vistas: ['skills'], hash: '#/skills', etiqueta: 'Skills' },
   { vistas: ['sistema', 'agentes'], hash: '#/sistema', etiqueta: 'Sistema' },
@@ -30,6 +32,9 @@ export function Marca() {
 export default function BarraSuperior({ atlas, ruta, abrirBuscador }: { atlas: Atlas | null; ruta: Ruta; abrirBuscador: () => void }) {
   const tema = useTema();
   const [regenerando, setRegenerando] = useState(false);
+  // Un punto discreto en «Hoy» cuando hay notas tuyas nuevas desde la última visita.
+  const recientes = useDatos('recientes', cargarRecientes);
+  const hayNovedades = (recientes.datos?.notas ?? []).some((x) => !x.g && Date.parse(x.m) > desdeNovedades(7));
   const [aviso, setAviso] = useState<string | null>(null);
 
   // El centro de mando también puede pedir una actualización.
@@ -69,6 +74,7 @@ export default function BarraSuperior({ atlas, ruta, abrirBuscador }: { atlas: A
           return (
             <a key={s.etiqueta} href={s.hash} className={activa ? 'activa' : ''} aria-current={activa ? 'page' : undefined}>
               {s.etiqueta}
+              {s.vistas.includes('hoy') && hayNovedades && !activa && <span className="punto-novedad" aria-label="hay novedades" />}
             </a>
           );
         })}
