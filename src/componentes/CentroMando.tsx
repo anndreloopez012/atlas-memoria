@@ -7,10 +7,11 @@ import { ArrowRight, Bot, Clock, Compass, FileText, Moon, RefreshCw, Search, Spa
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cargarAgentes, cargarSkills, cargarVault, useVersionDatos } from '../lib/datos';
 import { useFavoritos } from '../lib/favoritos';
+import { recomendador } from '../lib/recomendar';
 import { leerRecientes, registrarReciente, type Reciente } from '../lib/recientes';
 import { navegar, rutaAgente, rutaSistema, rutaSkill, rutaVault } from '../lib/rutas';
 import { alternarTema, useTema } from '../lib/tema';
-import type { Atlas } from '../lib/tipos';
+import type { Atlas, Skill } from '../lib/tipos';
 
 interface Doc {
   id: string;
@@ -35,7 +36,7 @@ interface Fila {
   ejecutar: () => void;
 }
 
-let indiceCache: { version: number; indice: MiniSearch<Doc>; docs: Map<string, Doc> } | null = null;
+let indiceCache: { version: number; indice: MiniSearch<Doc>; docs: Map<string, Doc>; skills: Skill[] } | null = null;
 
 async function construirIndice(atlas: Atlas, version: number) {
   if (indiceCache?.version === version) return indiceCache;
@@ -89,7 +90,7 @@ async function construirIndice(atlas: Atlas, version: number) {
     processTerm: (t) => sinAcentos(t),
   });
   indice.addAll(docs);
-  indiceCache = { version, indice, docs: new Map(docs.map((d) => [d.id, d])) };
+  indiceCache = { version, indice, docs: new Map(docs.map((d) => [d.id, d])), skills: skills.skills };
   return indiceCache;
 }
 
@@ -209,6 +210,21 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
       return [...fijos, ...ultimos, ...destinos, ...acciones];
     }
     const encontrados: Fila[] = [];
+    // «¿Qué skill uso para…?»: si el texto describe una tarea, primero las skills que
+    // mejor encajan, con el motivo.
+    const recomendadas = listo && (q.split(/\s+/).length >= 2 || q.length >= 4) ? recomendador(listo.skills)(q, 3) : [];
+    for (const { skill, razon } of recomendadas) {
+      encontrados.push({
+        clave: `rec:${skill.id}`,
+        grupo: 'Skills para eso',
+        titulo: skill.nombre,
+        contexto: razon,
+        icono: Sparkles,
+        color: '#dcb56c',
+        ejecutar: () => abrir({ tipo: 'skill', id: skill.id, titulo: skill.nombre, contexto: `skill · ${skill.categoria}`, destino: rutaSkill(skill.nombre), color: '#dcb56c' }),
+      });
+    }
+    const yaRecomendadas = new Set(recomendadas.map((r) => `s:${r.skill.id}`));
     if (listo) {
       const docs = listo.indice
         .search(q)
@@ -217,7 +233,7 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
         .filter(Boolean);
       // Skills y agentes primero (son pocos y suelen ser lo que se busca), luego notas.
       for (const tipo of ['skill', 'agente', 'nota'] as const) {
-        for (const d of docs.filter((x) => x.tipo === tipo).slice(0, tipo === 'nota' ? 30 : 8)) {
+        for (const d of docs.filter((x) => x.tipo === tipo && !yaRecomendadas.has(x.id)).slice(0, tipo === 'nota' ? 30 : 8)) {
           encontrados.push({
             clave: d.id,
             grupo: GRUPO[tipo],
@@ -266,7 +282,7 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
               setActivo(0);
             }}
             onKeyDown={tecla}
-            placeholder="Busca o pide algo: una nota, una skill, un agente…"
+            placeholder="Busca o pide algo: una nota, una skill, «qué uso para hacer un video»…"
             aria-label="Buscar o pedir"
             aria-controls="centro-filas"
           />

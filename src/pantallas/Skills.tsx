@@ -1,10 +1,11 @@
 // Catálogo de skills: por categoría, con filtros por IA, origen y paquete, o como
 // red (qué skill menciona a cuál y qué agentes las usan).
-import { LayoutGrid, Network, Search, Star } from 'lucide-react';
+import { ChevronDown, LayoutGrid, Network, Search, SlidersHorizontal, Star, X } from 'lucide-react';
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import type { EnlaceGrafo, NodoGrafo } from '../componentes/Grafo';
 import { cargarAgentes, cargarSkills, useDatos } from '../lib/datos';
 import { AYUDA_IA, colorIA, inicialIA, n, PALETA } from '../lib/formato';
+import { recomendador } from '../lib/recomendar';
 import { navegar, rutaAgente, rutaSkill } from '../lib/rutas';
 import { coloresCanvas, tono, useTema } from '../lib/tema';
 import type { Atlas, Skill } from '../lib/tipos';
@@ -43,6 +44,7 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
   const [paquete, setPaquete] = useState<string | null>(null);
   const [vista, setVista] = useState<'tarjetas' | 'red'>('tarjetas');
   const [verPlugins, setVerPlugins] = useState(false);
+  const [masFiltros, setMasFiltros] = useState(false);
 
   useEffect(() => setCat(categoria), [categoria]);
 
@@ -55,18 +57,23 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
     return (c: string) => tono(m.get(c) ?? '#a8a59b', tema);
   }, [datos.datos, tema]);
 
+  // Con texto, el orden es por cuánto encaja la skill con lo que pides (con el
+  // motivo); sin texto, por categoría.
+  const motivos = useMemo(() => {
+    const lista = datos.datos?.skills;
+    if (!lista || q.trim().length < 3) return null;
+    return new Map(recomendador(lista)(q, 40).map((r) => [r.skill.id, r.razon]));
+  }, [datos.datos, q]);
+
   const filtradas = useMemo(() => {
     const lista = datos.datos?.skills ?? [];
     const consulta = sinAcentos(q.trim());
-    return lista.filter(
-      (s) =>
-        (!cat || s.categoria === cat) &&
-        (!ia || s.ias.includes(ia)) &&
-        (!origen || s.origen === origen) &&
-        (!paquete || s.paquete === paquete) &&
-        (!consulta || sinAcentos(`${s.nombre} ${s.titulo} ${s.descripcion} ${s.paquete ?? ''}`).includes(consulta)),
-    );
-  }, [datos.datos, q, cat, ia, origen, paquete]);
+    const pasa = (s: Skill) => (!cat || s.categoria === cat) && (!ia || s.ias.includes(ia)) && (!origen || s.origen === origen) && (!paquete || s.paquete === paquete);
+    if (!consulta) return lista.filter(pasa);
+    const porTexto = lista.filter((s) => pasa(s) && sinAcentos(`${s.nombre} ${s.titulo} ${s.descripcion} ${s.paquete ?? ''}`).includes(consulta));
+    const recomendadas = [...(motivos?.keys() ?? [])].map((id) => lista.find((s) => s.id === id)!).filter((s) => s && pasa(s));
+    return [...recomendadas, ...porTexto.filter((s) => !motivos?.has(s.id))];
+  }, [datos.datos, q, cat, ia, origen, paquete, motivos]);
 
   const grupos = useMemo(() => {
     const m = new Map<string, Skill[]>();
@@ -101,6 +108,14 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
   const todasLasIAs = d?.ias ?? [];
   const iasReales = todasLasIAs.filter((x) => x !== 'Compartidas' && x !== 'Extra');
   const hayFiltros = q || cat || ia || origen || paquete;
+  const filtrosOcultos = [ia, origen, paquete].filter(Boolean).length;
+  const limpiar = () => {
+    setQ('');
+    setCat(null);
+    setIa(null);
+    setOrigen(null);
+    setPaquete(null);
+  };
 
   return (
     <div className="pagina skills">
@@ -116,43 +131,29 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
       </header>
 
       <div className="filtros">
-        <label className="filtro grande">
-          <Search size={15} />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Busca por nombre o por lo que necesitas: «video», «stripe», «landing»…" />
-        </label>
         <div className="filtros-fila">
-          <span className="rotulo">IA</span>
-          {todasLasIAs.map((x) => (
-            <button key={x} className={`chip ${ia === x ? 'activo' : ''}`} onClick={() => setIa(ia === x ? null : x)} title={AYUDA_IA[x]}>
-              <span className="chip-punto" style={{ background: colorIA(x) }} />
-              {x}
-            </button>
-          ))}
-          <span className="rotulo separado">Origen</span>
-          {[
-            ['propia', 'Propias'],
-            ['instalada', 'Instaladas'],
-            ['plugin', 'De plugins'],
-            ['sistema', 'Sistema'],
-          ]
-            .filter(([v]) => d?.skills.some((x) => x.origen === v))
-            .map(([v, e]) => (
-            <button key={v} className={`chip ${origen === v ? 'activo' : ''}`} onClick={() => setOrigen(origen === v ? null : v)}>
-              {v === 'propia' && <Star size={12} />}
-              {e}
-            </button>
-          ))}
-          <div className="conmutador derecha" role="tablist">
+          <label className="filtro grande">
+            <Search size={15} />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="¿Qué necesitas hacer? Escríbelo con tus palabras: «un video de lanzamiento», «cobrar con tarjeta»…" aria-label="Qué necesitas hacer" />
+            {q && (
+              <button className="filtro-limpiar" onClick={() => setQ('')} aria-label="Quitar búsqueda">
+                <X size={13} />
+              </button>
+            )}
+          </label>
+          <div className="conmutador" role="tablist" aria-label="Forma de ver las skills">
             <button role="tab" aria-selected={vista === 'tarjetas'} className={vista === 'tarjetas' ? 'activo' : ''} onClick={() => setVista('tarjetas')}>
-              <LayoutGrid size={14} /> Tarjetas
+              <LayoutGrid size={14} /> <span className="conmutador-texto">Tarjetas</span>
             </button>
             <button role="tab" aria-selected={vista === 'red'} className={vista === 'red' ? 'activo' : ''} onClick={() => setVista('red')}>
-              <Network size={14} /> Red
+              <Network size={14} /> <span className="conmutador-texto">Red</span>
             </button>
           </div>
         </div>
-        <div className="filtros-fila">
-          <span className="rotulo">Categoría</span>
+        <div className="filtros-fila una-linea">
+          <button className={`chip ${cat === null ? 'activo' : ''}`} onClick={() => setCat(null)}>
+            Todas
+          </button>
           {d?.categorias.map((c) => (
             <button key={c} className={`chip ${cat === c ? 'activo' : ''}`} onClick={() => setCat(cat === c ? null : c)}>
               <span className="chip-punto" style={{ background: colorCategoria(c) }} />
@@ -161,34 +162,60 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
             </button>
           ))}
         </div>
-        {d && d.paquetes.length > 0 && (
-          <div className="filtros-fila">
-            <span className="rotulo">Paquete</span>
-            {d.paquetes
-              .filter((p) => !p.nombre.startsWith('Plugin ') || verPlugins || paquete === p.nombre)
-              .map((p) => (
-                <button key={p.nombre} className={`chip ${paquete === p.nombre ? 'activo' : ''}`} onClick={() => setPaquete(paquete === p.nombre ? null : p.nombre)} title={p.descripcion}>
-                  {p.nombre} <span className="mono">{p.skills.length}</span>
+        <div className="filtros-fila">
+          <button className={`chip ${masFiltros || filtrosOcultos ? 'activo' : ''}`} onClick={() => setMasFiltros((x) => !x)} aria-expanded={masFiltros}>
+            <SlidersHorizontal size={13} /> Más filtros{filtrosOcultos ? ` · ${filtrosOcultos}` : ''} <ChevronDown size={13} className={masFiltros ? 'girado' : ''} />
+          </button>
+          {hayFiltros && (
+            <button className="chip limpiar" onClick={limpiar}>
+              Quitar filtros
+            </button>
+          )}
+          {d && <span className="mono filtros-cuenta">{q ? `${filtradas.length} que encajan` : `${filtradas.length} de ${d.skills.length}`}</span>}
+        </div>
+        {masFiltros && (
+          <div className="filtros-mas">
+            <div className="filtros-fila">
+              <span className="rotulo">IA</span>
+              {todasLasIAs.map((x) => (
+                <button key={x} className={`chip ${ia === x ? 'activo' : ''}`} onClick={() => setIa(ia === x ? null : x)} title={AYUDA_IA[x]}>
+                  <span className="chip-punto" style={{ background: colorIA(x) }} />
+                  {x}
                 </button>
               ))}
-            {d.paquetes.some((p) => p.nombre.startsWith('Plugin ')) && (
-              <button className="chip limpiar" onClick={() => setVerPlugins((x) => !x)} aria-expanded={verPlugins}>
-                {verPlugins ? 'Ocultar plugins' : `Plugins · ${d.paquetes.filter((p) => p.nombre.startsWith('Plugin ')).length}`}
-              </button>
-            )}
-            {hayFiltros && (
-              <button
-                className="chip limpiar"
-                onClick={() => {
-                  setQ('');
-                  setCat(null);
-                  setIa(null);
-                  setOrigen(null);
-                  setPaquete(null);
-                }}
-              >
-                Quitar filtros
-              </button>
+            </div>
+            <div className="filtros-fila">
+              <span className="rotulo">Origen</span>
+              {[
+                ['propia', 'Propias'],
+                ['instalada', 'Instaladas'],
+                ['plugin', 'De plugins'],
+                ['sistema', 'Sistema'],
+              ]
+                .filter(([v]) => d?.skills.some((x) => x.origen === v))
+                .map(([v, e]) => (
+                  <button key={v} className={`chip ${origen === v ? 'activo' : ''}`} onClick={() => setOrigen(origen === v ? null : v)}>
+                    {v === 'propia' && <Star size={12} />}
+                    {e}
+                  </button>
+                ))}
+            </div>
+            {d && d.paquetes.length > 0 && (
+              <div className="filtros-fila">
+                <span className="rotulo">Paquete</span>
+                {d.paquetes
+                  .filter((p) => !p.nombre.startsWith('Plugin ') || verPlugins || paquete === p.nombre)
+                  .map((p) => (
+                    <button key={p.nombre} className={`chip ${paquete === p.nombre ? 'activo' : ''}`} onClick={() => setPaquete(paquete === p.nombre ? null : p.nombre)} title={p.descripcion}>
+                      {p.nombre} <span className="mono">{p.skills.length}</span>
+                    </button>
+                  ))}
+                {d.paquetes.some((p) => p.nombre.startsWith('Plugin ')) && (
+                  <button className="chip limpiar" onClick={() => setVerPlugins((x) => !x)} aria-expanded={verPlugins}>
+                    {verPlugins ? 'Ocultar plugins' : `Plugins · ${d.paquetes.filter((p) => p.nombre.startsWith('Plugin ')).length}`}
+                  </button>
+                )}
+              </div>
             )}
           </div>
         )}
@@ -197,7 +224,22 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
       {datos.error && <p className="vacio">{datos.error}</p>}
       {d && filtradas.length === 0 && <p className="vacio">Ninguna skill coincide con esos filtros.</p>}
 
-      {d && vista === 'tarjetas' && (
+      {d && vista === 'tarjetas' && q.trim() && filtradas.length > 0 && (
+        <section className="grupo-skills">
+          <header>
+            <span className="grupo-punto" />
+            <h2 className="display">Las que mejor encajan</h2>
+            <span className="mono">{filtradas.length}</span>
+          </header>
+          <div className="rejilla-skills">
+            {filtradas.map((s, i) => (
+              <TarjetaSkill key={s.id} s={s} indice={i} todas={todasLasIAs} motivo={motivos?.get(s.id)} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {d && vista === 'tarjetas' && !q.trim() && (
         <div className="grupos-skills">
           {grupos.map(([categoriaGrupo, lista]) => (
             <section key={categoriaGrupo} className="grupo-skills" style={{ ['--cat' as string]: colorCategoria(categoriaGrupo) }}>
@@ -208,24 +250,7 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
               </header>
               <div className="rejilla-skills">
                 {lista.map((s, i) => (
-                  <a key={s.id} href={rutaSkill(s.nombre)} className={`tarjeta-skill ${s.origen}`} style={{ animationDelay: `${Math.min(i, 20) * 0.025}s` }}>
-                    <span className="tarjeta-skill-cabeza">
-                      <span className="tarjeta-skill-nombre mono">{s.nombre}</span>
-                      {s.origen === 'propia' && (
-                        <span className="insignia propia">
-                          <Star size={10} /> tuya
-                        </span>
-                      )}
-                    </span>
-                    <span className="tarjeta-skill-que">{s.que[0] ?? s.descripcion}</span>
-                    <span className="tarjeta-skill-pie">
-                      <InsigniasIA ias={s.ias} todas={todasLasIAs} />
-                      <span className="mono">
-                        {s.archivos.filter((a) => a.k === 'referencias').length} ref · {s.archivos.filter((a) => a.k === 'scripts').length} scripts
-                      </span>
-                      {s.paquete && <span className="mono paquete">{s.paquete}</span>}
-                    </span>
-                  </a>
+                  <TarjetaSkill key={s.id} s={s} indice={i} todas={todasLasIAs} />
                 ))}
               </div>
             </section>
@@ -258,5 +283,28 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
         </div>
       )}
     </div>
+  );
+}
+
+function TarjetaSkill({ s, indice, todas, motivo }: { s: Skill; indice: number; todas: string[]; motivo?: string }) {
+  return (
+    <a href={rutaSkill(s.nombre)} className={`tarjeta-skill ${s.origen}`} style={{ animationDelay: `${Math.min(indice, 20) * 0.025}s` }}>
+      <span className="tarjeta-skill-cabeza">
+        <span className="tarjeta-skill-nombre mono">{s.nombre}</span>
+        {s.origen === 'propia' && (
+          <span className="insignia propia">
+            <Star size={10} /> tuya
+          </span>
+        )}
+      </span>
+      {motivo ? <span className="tarjeta-skill-que motivo">{motivo}</span> : <span className="tarjeta-skill-que">{s.que[0] ?? s.descripcion}</span>}
+      <span className="tarjeta-skill-pie">
+        <InsigniasIA ias={s.ias} todas={todas} />
+        <span className="mono">
+          {s.archivos.filter((a) => a.k === 'referencias').length} ref · {s.archivos.filter((a) => a.k === 'scripts').length} scripts
+        </span>
+        {s.paquete && <span className="mono paquete">{s.paquete}</span>}
+      </span>
+    </a>
   );
 }

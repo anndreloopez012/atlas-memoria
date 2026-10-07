@@ -52,7 +52,7 @@ Se marca cada punto al fusionarlo.
 - [x] 2 · tareas
 - [x] 4 · proyectos
 - [x] 9 · favoritos y recorrido
-- [ ] 1 · ¿qué skill uso para…?
+- [x] 1 · ¿qué skill uso para…?
 - [ ] 11 · uso real de skills
 - [ ] 3 · salud de la memoria
 - [ ] 8 · camino entre notas
