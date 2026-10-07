@@ -99,6 +99,8 @@ function construir() {
     maxBytesBloque: 450_000,
     // Cuántos días hacia atrás se guardan las novedades (Hoy · desde tu última visita).
     diasNovedades: Number(base.novedades?.dias) || 45,
+    // Contar el uso de las skills en los historiales locales de las IAs (solo conteos).
+    uso: env.ATLAS_USO === '0' ? false : base.uso !== false,
   };
 }
 

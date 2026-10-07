@@ -45,6 +45,7 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
   const [vista, setVista] = useState<'tarjetas' | 'red'>('tarjetas');
   const [verPlugins, setVerPlugins] = useState(false);
   const [masFiltros, setMasFiltros] = useState(false);
+  const [uso, setUso] = useState<'usadas' | 'nunca' | null>(null);
 
   useEffect(() => setCat(categoria), [categoria]);
 
@@ -68,12 +69,17 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
   const filtradas = useMemo(() => {
     const lista = datos.datos?.skills ?? [];
     const consulta = sinAcentos(q.trim());
-    const pasa = (s: Skill) => (!cat || s.categoria === cat) && (!ia || s.ias.includes(ia)) && (!origen || s.origen === origen) && (!paquete || s.paquete === paquete);
+    const pasa = (s: Skill) =>
+      (!cat || s.categoria === cat) &&
+      (!ia || s.ias.includes(ia)) &&
+      (!origen || s.origen === origen) &&
+      (!paquete || s.paquete === paquete) &&
+      (!uso || (uso === 'usadas' ? Boolean(s.uso) : !s.uso));
     if (!consulta) return lista.filter(pasa);
     const porTexto = lista.filter((s) => pasa(s) && sinAcentos(`${s.nombre} ${s.titulo} ${s.descripcion} ${s.paquete ?? ''}`).includes(consulta));
     const recomendadas = [...(motivos?.keys() ?? [])].map((id) => lista.find((s) => s.id === id)!).filter((s) => s && pasa(s));
     return [...recomendadas, ...porTexto.filter((s) => !motivos?.has(s.id))];
-  }, [datos.datos, q, cat, ia, origen, paquete, motivos]);
+  }, [datos.datos, q, cat, ia, origen, paquete, uso, motivos]);
 
   const grupos = useMemo(() => {
     const m = new Map<string, Skill[]>();
@@ -107,15 +113,18 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
   const propias = d?.skills.filter((s) => s.origen === 'propia').length ?? 0;
   const todasLasIAs = d?.ias ?? [];
   const iasReales = todasLasIAs.filter((x) => x !== 'Compartidas' && x !== 'Extra');
-  const hayFiltros = q || cat || ia || origen || paquete;
-  const filtrosOcultos = [ia, origen, paquete].filter(Boolean).length;
+  const hayFiltros = q || cat || ia || origen || paquete || uso;
+  const filtrosOcultos = [ia, origen, paquete, uso].filter(Boolean).length;
   const limpiar = () => {
     setQ('');
     setCat(null);
     setIa(null);
     setOrigen(null);
     setPaquete(null);
+    setUso(null);
   };
+  const hayUso = Boolean(atlas.sistema.uso?.activo && d?.skills.some((s) => s.uso));
+  const masUsadas = hayUso && !hayFiltros ? [...(d?.skills ?? [])].filter((s) => s.uso).sort((a, b) => b.uso!.total - a.uso!.total).slice(0, 8) : [];
 
   return (
     <div className="pagina skills">
@@ -200,6 +209,17 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
                   </button>
                 ))}
             </div>
+            {hayUso && (
+              <div className="filtros-fila">
+                <span className="rotulo">Uso</span>
+                <button className={`chip ${uso === 'usadas' ? 'activo' : ''}`} onClick={() => setUso(uso === 'usadas' ? null : 'usadas')}>
+                  Las que usas
+                </button>
+                <button className={`chip ${uso === 'nunca' ? 'activo' : ''}`} onClick={() => setUso(uso === 'nunca' ? null : 'nunca')} title={`Sin uso en los últimos ${atlas.sistema.uso?.dias ?? 180} días`}>
+                  Nunca usadas
+                </button>
+              </div>
+            )}
             {d && d.paquetes.length > 0 && (
               <div className="filtros-fila">
                 <span className="rotulo">Paquete</span>
@@ -234,6 +254,21 @@ export default function Skills({ atlas, skill, categoria }: { atlas: Atlas; skil
           <div className="rejilla-skills">
             {filtradas.map((s, i) => (
               <TarjetaSkill key={s.id} s={s} indice={i} todas={todasLasIAs} motivo={motivos?.get(s.id)} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {d && vista === 'tarjetas' && masUsadas.length > 0 && (
+        <section className="grupo-skills mas-usadas">
+          <header>
+            <span className="grupo-punto" />
+            <h2 className="display">Las que más usas</h2>
+            <span className="mono">últimos {atlas.sistema.uso?.dias ?? 180} días</span>
+          </header>
+          <div className="rejilla-skills">
+            {masUsadas.map((s, i) => (
+              <TarjetaSkill key={s.id} s={s} indice={i} todas={todasLasIAs} />
             ))}
           </div>
         </section>
@@ -294,6 +329,11 @@ function TarjetaSkill({ s, indice, todas, motivo }: { s: Skill; indice: number; 
         {s.origen === 'propia' && (
           <span className="insignia propia">
             <Star size={10} /> tuya
+          </span>
+        )}
+        {s.uso && (
+          <span className="insignia uso" title={`Último uso ${new Date(s.uso.ultimo).toLocaleDateString('es-GT')}`}>
+            {s.uso.total} {s.uso.total === 1 ? 'uso' : 'usos'}
           </span>
         )}
       </span>

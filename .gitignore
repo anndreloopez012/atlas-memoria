@@ -18,3 +18,5 @@ graphify-out
 *.log
 .vscode/
 .idea/
+# Caché local del atlas (conteos de uso de skills)
+.atlas-cache/
