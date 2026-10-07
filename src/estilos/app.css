@@ -1310,6 +1310,89 @@
   border-color: var(--c);
 }
 
+/* Respuesta de la memoria (centro de mando) */
+.respuesta {
+  padding: 14px 18px 18px;
+}
+
+.respuesta-pregunta {
+  margin: 2px 0 12px;
+  font-family: var(--f-display);
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.respuesta-pensando {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--tinta-2);
+}
+
+.respuesta-pensando .mono {
+  flex-basis: 100%;
+  color: var(--tinta-3);
+  font-size: 11.5px;
+}
+
+.respuesta-girando {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--linea-fuerte);
+  border-top-color: var(--laton);
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+}
+
+.respuesta-texto {
+  font-size: 15px;
+}
+
+.respuesta-aviso {
+  color: var(--tinta-2);
+  font-size: 14px;
+}
+
+.respuesta-fuentes {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 12px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--linea);
+  list-style: none;
+}
+
+.respuesta-fuentes button {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--tinta);
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.respuesta-fuentes button:hover {
+  background: var(--superficie-2);
+}
+
+.respuesta-fuentes .mono {
+  color: var(--laton);
+}
+
+.respuesta-fuentes .resultado-contexto {
+  flex-basis: 100%;
+}
+
 .chip.interruptor {
   cursor: pointer;
 }

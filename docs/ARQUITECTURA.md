@@ -73,6 +73,7 @@ Un complemento de Vite (`atlas-datos`) que funciona igual en `vite dev` y `vite 
 | `GET /datos/*` | Sirve `datos/` leyendo del disco en cada pedido (evita el 404 que Vite da en carpetas sincronizadas recién creadas). |
 | `GET /adjunto/<vault>/<ruta>` | Sirve imágenes y archivos de un vault. Las rutas de los vaults salen de `datos/atlas.json`. Rechaza rutas que escapen del vault. |
 | `POST /__atlas/regenerar` | Ejecuta el generador (una sola corrida a la vez) y devuelve su salida. |
+| `GET`, `POST /__atlas/preguntar` | `GET` dice qué IA respondería (`{ ia }`). `POST { pregunta }` busca las 8 notas que mejor la responden (MiniSearch sobre título, encabezados, etiquetas, extracto y carpeta) y, si hay IA, la ejecuta sin herramientas con un pedido que la obliga a responder solo con esas notas y citarlas. Si una IA falla por no tener sesión, prueba la siguiente. Devuelve `{ ia, respuesta, error, fuentes }`. Lógica en `scripts/lib/preguntar.mjs`. |
 | `POST /__atlas/tarea` | Marca una tarea como hecha: `{ s: slug del vault, r: ruta de la nota, l: línea, h: huella }`. Solo cambia la casilla de esa línea y solo si la huella coincide (busca hasta 30 líneas arriba y abajo por si la nota se movió); si no, responde 409 sin tocar nada. La lógica está en `scripts/lib/tareas.mjs` (`marcarHecha`) y la prueba `npm run verificar`. |
 
 En desarrollo además:

@@ -49,6 +49,7 @@ Hay una copia en [atlas.config.ejemplo.json](../atlas.config.ejemplo.json).
 | `propias` | objeto | Qué skills son de la persona. Además de las que viven fuera de las carpetas de las IAs (por ejemplo, en un repositorio enlazado): `cuentas` (dueños en GitHub) y `patrones` (texto en el nombre). |
 | `carpetasGeneradas` | lista | Carpetas de primer nivel de los vaults donde una herramienta genera notas en masa (p. ej. Graphify, que crea una nota por archivo de código). Sus subcarpetas se cuentan pero no se cargan. |
 | `puerto` | número | Puerto del servidor local (5190 por defecto). |
+| `preguntar` | objeto | `ia`: qué IA responde las preguntas a la memoria: `auto` (la primera instalada entre Claude Code, Codex y Gemini CLI), `claude`, `codex`, `gemini` o `ninguna` (solo muestra las notas). La pregunta y las notas que la responden se envían a esa IA. |
 | `uso` | sí/no | Contar el uso de las skills en los historiales locales de Claude Code y Codex (solo conteos y fechas; `true` por defecto). `false` lo apaga. |
 | `novedades` | objeto | `dias`: cuántos días hacia atrás guarda las novedades que muestra Hoy (45 por defecto). |
 
