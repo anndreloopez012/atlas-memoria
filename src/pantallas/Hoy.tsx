@@ -11,6 +11,7 @@ import { hace, n } from '../lib/formato';
 import { rutaAgente, rutaSkill, rutaVault, type SeccionHoy } from '../lib/rutas';
 import type { Atlas, Recientes } from '../lib/tipos';
 import { desdeNovedades, visitaAnterior } from '../lib/visita';
+import Proyectos, { TarjetaProyectos } from './Proyectos';
 import Tareas from './Tareas';
 
 const FECHA = new Intl.DateTimeFormat('es-GT', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -31,6 +32,7 @@ export function novedades(datos: Recientes | null, desde: number) {
 
 export default function Hoy({ atlas, seccion }: { atlas: Atlas; seccion: SeccionHoy }) {
   if (seccion === 'tareas') return <Tareas atlas={atlas} />;
+  if (seccion === 'proyectos') return <Proyectos />;
   return <PortadaHoy atlas={atlas} />;
 }
 
@@ -107,6 +109,7 @@ function PortadaHoy({ atlas }: { atlas: Atlas }) {
       <div className="hoy-rejilla">
         <aside className="hoy-lateral" aria-label="Lo pendiente">
           <Pendientes atlas={atlas} />
+          <TarjetaProyectos />
         </aside>
         <section className="hoy-seccion hoy-novedades" aria-label="Novedades">
           {porVault.map(({ v, notas }) => (

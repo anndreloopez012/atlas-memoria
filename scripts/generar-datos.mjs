@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { leerAgentesIA, leerAutomatizaciones, leerMotor, notaPorRuta } from './lib/agentes.mjs';
 import { abreviar, CONFIG } from './lib/config.mjs';
+import { leerProyectos } from './lib/proyectos.mjs';
 import { leerSkills } from './lib/skills.mjs';
 import { carpetasDePlantillas, extraerTareas } from './lib/tareas.mjs';
 import { pendientesDeTraduccion } from './lib/traduccion.mjs';
@@ -173,6 +174,10 @@ for (const { info, notas, dirVault } of vaults) {
 }
 tareas.sort((a, b) => (a.d && b.d ? a.d.localeCompare(b.d) : a.d ? -1 : b.d ? 1 : b.m.localeCompare(a.m) || a.l - b.l));
 escribir('tareas.json', { abiertas: tareas.length, hechas: tareasHechas, tareas });
+
+// --- Proyectos ----------------------------------------------------------------------
+const proyectos = leerProyectos(todas, slug, esGenerada);
+escribir('proyectos.json', proyectos);
 
 const categorias = [...new Set(skills.map((s) => s.categoria))].sort((a, b) => a.localeCompare(b, 'es'));
 escribir('skills.json', { skills, paquetes, categorias, ias, totalInstalaciones });

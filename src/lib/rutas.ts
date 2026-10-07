@@ -11,7 +11,7 @@ export type Ruta =
   | { vista: 'sistema'; pestana: PestanaSistema };
 
 /** Vistas completas dentro de Hoy (la portada de Hoy es `null`). */
-export type SeccionHoy = 'tareas' | null;
+export type SeccionHoy = 'tareas' | 'proyectos' | null;
 
 /** Sistema junta cómo trabaja todo, los agentes y (más adelante) la salud. */
 export type PestanaSistema = 'como' | 'agentes';
@@ -40,7 +40,7 @@ function leer(): Ruta {
       // La lista de agentes vive en Sistema; la ficha de cada uno conserva su URL.
       return partes[1] ? { vista: 'agentes', agente: partes[1] } : { vista: 'sistema', pestana: 'agentes' };
     case 'hoy':
-      return { vista: 'hoy', seccion: partes[1] === 'tareas' ? 'tareas' : null };
+      return { vista: 'hoy', seccion: partes[1] === 'tareas' || partes[1] === 'proyectos' ? partes[1] : null };
     case 'sistema':
       return { vista: 'sistema', pestana: partes[1] === 'agentes' ? 'agentes' : 'como' };
     default:

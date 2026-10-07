@@ -77,6 +77,7 @@ Lo que importa ahora, en una sola página tranquila:
 - Lo que tus herramientas actualizaron solas (reportes, fichas, cambios en lote) queda aparte y plegado, para que no tape lo tuyo.
 - Un punto discreto junto a «Hoy» en la barra avisa cuando hay algo nuevo.
 - **Pendientes**: las tareas (`- [ ]`) de todas tus notas, con su fecha (`📅 2026-10-12` o `[due:: …]`) y prioridad (⏫ 🔼 🔽) al estilo del complemento Tasks. En Hoy aparecen las más urgentes; `#/hoy/tareas` las muestra todas, agrupadas en vencidas, hoy, esta semana, más adelante y sin fecha (por nota), con un buscador y filtro por vault. Se omiten las plantillas y el código, y las de notas que reescriben tus herramientas quedan aparte.
+- **Proyectos**: los más activos en Hoy y todos en `#/hoy/proyectos`, cada uno con su última actividad y las entradas recientes de su historia (bitácora, decisiones, cambios). Un proyecto es una nota con `tipo: proyecto` (o `proyecto-moc`, `project`) y su historia son las notas con `proyecto: <nombre>`. Si tienes un sistema de memoria con semáforo, se muestra su estado (al día, por revisar, con problemas, archivado) y el motivo.
 - **Marcar como hecha** desde el atlas: el servidor cambia solo la casilla de esa línea (`[ ]` → `[x]`) después de comprobar que la línea sigue igual; si la nota cambió, no toca nada y lo avisa.
 
 ### Vaults (`#/v/<vault>`)
