@@ -88,5 +88,5 @@ Al traducir lotes (paso 4):
 | `scripts/verificar.mjs` | Prueba de humo en un HOME temporal |
 | `scripts/traducir.mjs` | Traducción de lo pendiente |
 | `vite.config.ts` | Servidor: datos, adjuntos de los vaults, regeneración y vigilancia en vivo |
-| `src/` | Página React (pantallas Universo, Vaults, Skills, Agentes, Cómo trabaja) |
+| `src/` | Página React (Universo, Vaults, Skills y Sistema, más el centro de mando ⌘K) |
 | `docs/` | Arquitectura, formato de datos, configuración y flujo de Git |

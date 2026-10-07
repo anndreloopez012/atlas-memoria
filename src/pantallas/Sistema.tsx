@@ -1,14 +1,17 @@
-// Cómo trabaja todo: de dónde entra el conocimiento, quién lo procesa, dónde
-// queda y quién lo consulta. Se adapta a cada equipo: si hay un sistema de
-// memoria (.memoria-system) muestra su motor, enrutado y comandos; si no, explica
-// cómo el atlas lee los vaults, las skills y los agentes que encontró.
+// Sistema: cómo trabaja todo y quién lo hace, en pestañas.
+// «Cómo trabaja»: de dónde entra el conocimiento, quién lo procesa, dónde queda y
+// quién lo consulta. Se adapta a cada equipo: si hay un sistema de memoria
+// (.memoria-system) muestra su motor, enrutado y comandos; si no, explica cómo el
+// atlas lee los vaults, las skills y los agentes que encontró.
+// «Agentes»: los especialistas de IA y las automatizaciones (ver Agentes.tsx).
 import { ArrowRight, Terminal } from 'lucide-react';
 import { vaultCentral } from '../lib/atlas';
 import { cargarAgentes, useDatos } from '../lib/datos';
 import { colorIA, intervalo, n } from '../lib/formato';
-import { rutaAgente, rutaVault } from '../lib/rutas';
+import { rutaAgente, rutaSistema, rutaVault, type PestanaSistema } from '../lib/rutas';
 import { mezclar, tono, useTema } from '../lib/tema';
 import type { Atlas, Automatizacion } from '../lib/tipos';
+import Agentes from './Agentes';
 
 const ANCHO = 1200;
 const ALTO = 540;
@@ -35,7 +38,29 @@ const COMANDOS_ATLAS = [
 // «com.persona.respaldo» → «respaldo»: el prefijo de dominio inverso no aporta.
 const nombreCorto = (etiqueta: string) => etiqueta.replace(/^([a-z0-9-]+\.){2}/i, '');
 
-export default function Sistema({ atlas }: { atlas: Atlas }) {
+const PESTANAS: { id: PestanaSistema; etiqueta: string; ayuda: string }[] = [
+  { id: 'como', etiqueta: 'Cómo trabaja', ayuda: 'El flujo de tu memoria y lo que el atlas encontró en este equipo' },
+  { id: 'agentes', etiqueta: 'Agentes', ayuda: 'Especialistas de IA y automatizaciones que trabajan por ti' },
+];
+
+export default function Sistema({ atlas, pestana }: { atlas: Atlas; pestana: PestanaSistema }) {
+  return (
+    <>
+      <nav className="subpestanas" aria-label="Secciones de Sistema">
+        <div className="conmutador">
+          {PESTANAS.map((p) => (
+            <a key={p.id} href={rutaSistema(p.id)} className={pestana === p.id ? 'activo' : ''} aria-current={pestana === p.id ? 'page' : undefined} title={p.ayuda}>
+              {p.etiqueta}
+            </a>
+          ))}
+        </div>
+      </nav>
+      {pestana === 'agentes' ? <Agentes atlas={atlas} agente={null} /> : <ComoTrabaja atlas={atlas} />}
+    </>
+  );
+}
+
+function ComoTrabaja({ atlas }: { atlas: Atlas }) {
   const tema = useTema();
   const agentes = useDatos('agentes', cargarAgentes);
   const autos = (agentes.datos?.agentes ?? []).filter((a): a is Automatizacion => a.tipo === 'automatizacion');

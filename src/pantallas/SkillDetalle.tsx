@@ -1,13 +1,14 @@
 // Ficha de una skill: para qué sirve, cuándo se activa, cómo trabaja paso a paso,
 // qué archivos carga y con qué skills, agentes y notas se relaciona.
 import { ArrowLeft, BookOpen, ExternalLink, FileCode2, FileText, FolderTree, Package, Star } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Markdown from '../componentes/Markdown';
 import Pipeline, { type Paso } from '../componentes/Pipeline';
 import Visor from '../componentes/Visor';
 import { vaultPorNombre } from '../lib/atlas';
 import { cargarAgentes, cargarDetalleSkill, cargarSkills, useDatos } from '../lib/datos';
 import { colorIA, corto, inicialIA, n, tamano } from '../lib/formato';
+import { registrarReciente } from '../lib/recientes';
 import { rutaAgente, rutaSkill, rutaVault } from '../lib/rutas';
 import type { ArchivoSkill, Atlas } from '../lib/tipos';
 import { InsigniasIA } from './Skills';
@@ -43,6 +44,10 @@ export default function SkillDetalle({ atlas, nombre }: { atlas: Atlas; nombre: 
   const detalle = useDatos(skill ? `skill:${skill.archivoDetalle}` : null, () => cargarDetalleSkill(skill!.archivoDetalle));
   const [visor, setVisor] = useState<{ titulo: string; texto: string; subtitulo: string } | null>(null);
   const [completo, setCompleto] = useState(false);
+
+  useEffect(() => {
+    if (skill) registrarReciente({ tipo: 'skill', id: skill.id, titulo: skill.nombre, contexto: `skill · ${skill.categoria}`, destino: rutaSkill(skill.nombre), color: '#dcb56c' });
+  }, [skill]);
 
   if (datos.cargando || !datos.datos) return <div className="pantalla-estado cargando"><p className="rotulo">Abriendo skill…</p></div>;
   if (!skill)

@@ -1,17 +1,18 @@
 import { Moon, RefreshCw, Search, Sun } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { recargarDatos, regenerarEnServidor } from '../lib/datos';
 import { hace } from '../lib/formato';
 import { rutaVault, type Ruta } from '../lib/rutas';
 import { alternarTema, useTema } from '../lib/tema';
 import type { Atlas } from '../lib/tipos';
 
-const secciones = (atlas: Atlas | null): { vista: Ruta['vista']; hash: string; etiqueta: string }[] => [
-  { vista: 'universo', hash: '#/', etiqueta: 'Universo' },
-  { vista: 'vault', hash: rutaVault(atlas?.centro ?? ''), etiqueta: 'Vaults' },
-  { vista: 'skills', hash: '#/skills', etiqueta: 'Skills' },
-  { vista: 'agentes', hash: '#/agentes', etiqueta: 'Agentes' },
-  { vista: 'sistema', hash: '#/sistema', etiqueta: 'Cómo trabaja' },
+// Cinco secciones como máximo: cada una con un propósito claro. Lo demás se hace
+// desde el centro de mando (⌘K), así la barra no se llena de botones.
+const secciones = (atlas: Atlas | null): { vistas: Ruta['vista'][]; hash: string; etiqueta: string }[] => [
+  { vistas: ['universo'], hash: '#/', etiqueta: 'Universo' },
+  { vistas: ['vault'], hash: rutaVault(atlas?.centro ?? ''), etiqueta: 'Vaults' },
+  { vistas: ['skills'], hash: '#/skills', etiqueta: 'Skills' },
+  { vistas: ['sistema', 'agentes'], hash: '#/sistema', etiqueta: 'Sistema' },
 ];
 
 export function Marca() {
@@ -30,6 +31,13 @@ export default function BarraSuperior({ atlas, ruta, abrirBuscador }: { atlas: A
   const tema = useTema();
   const [regenerando, setRegenerando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
+
+  // El centro de mando también puede pedir una actualización.
+  useEffect(() => {
+    const pedido = () => void actualizar();
+    window.addEventListener('atlas:actualizar', pedido);
+    return () => window.removeEventListener('atlas:actualizar', pedido);
+  });
 
   const actualizar = async () => {
     setRegenerando(true);
@@ -56,17 +64,20 @@ export default function BarraSuperior({ atlas, ruta, abrirBuscador }: { atlas: A
       </a>
 
       <nav className="navegacion" aria-label="Secciones">
-        {secciones(atlas).map((s) => (
-          <a key={s.vista} href={s.hash} className={ruta.vista === s.vista ? 'activa' : ''} aria-current={ruta.vista === s.vista ? 'page' : undefined}>
-            {s.etiqueta}
-          </a>
-        ))}
+        {secciones(atlas).map((s) => {
+          const activa = s.vistas.includes(ruta.vista);
+          return (
+            <a key={s.etiqueta} href={s.hash} className={activa ? 'activa' : ''} aria-current={activa ? 'page' : undefined}>
+              {s.etiqueta}
+            </a>
+          );
+        })}
       </nav>
 
       <div className="barra-acciones">
-        <button className="buscar-boton" onClick={abrirBuscador}>
+        <button className="buscar-boton" onClick={abrirBuscador} aria-label="Buscar o pedir algo (⌘K)">
           <Search size={15} />
-          <span>Buscar</span>
+          <span>Buscar o pedir</span>
           <kbd>⌘K</kbd>
         </button>
         <button className="icono-boton estado-datos" onClick={actualizar} disabled={regenerando} title={aviso ?? 'Volver a leer vaults, skills y agentes'}>

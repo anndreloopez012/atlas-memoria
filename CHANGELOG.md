@@ -1,5 +1,13 @@
 # Cambios
 
+## 2.0.0 · 2026-10-07
+
+Más funcional sin más botones (plan en [docs/PLAN-2.0.md](docs/PLAN-2.0.md)).
+
+### Centro de mando y navegación más simple
+- El buscador pasa a ser el **centro de mando** (botón «Buscar o pedir» o `⌘K`): busca en todo y, sin escribir, muestra lo último que abriste, a dónde ir y las acciones (cambiar el tema, actualizar los datos).
+- La barra queda con secciones claras: Universo, Vaults, Skills y **Sistema**, que junta «Cómo trabaja» y «Agentes» en pestañas. Las direcciones anteriores (`#/agentes`, `#/agentes/<id>`) siguen funcionando.
+
 ## 1.4.0 · 2026-10-05
 
 ### Una sola mente
