@@ -58,5 +58,5 @@ Se marca cada punto al fusionarlo.
 - [x] 8 · camino entre notas
 - [x] 5 · preguntar a la memoria
 - [x] 7 · capturar
-- [ ] 10 · voz
+- [x] 10 · voz
 - [ ] 12 · exportar

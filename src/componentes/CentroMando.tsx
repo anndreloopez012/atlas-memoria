@@ -3,12 +3,13 @@
 // que abriste, a dónde ir y las acciones disponibles. Las funciones nuevas se suman
 // aquí como grupos o acciones, no como botones sueltos por la interfaz.
 import MiniSearch from 'minisearch';
-import { ArrowRight, Bot, Check, Clock, Compass, ExternalLink, FileText, MessageCircleQuestion, Moon, NotebookPen, RefreshCw, Search, Sparkles, Star, Sun, X, type LucideIcon } from 'lucide-react';
+import { ArrowRight, Bot, Check, Clock, Compass, ExternalLink, FileText, MessageCircleQuestion, Mic, Moon, NotebookPen, RefreshCw, Search, Sparkles, Star, Sun, X, type LucideIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cargarAgentes, cargarSkills, cargarVault, useVersionDatos } from '../lib/datos';
 import { useFavoritos } from '../lib/favoritos';
 import Markdown from './Markdown';
 import { recomendador } from '../lib/recomendar';
+import { interpretarVoz, reconocimientoDeVoz, type ReconocimientoVoz } from '../lib/voz';
 import { leerRecientes, registrarReciente, type Reciente } from '../lib/recientes';
 import { navegar, rutaAgente, rutaSistema, rutaSkill, rutaVault } from '../lib/rutas';
 import { alternarTema, useTema } from '../lib/tema';
@@ -165,6 +166,63 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
     iaDisponible().then(setIa);
     destinoCaptura().then(setDestino);
   }, []);
+
+  // Voz: el micrófono aparece solo si el navegador sabe reconocer voz.
+  const Reconocimiento = reconocimientoDeVoz();
+  const [escuchando, setEscuchando] = useState(false);
+  const [avisoVoz, setAvisoVoz] = useState<string | null>(null);
+  const reco = useRef<ReconocimientoVoz | null>(null);
+  useEffect(() => () => reco.current?.abort(), []);
+
+  const escuchar = () => {
+    if (!Reconocimiento) return;
+    if (escuchando) {
+      reco.current?.stop();
+      return;
+    }
+    const r = new Reconocimiento();
+    r.lang = navigator.language?.startsWith('es') ? navigator.language : 'es-ES';
+    r.interimResults = true;
+    r.continuous = false;
+    let final = '';
+    r.onresult = (e) => {
+      const partes = Array.from(e.results);
+      final = partes.map((x) => x[0].transcript).join(' ');
+      setConsulta(final);
+      setActivo(0);
+    };
+    r.onerror = (e) => {
+      setAvisoVoz(
+        e.error === 'not-allowed' || e.error === 'service-not-allowed'
+          ? 'Permite el micrófono en el navegador para usar la voz.'
+          : e.error === 'no-speech'
+            ? 'No escuché nada. Toca el micrófono e intenta de nuevo.'
+            : e.error === 'network'
+              ? 'El reconocimiento de voz de este navegador necesita internet.'
+              : null,
+      );
+    };
+    r.onend = () => {
+      setEscuchando(false);
+      const dicho = final.trim();
+      if (!dicho) return;
+      const orden = interpretarVoz(dicho, atlas);
+      if (orden.tipo === 'ir') {
+        navegar(orden.hash);
+        cerrar();
+      } else if (orden.tipo === 'capturar') setConsulta(`+ ${orden.texto}`);
+      else if (orden.tipo === 'preguntar' && ia !== undefined) {
+        setConsulta(orden.texto);
+        preguntar(orden.texto);
+      } else setConsulta(orden.texto);
+    };
+    reco.current = r;
+    setAvisoVoz(null);
+    setRespuesta(null);
+    setCaptura(null);
+    setEscuchando(true);
+    r.start();
+  };
 
   const guardar = async (texto: string) => {
     setCaptura({ texto, guardando: true });
@@ -411,14 +469,26 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
               setActivo(0);
             }}
             onKeyDown={tecla}
-            placeholder="Busca o pide algo: una nota, una skill, «qué uso para hacer un video»…"
+            placeholder={escuchando ? 'Te escucho… di «abre Programación» o «busca Stripe»' : 'Busca o pide algo: una nota, una skill, «qué uso para hacer un video»…'}
             aria-label="Buscar o pedir"
             aria-controls="centro-filas"
           />
+          {Reconocimiento && (
+            <button
+              className={`icono-boton microfono ${escuchando ? 'escuchando' : ''}`}
+              onClick={escuchar}
+              aria-pressed={escuchando}
+              aria-label={escuchando ? 'Dejar de escuchar' : 'Hablar'}
+              title="Hablar: «abre Programación», «busca Stripe», «pregúntale…», «anota…». El navegador procesa el audio."
+            >
+              <Mic size={16} />
+            </button>
+          )}
           <button className="icono-boton" onClick={cerrar} aria-label="Cerrar">
             <X size={16} />
           </button>
         </div>
+        {avisoVoz && <p className="aviso-voz">{avisoVoz}</p>}
         {respuesta && !captura && (
           <div className="buscador-resultados respuesta" aria-live="polite">
             <p className="rotulo">Pregunta</p>
