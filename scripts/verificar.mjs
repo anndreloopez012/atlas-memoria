@@ -134,6 +134,9 @@ try {
   ok(usoDemo?.total === 2 && usoDemo.ias.Claude === 1 && usoDemo.ias.Codex === 1 && !skills.skills.find((x) => x.nombre === 'otra-skill')?.uso, 'cuenta el uso real de las skills en Claude Code y Codex (solo conteos)');
   const salud = leer('salud.json');
   ok(salud.rotos.total === 1 && salud.rotos.items[0].destinos[0] === 'Nota que no existe' && salud.adjuntos.items[0]?.destinos[0] === 'foto-perdida.png', 'revisa la salud: enlaces rotos y adjuntos que faltan');
+  const { fuentesPara, armarPedido, iasParaPreguntar } = await import('./lib/preguntar.mjs');
+  const fuentes = fuentesPara('¿Qué dice la idea?', entorno.ATLAS_SALIDA);
+  ok(fuentes[0]?.t === 'Idea' && fuentes[0].texto.includes('Revisar la idea') && armarPedido('x', fuentes).includes('[1] «Idea»') && iasParaPreguntar('ninguna').length === 0, 'encuentra las notas que responden una pregunta (sin llamar a ninguna IA)');
   const recientes = leer('recientes.json');
   ok(recientes.notas.length === 5 && recientes.skills.some((s) => s.nombre === 'demo-skill') && recientes.agentes.length === 1, 'lista las novedades (notas, skills y agentes recientes)');
 
