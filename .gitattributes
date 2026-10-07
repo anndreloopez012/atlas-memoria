@@ -1,0 +1,4 @@
+# El zip de cada versión no necesita la automatización de GitHub.
+.github export-ignore
+# Los .cmd de Windows deben llevar fin de línea CRLF.
+*.cmd text eol=crlf

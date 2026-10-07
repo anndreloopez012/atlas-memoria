@@ -2,6 +2,19 @@
 
 Esta guía sirve para dos lectores: **la IA** que hace la instalación (Claude Code, Codex o Antigravity) y **la persona** que quiera entender qué pasa o hacerlo a mano.
 
+## La forma más fácil: doble clic
+
+Descarga el último `atlas-memoria-vX.Y.Z.zip` de [Releases](https://github.com/anndreloopez012/atlas-memoria/releases/latest), descomprímelo y haz doble clic en `Instalar en Mac.command`, `Instalar en Windows.cmd` o `Instalar en Linux.sh`. El instalador:
+
+1. Copia la app a una carpeta fija: macOS `~/Library/Application Support/Atlas de memoria`, Windows `%LOCALAPPDATA%\Atlas de memoria`, Linux `~/.local/share/atlas-memoria` (la descarga se puede borrar).
+2. Instala Node.js si falta (Homebrew, fnm o nvm sin sudo; winget en Windows) y las dependencias.
+3. Detecta vaults, skills y agentes, verifica y genera los datos.
+4. Crea el acceso **«Atlas de memoria»** con su ícono y lo abre.
+
+Avisos del sistema la primera vez: en macOS, **Ajustes del Sistema › Privacidad y seguridad › Abrir igualmente**; en Windows, **Más información › Ejecutar de todas formas**; en Linux, clic derecho › **Ejecutar como programa**. La primera apertura también puede pedir permiso para leer tus carpetas (Documentos, donde suelen estar los vaults): acéptalo.
+
+Después se abre siempre con doble clic. Cada apertura busca cambios en vaults, skills y agentes; la app se apaga sola al dejar de usarla. Si se borra el acceso: `npm run lanzador` lo vuelve a crear.
+
 ## La forma corta: que lo haga tu IA
 
 Abre Claude Code, Codex o Antigravity y escribe:

@@ -89,3 +89,46 @@ export async function regenerarEnServidor(): Promise<{ ok: boolean; salida: stri
   if (!r.ok) return { ok: false, salida: `El servidor respondió ${r.status}` };
   return r.json();
 }
+
+// --- Estado del servidor ----------------------------------------------------------
+// La página pregunta cada 15 s si hay datos nuevos (en la app no hay recarga en
+// caliente) y si el servidor está buscando cambios. De paso le avisa que sigue en uso.
+let buscandoActual = false;
+let generadoVisto: string | null = null;
+const oyentesEstado = new Set<() => void>();
+
+async function consultarEstado() {
+  try {
+    const r = await fetch('/__atlas/estado', { cache: 'no-store' });
+    if (!r.ok) return;
+    const { generado, buscando } = (await r.json()) as { generado: string | null; buscando: boolean };
+    if (generadoVisto && generado && generado !== generadoVisto) recargarDatos();
+    generadoVisto = generado ?? generadoVisto;
+    if (buscando !== buscandoActual) {
+      buscandoActual = buscando;
+      oyentesEstado.forEach((f) => f());
+    }
+  } catch {
+    /* servidor apagado o sin conexión */
+  }
+}
+
+if (typeof window !== 'undefined') {
+  void consultarEstado();
+  setInterval(() => void consultarEstado(), 15_000);
+  // Al volver a la pestaña se pregunta enseguida.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') void consultarEstado();
+  });
+}
+
+/** true mientras el servidor vuelve a leer vaults, skills y agentes. */
+export function useBuscandoCambios() {
+  return useSyncExternalStore(
+    (f) => {
+      oyentesEstado.add(f);
+      return () => oyentesEstado.delete(f);
+    },
+    () => buscandoActual,
+  );
+}

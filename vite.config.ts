@@ -145,6 +145,8 @@ function atlas(): Plugin {
   let generando: Promise<{ ok: boolean; salida: string }> | null = null;
   // En desarrollo, avisa al navegador que hay datos nuevos (se define en configureServer).
   let avisarDatos: (() => void) | null = null;
+  // Última vez que la página (o el lanzador) preguntó por el estado.
+  let ultimaConsulta = Date.now();
   const regenerar = () => (generando ??= generar().finally(() => (generando = null)));
 
   const middlewares = (app: Connect.Server) => {
@@ -220,6 +222,19 @@ function atlas(): Plugin {
       }
     });
 
+    // Estado: cuándo se generaron los datos y si se están buscando cambios. La página
+    // lo consulta cada pocos segundos (así se actualiza sola y mantiene viva la app).
+    app.use('/__atlas/estado', (_req, res) => {
+      ultimaConsulta = Date.now();
+      let generado: string | null = null;
+      try {
+        generado = (JSON.parse(fs.readFileSync(path.join(DATOS, 'atlas.json'), 'utf8')) as { generado: string }).generado;
+      } catch {
+        /* todavía sin datos */
+      }
+      responder(res, 200, { atlas: true, generado, buscando: Boolean(generando) });
+    });
+
     app.use('/__atlas/regenerar', async (req, res) => {
       if (req.method !== 'POST') {
         res.statusCode = 405;
@@ -240,77 +255,89 @@ function atlas(): Plugin {
         execFileSync(process.execPath, [GENERADOR], { cwd: RAIZ, stdio: 'inherit' });
       }
       middlewares(server.middlewares);
+      // En desarrollo el navegador se entera al instante por HMR; en producción lo
+      // descubre consultando /__atlas/estado.
       avisarDatos = () => server.ws.send({ type: 'custom', event: 'atlas:datos', data: { ok: true } });
-      if (process.env.ATLAS_VIGILAR === '0') return;
-
-      // Sincronización en vivo: un cambio en cualquier vault, en las carpetas de
-      // skills y agentes (o en la configuración) regenera el atlas tras 8 s sin cambios y avisa al navegador.
-      let temporizador: NodeJS.Timeout | undefined;
-      let vigias: fs.FSWatcher[] = [];
-      let vigilados = '';
-      const avisar = () => {
-        clearTimeout(temporizador);
-        temporizador = setTimeout(async () => {
-          const { ok, salida } = await regenerar();
-          server.config.logger.info(`  atlas: ${ok ? 'datos actualizados' : 'error al regenerar'}`, { timestamp: true });
-          if (!ok) server.config.logger.error(salida);
-          server.ws.send({ type: 'custom', event: 'atlas:datos', data: { ok } });
-          armar();
-        }, 8000);
-      };
-      const armar = () => {
-        const rutas = [...vaultsActuales().values()];
-        const ias = fuentesDeIAs();
-        const clave = [...rutas, ...ias.skills, ...ias.agentes].join('|');
-        if (clave === vigilados) return;
-        vigias.forEach((v) => v.close());
-        vigias = [];
-        vigilados = clave;
-        // Skills y agentes: una skill nueva o editada (su SKILL.md) o un agente nuevo
-        // (un .md en su carpeta) también regeneran el atlas.
-        const vigilarIA = (ruta: string, sirve: (rel: string) => boolean) => {
-          try {
-            vigias.push(
-              fs.watch(ruta, { recursive: true }, (_evento, archivo) => {
-                const rel = String(archivo || '').split(path.sep).join('/');
-                if (/(^|\/)(node_modules|\.git)(\/|$)/.test(rel) || !sirve(rel)) return;
-                avisar();
-              }),
-            );
-          } catch (error) {
-            server.config.logger.warn(`  atlas: no se pudo vigilar ${ruta}: ${String(error)}`);
-          }
-        };
-        for (const ruta of ias.skills) vigilarIA(ruta, (rel) => /(^|\/)SKILL\.md$/.test(rel) || !rel.includes('/'));
-        for (const ruta of ias.agentes) vigilarIA(ruta, (rel) => rel.endsWith('.md'));
-        const generadas = new Set(leerConfig().carpetasGeneradas || ['Graphify']);
-        for (const ruta of rutas) {
-          try {
-            vigias.push(
-              fs.watch(ruta, { recursive: true }, (_evento, archivo) => {
-                const rel = String(archivo || '').split(path.sep).join('/');
-                if (!rel.endsWith('.md')) return;
-                const primera = rel.split('/')[0];
-                if (primera.startsWith('.') || (generadas.has(primera) && rel.includes('/'))) return;
-                avisar();
-              }),
-            );
-          } catch (error) {
-            server.config.logger.warn(`  atlas: no se pudo vigilar ${ruta}: ${String(error)}`);
-          }
-        }
-      };
-      armar();
-      fs.watchFile(ARCHIVO_CONFIG, { interval: 2000 }, avisar);
-      server.httpServer?.on('close', () => {
-        vigias.forEach((v) => v.close());
-        fs.unwatchFile(ARCHIVO_CONFIG);
-      });
+      if (process.env.ATLAS_VIGILAR !== '0') vigilar(server.config.logger, server.httpServer);
     },
     configurePreviewServer(server) {
       middlewares(server.middlewares);
+      if (process.env.ATLAS_VIGILAR !== '0') vigilar(server.config.logger, server.httpServer);
+      // Cada vez que se abre la app se buscan cambios (notas, skills, agentes) sin
+      // hacer esperar: la página abre con los datos anteriores y se actualiza sola.
+      if (process.env.ATLAS_BUSCAR_AL_ABRIR !== '0') void regenerar();
+      // Abierta con doble clic, la app se apaga sola cuando nadie la usa.
+      if (process.env.ATLAS_APAGAR_SIN_USO === '1') {
+        const minutos = Number(process.env.ATLAS_MINUTOS_SIN_USO || 3);
+        setInterval(() => {
+          if (Date.now() - ultimaConsulta > minutos * 60_000) {
+            server.config.logger.info('  atlas: nadie lo está usando; se apaga.');
+            process.exit(0);
+          }
+        }, 30_000).unref();
+      }
     },
   };
+
+  /**
+   * Sincronización en vivo: un cambio en cualquier vault, en las carpetas de skills
+   * y agentes (o en la configuración) regenera el atlas tras 8 s sin cambios y avisa
+   * al navegador. Funciona igual en desarrollo y en la app (vite preview).
+   */
+  function vigilar(logger: { info: (m: string, o?: { timestamp?: boolean }) => void; warn: (m: string) => void; error: (m: string) => void }, httpServer: { on: (e: 'close', f: () => void) => void } | null) {
+    let temporizador: NodeJS.Timeout | undefined;
+    let vigias: fs.FSWatcher[] = [];
+    let vigilados = '';
+    const avisar = () => {
+      clearTimeout(temporizador);
+      temporizador = setTimeout(async () => {
+        const { ok, salida } = await regenerar();
+        logger.info(`  atlas: ${ok ? 'datos actualizados' : 'error al regenerar'}`, { timestamp: true });
+        if (!ok) logger.error(salida);
+        avisarDatos?.();
+        armar();
+      }, 8000);
+    };
+    const mirar = (ruta: string, sirve: (rel: string) => boolean) => {
+      try {
+        vigias.push(
+          fs.watch(ruta, { recursive: true }, (_evento, archivo) => {
+            const rel = String(archivo || '').split(path.sep).join('/');
+            if (/(^|\/)(node_modules|\.git)(\/|$)/.test(rel) || !sirve(rel)) return;
+            avisar();
+          }),
+        );
+      } catch (error) {
+        logger.warn(`  atlas: no se pudo vigilar ${ruta}: ${String(error)}`);
+      }
+    };
+    const armar = () => {
+      const rutas = [...vaultsActuales().values()];
+      const ias = fuentesDeIAs();
+      const clave = [...rutas, ...ias.skills, ...ias.agentes].join('|');
+      if (clave === vigilados) return;
+      vigias.forEach((v) => v.close());
+      vigias = [];
+      vigilados = clave;
+      const generadas = new Set(leerConfig().carpetasGeneradas || ['Graphify']);
+      // Notas: cualquier .md fuera de carpetas ocultas y de las que generan herramientas.
+      for (const ruta of rutas) {
+        mirar(ruta, (rel) => {
+          const primera = rel.split('/')[0];
+          return rel.endsWith('.md') && !primera.startsWith('.') && !(generadas.has(primera) && rel.includes('/'));
+        });
+      }
+      // Skills: un SKILL.md nuevo, editado o borrado (o una carpeta nueva). Agentes: un .md.
+      for (const ruta of ias.skills) mirar(ruta, (rel) => /(^|\/)SKILL\.md$/.test(rel) || !rel.includes('/'));
+      for (const ruta of ias.agentes) mirar(ruta, (rel) => rel.endsWith('.md'));
+    };
+    armar();
+    fs.watchFile(ARCHIVO_CONFIG, { interval: 2000 }, avisar);
+    httpServer?.on('close', () => {
+      vigias.forEach((v) => v.close());
+      fs.unwatchFile(ARCHIVO_CONFIG);
+    });
+  }
 }
 
 export default defineConfig({

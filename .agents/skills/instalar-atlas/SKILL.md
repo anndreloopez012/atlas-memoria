@@ -18,13 +18,13 @@ La persona solo dio la URL del repositorio y dijo «instala». Haz todo tú; pre
    - `sugerenciasDeVaults` → pregunta si son suyos antes de agregarlos.
    - `centro` → cámbialo con `--centro "<nombre>"` si la persona usa otro vault como principal.
 4. **Español.** Si `totales.sinTraducir` > 0: `npm run traducir -- --lotes <carpeta>`, traduce cada `lote-NN.json` a `resultado-NN.json` (`{ clave: traducción }`, reglas en AGENTS.md → «Traducción») y `npm run traducir -- --importar <carpeta>`. Fuera de Claude Code también sirve `npm run traducir`.
-5. **Abrir.** `bash iniciar.sh` (o `iniciar.ps1`) en segundo plano y abre `siguiente.url` (por defecto http://localhost:5190).
+5. **Abrir.** El instalador ya dejó el acceso de doble clic «Atlas de memoria» (`lanzadores` en el resumen). Ábrelo una vez con `npm run abrir`: busca cambios, abre el navegador y deja el servidor en segundo plano (se apaga solo).
 
 ## Comprobar
 
 - `npm run verificar` termina en «Todo en orden».
 - La URL responde y la portada muestra el vault central con los demás en órbita (o, sin vaults, el anillo de skills).
-- Cuéntale a la persona qué se encontró y cómo volver a abrir el atlas.
+- Cuéntale a la persona qué se encontró y que desde ahora lo abre con **doble clic** en «Atlas de memoria» (`siguiente.dobleClic`); al abrirlo siempre busca cambios en vaults, skills y agentes.
 
 ## Actualizar
 

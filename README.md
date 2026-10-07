@@ -6,6 +6,23 @@ Se instala en cualquier computadora (macOS, Windows o Linux) y **se acopla a lo 
 
 ---
 
+## Descargar e instalar (sin terminal)
+
+1. Descarga el último **`atlas-memoria-vX.Y.Z.zip`** de [Releases](https://github.com/anndreloopez012/atlas-memoria/releases/latest) y descomprímelo.
+2. Haz **doble clic** en el instalador de tu sistema:
+
+| Sistema | Instalador | La primera vez |
+|---|---|---|
+| macOS | `Instalar en Mac.command` | macOS avisa que es de un desarrollador no identificado: ve a **Ajustes del Sistema › Privacidad y seguridad › Abrir igualmente** (o clic derecho › Abrir). |
+| Windows | `Instalar en Windows.cmd` | Si aparece «Windows protegió tu PC», elige **Más información › Ejecutar de todas formas**. |
+| Linux | `Instalar en Linux.sh` | Clic derecho › **Ejecutar como programa** (o `bash "Instalar en Linux.sh"`). |
+
+El instalador copia la app a una carpeta fija (puedes borrar la descarga), instala Node.js si falta, encuentra tus vaults, skills y agentes, crea el acceso **«Atlas de memoria»** con su ícono y lo abre en tu navegador.
+
+**Desde ahí, ábrelo con doble clic** en «Atlas de memoria» (macOS: Aplicaciones y Escritorio · Windows: Escritorio y menú Inicio · Linux: menú de aplicaciones y Escritorio). Cada vez que lo abres **busca cambios** en tus vaults de Obsidian, tus skills y tus agentes (y ubicaciones nuevas), los sigue vigilando mientras lo usas y **se apaga solo** unos minutos después de cerrar la pestaña. No quedan ventanas abiertas.
+
+Para actualizar, descarga la versión nueva y vuelve a ejecutar el instalador: conserva tu configuración.
+
 ## Instalar con IA
 
 Abre **Claude Code**, **Codex** o **Antigravity** y escribe:
@@ -19,7 +36,7 @@ La IA hace todo:
 1. Clona el repositorio.
 2. Instala lo que falte en el equipo (Node.js y dependencias).
 3. Detecta tus vaults, skills, agentes y automatizaciones.
-4. Verifica que funcione, traduce al español lo que haga falta y te deja el atlas abierto en <http://localhost:5190>.
+4. Verifica que funcione, traduce al español lo que haga falta, crea el acceso de doble clic **«Atlas de memoria»** y te lo deja abierto en <http://localhost:5190>.
 
 Solo te pregunta si no encuentra tus vaults o si hay carpetas dudosas.
 
@@ -177,10 +194,11 @@ Lo que no se detecta se agrega con una opción: `--vault`, `--skills`, `--agente
 
 ## Cómo se mantiene sincronizado
 
-1. **En vivo:** mientras el atlas está abierto (`iniciar` o `npm run dev`), el servidor vigila tus vaults, las carpetas de **skills** (un `SKILL.md` nuevo o editado) y de **agentes** de todas las IAs detectadas, y `atlas.config.json`. Cuando algo cambia, espera 8 segundos para agrupar los guardados, regenera el atlas y avisa al navegador, que recarga los datos sin perder la vista. Una nota, skill o agente nuevo aparece solo en unos 15-20 segundos.
-2. **Bajo pedido:** el botón de la barra superior (muestra «hace X min») o «Actualizar los datos ahora» en el centro de mando vuelve a leer todo.
-3. **Ubicaciones nuevas** (un vault nuevo, otra IA o un plugin recién activado con su propia carpeta de skills): `npm run detectar` las agrega.
-4. **Desde la terminal:** `npm run datos`.
+1. **Al abrir:** el acceso de doble clic busca ubicaciones nuevas (vaults, carpetas de skills y de agentes), abre el navegador con lo último que tenía y vuelve a leer todo en segundo plano; la página se actualiza sola (en la barra se ve «buscando cambios…»).
+2. **En vivo:** mientras el atlas está abierto (doble clic, `iniciar` o `npm run dev`), el servidor vigila tus vaults, las carpetas de **skills** (un `SKILL.md` nuevo o editado) y de **agentes** de todas las IAs detectadas, y `atlas.config.json`. Cuando algo cambia, espera 8 segundos para agrupar los guardados, regenera el atlas y avisa al navegador, que recarga los datos sin perder la vista. Una nota, skill o agente nuevo aparece solo en unos 15-20 segundos.
+3. **Bajo pedido:** el botón de la barra superior (muestra «hace X min») o «Actualizar los datos ahora» en el centro de mando vuelve a leer todo.
+4. **Ubicaciones nuevas** (un vault nuevo, otra IA o un plugin recién activado con su propia carpeta de skills): `npm run detectar` las agrega.
+5. **Desde la terminal:** `npm run datos`.
 
 Los datos generados viven en `datos/` y **no se suben a Git**: son contenido personal y cambian a cada rato. El repositorio solo guarda el código que los genera y los dibuja.
 

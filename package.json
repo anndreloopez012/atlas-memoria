@@ -1,7 +1,7 @@
 {
   "name": "atlas-memoria",
   "private": true,
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Atlas interactivo de tu memoria: vaults de Obsidian con un vault central, skills y agentes de Claude Code, Codex y Antigravity. Lo instala una IA en cualquier equipo.",
   "type": "module",
   "scripts": {
@@ -14,7 +14,9 @@
     "build": "tsc -p tsconfig.json && tsc -p tsconfig.node.json && vite build",
     "start": "vite build && vite preview",
     "preview": "vite preview",
-    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json"
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
+    "lanzador": "node scripts/lanzador.mjs",
+    "abrir": "node scripts/abrir.mjs"
   },
   "engines": {
     "node": ">=20"
