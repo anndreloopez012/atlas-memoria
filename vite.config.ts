@@ -1,6 +1,7 @@
 import react from '@vitejs/plugin-react';
 import { execFile, execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import type { ServerResponse } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -114,6 +115,18 @@ function marcarTarea(datos: Record<string, unknown>): { ok: boolean; error?: str
   const abs = raiz ? dentroDe(raiz, r) : null;
   if (!abs) return { ok: false, error: 'No encuentro la nota' };
   return marcarHecha(abs, Number(l), String(h));
+}
+
+/** Carpetas de skills y de agentes de este equipo (las detectadas, de los datos generados). */
+function fuentesDeIAs(): { skills: string[]; agentes: string[] } {
+  try {
+    const atlas = JSON.parse(fs.readFileSync(path.join(DATOS, 'atlas.json'), 'utf8')) as { sistema: { fuentes: { skills: { ruta: string }[]; agentes: { ruta: string }[] } } };
+    const expandir = (r: string) => (r.startsWith('~') ? path.join(os.homedir(), r.slice(1)) : r);
+    const existentes = (lista: { ruta: string }[]) => [...new Set(lista.map((x) => expandir(x.ruta)))].filter((r) => fs.existsSync(r));
+    return { skills: existentes(atlas.sistema.fuentes.skills), agentes: existentes(atlas.sistema.fuentes.agentes) };
+  } catch {
+    return { skills: [], agentes: [] };
+  }
 }
 
 function generar(): Promise<{ ok: boolean; salida: string }> {
@@ -230,8 +243,8 @@ function atlas(): Plugin {
       avisarDatos = () => server.ws.send({ type: 'custom', event: 'atlas:datos', data: { ok: true } });
       if (process.env.ATLAS_VIGILAR === '0') return;
 
-      // Sincronización en vivo: un cambio en cualquier vault (o en la
-      // configuración) regenera el atlas tras 8 s sin cambios y avisa al navegador.
+      // Sincronización en vivo: un cambio en cualquier vault, en las carpetas de
+      // skills y agentes (o en la configuración) regenera el atlas tras 8 s sin cambios y avisa al navegador.
       let temporizador: NodeJS.Timeout | undefined;
       let vigias: fs.FSWatcher[] = [];
       let vigilados = '';
@@ -247,10 +260,29 @@ function atlas(): Plugin {
       };
       const armar = () => {
         const rutas = [...vaultsActuales().values()];
-        if (rutas.join('|') === vigilados) return;
+        const ias = fuentesDeIAs();
+        const clave = [...rutas, ...ias.skills, ...ias.agentes].join('|');
+        if (clave === vigilados) return;
         vigias.forEach((v) => v.close());
         vigias = [];
-        vigilados = rutas.join('|');
+        vigilados = clave;
+        // Skills y agentes: una skill nueva o editada (su SKILL.md) o un agente nuevo
+        // (un .md en su carpeta) también regeneran el atlas.
+        const vigilarIA = (ruta: string, sirve: (rel: string) => boolean) => {
+          try {
+            vigias.push(
+              fs.watch(ruta, { recursive: true }, (_evento, archivo) => {
+                const rel = String(archivo || '').split(path.sep).join('/');
+                if (/(^|\/)(node_modules|\.git)(\/|$)/.test(rel) || !sirve(rel)) return;
+                avisar();
+              }),
+            );
+          } catch (error) {
+            server.config.logger.warn(`  atlas: no se pudo vigilar ${ruta}: ${String(error)}`);
+          }
+        };
+        for (const ruta of ias.skills) vigilarIA(ruta, (rel) => /(^|\/)SKILL\.md$/.test(rel) || !rel.includes('/'));
+        for (const ruta of ias.agentes) vigilarIA(ruta, (rel) => rel.endsWith('.md'));
         const generadas = new Set(leerConfig().carpetasGeneradas || ['Graphify']);
         for (const ruta of rutas) {
           try {

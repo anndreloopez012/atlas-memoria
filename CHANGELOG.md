@@ -1,5 +1,9 @@
 # Cambios
 
+## 2.1.0 · 2026-10-07
+
+- El servidor también vigila las carpetas de skills y agentes de todas las IAs: una skill o un agente nuevo (o editado, o borrado) aparece solo en unos segundos, sin tocar ninguna nota ni actualizar a mano.
+
 ## 2.0.0 · 2026-10-07
 
 Más funcional sin más botones (plan en [docs/PLAN-2.0.md](docs/PLAN-2.0.md)).
