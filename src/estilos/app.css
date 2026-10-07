@@ -381,6 +381,184 @@
   margin-left: auto;
 }
 
+/* Punto de «hay novedades» junto a una sección de la barra */
+.punto-novedad {
+  position: absolute;
+  top: 6px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--laton);
+  box-shadow: 0 0 0 2px var(--fondo);
+}
+
+/* ============================ Hoy ============================ */
+.hoy-rejilla {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+  margin-top: 36px;
+}
+
+.hoy-seccion {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  align-content: start;
+}
+
+.hoy-vault {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+  border: 1px solid var(--linea);
+  border-top: 2px solid var(--vault, var(--laton));
+  border-radius: var(--radio);
+  background: var(--superficie);
+  animation: aparecer-abajo 0.5s var(--ease) both;
+}
+
+.hoy-vault header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hoy-vault h2 {
+  margin: 0;
+  font-family: var(--f-ui);
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+}
+
+.hoy-vault header .mono {
+  color: var(--tinta-3);
+}
+
+.hoy-ir {
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--tinta-2);
+  transition: background 0.2s, color 0.2s;
+}
+
+.hoy-ir:hover {
+  background: var(--superficie-2);
+  color: var(--tinta);
+}
+
+.hoy-vault ol {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hoy-vault li a {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  padding: 7px 8px;
+  margin: 0 -8px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--tinta);
+  transition: background 0.2s;
+}
+
+.hoy-vault li a:hover {
+  background: var(--superficie-2);
+}
+
+.hoy-titulo {
+  font-weight: 560;
+}
+
+.hoy-meta {
+  flex-basis: 100%;
+  color: var(--tinta-3);
+  font-size: 11.5px;
+}
+
+.hoy-mas {
+  align-self: flex-start;
+  color: var(--tinta-2);
+  font-size: 12px;
+}
+
+.insignia.nueva {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--exito) 18%, transparent);
+  color: var(--exito);
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.hoy-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hoy-arsenal {
+  grid-column: 1 / -1;
+}
+
+.hoy-automaticas {
+  grid-column: 1 / -1;
+  color: var(--tinta-3);
+  font-size: 13.5px;
+}
+
+.hoy-automaticas summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.hoy-automaticas summary::-webkit-details-marker {
+  display: none;
+}
+
+.hoy-automaticas[open] summary svg {
+  transform: rotate(180deg);
+}
+
+.hoy-automaticas ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hoy-vacio {
+  grid-column: 1 / -1;
+  padding: 40px 0;
+  text-align: center;
+  color: var(--tinta-2);
+}
+
+.hoy-vacio .display {
+  margin: 0 0 6px;
+  font-size: 32px;
+  color: var(--tinta);
+}
+
 /* Pestañas de una sección (p. ej. Sistema): una fila fina y fija bajo la barra. */
 .subpestanas {
   position: sticky;

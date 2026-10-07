@@ -97,6 +97,8 @@ function construir() {
     ignorar: new Set(['.obsidian', '.smart-env', '.trash', '.git', 'node_modules']),
     maxBytesNota: 300_000,
     maxBytesBloque: 450_000,
+    // Cuántos días hacia atrás se guardan las novedades (Hoy · desde tu última visita).
+    diasNovedades: Number(base.novedades?.dias) || 45,
   };
 }
 

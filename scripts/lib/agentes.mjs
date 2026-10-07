@@ -8,7 +8,7 @@ import path from 'node:path';
 import { CONFIG } from './config.mjs';
 import { analizarDescripcion, traducirAnalisis } from './skills.mjs';
 import { es, esDocumento } from './traduccion.mjs';
-import { idCorto, ocultarSecretos, separarFrontmatter } from './texto.mjs';
+import { creado, idCorto, ocultarSecretos, separarFrontmatter } from './texto.mjs';
 
 function herramientas(valor) {
   if (!valor) return [];
@@ -43,6 +43,7 @@ export function leerAgentesIA(contadorSecretos, mencionadas, notasTodas) {
     for (const archivo of fs.readdirSync(fuente.dir).filter((f) => f.endsWith('.md')).sort()) {
       const ruta = path.join(fuente.dir, archivo);
       const crudo = ocultarSecretos(fs.readFileSync(ruta, 'utf8'), contadorSecretos);
+      const st = fs.statSync(ruta);
       const { fm, cuerpo } = separarFrontmatter(crudo);
       const nombre = String(fm.name || archivo.replace(/\.md$/, ''));
       const descripcion = String(fm.description || '').replace(/\s+/g, ' ').trim();
@@ -53,6 +54,8 @@ export function leerAgentesIA(contadorSecretos, mencionadas, notasTodas) {
         ia: fuente.ia,
         ambito: fuente.ambito,
         tipo: 'ia',
+        m: st.mtime.toISOString(),
+        c: creado(st),
         ...traducirAnalisis(descripcion, analisis),
         descripcionOriginal: descripcion,
         modelo: !fm.model || String(fm.model) === 'inherit' ? 'hereda el de la sesión' : String(fm.model),

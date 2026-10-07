@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { CONFIG } from './config.mjs';
-import { contarPalabras, limpiarEnLinea, ocultarSecretos, separarFrontmatter, sinBloquesDeCodigo } from './texto.mjs';
+import { contarPalabras, creado, limpiarEnLinea, ocultarSecretos, separarFrontmatter, sinBloquesDeCodigo } from './texto.mjs';
 import { documentoTraducido, es, esDocumento } from './traduccion.mjs';
 
 const HOME = os.homedir();
@@ -291,6 +291,13 @@ export function leerSkills(contadorSecretos, notasTodas) {
       const { fm, cuerpo } = separarFrontmatter(crudo);
       const nombre = String(fm.name || path.basename(dir)).trim();
       const relFuente = path.relative(fuente.dir, dir);
+      let fechas = { m: null, c: null };
+      try {
+        const st = fs.statSync(archivo);
+        fechas = { m: st.mtime.toISOString(), c: creado(st) };
+      } catch {
+        /* sin fechas */
+      }
       const padre = relFuente.includes(path.sep) ? relFuente.split(path.sep)[0] : null;
       instalaciones.push({
         ia: fuente.ia,
@@ -303,6 +310,7 @@ export function leerSkills(contadorSecretos, notasTodas) {
         plugin: fuente.plugin,
         paquete: fuente.paquete,
         padre: padre && padre !== '.system' ? padre : null,
+        ...fechas,
       });
     }
   }
@@ -402,6 +410,9 @@ export function leerSkills(contadorSecretos, notasTodas) {
       extras,
       notas: (notasSkills.get(nombre) || []).slice(0, 6),
       ruta: principal.real,
+      // Última modificación y primera instalación (entre todas las IAs).
+      m: lista.map((i) => i.m).filter(Boolean).sort().at(-1) ?? null,
+      c: lista.map((i) => i.c).filter(Boolean).sort()[0] ?? null,
     });
     // Los manuales completos son largos: se traducen solo si se pide con
     // ATLAS_TRADUCIR_MANUALES=1, pero si ya hay traducción se usa siempre.

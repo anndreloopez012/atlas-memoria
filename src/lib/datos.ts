@@ -1,7 +1,7 @@
 // Carga perezosa de los datos del atlas con caché. Cada archivo se pide una sola
 // vez; `recargarDatos()` vacía la caché y avisa a los componentes.
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import type { Agente, Atlas, DatosSkills, DatosVault, DetalleSkill } from './tipos';
+import type { Agente, Atlas, DatosSkills, DatosVault, DetalleSkill, Recientes } from './tipos';
 
 const cache = new Map<string, Promise<unknown>>();
 let version = 0;
@@ -25,6 +25,7 @@ export const cargarBloque = (bloque: string) => pedir<Record<string, string>>(`c
 export const cargarSkills = () => pedir<DatosSkills>('skills.json');
 export const cargarDetalleSkill = (archivo: string) => pedir<DetalleSkill>(`skills/${archivo}.json`);
 export const cargarAgentes = () => pedir<{ agentes: Agente[] }>('agentes.json');
+export const cargarRecientes = () => pedir<Recientes>('recientes.json');
 
 export function recargarDatos() {
   cache.clear();
