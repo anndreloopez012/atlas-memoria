@@ -54,6 +54,9 @@ Más funcional sin más botones (plan en [docs/PLAN-2.0.md](docs/PLAN-2.0.md)).
 ### Voz
 - Micrófono en el centro de mando (si el navegador lo permite): «abre Programación», «ve a las tareas», «busca…», «qué skill uso para…», «pregúntale…», «anota…».
 
+### Exportar
+- Acción del centro de mando: «Exportar esta vista como imagen» guarda un PNG del Universo, del vault con su vista actual o de la página, con tipografías, cerebros y grafo.
+
 ## 1.4.0 · 2026-10-05
 
 ### Una sola mente
