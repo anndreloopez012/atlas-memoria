@@ -199,7 +199,7 @@ resumen.totales = totales;
 // Así quien instala (o la IA que instala por la persona) deja la app lista para
 // abrirse con doble clic desde el Escritorio o las Aplicaciones.
 if (!bandera('--sin-lanzador')) {
-  const l = correr('lanzador.mjs', ['--json']);
+  const l = spawnSync(process.execPath, [path.join(RAIZ, 'scripts', 'lanzador.mjs'), '--json'], { cwd: RAIZ, encoding: 'utf8' });
   try {
     resumen.lanzadores = JSON.parse((l.stdout || '').trim().split('\n').pop()).lanzadores;
   } catch {
