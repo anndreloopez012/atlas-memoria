@@ -5,6 +5,7 @@ import type { ServerResponse } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Connect, type Plugin, type ViteDevServer } from 'vite';
+import { armarPedido, fuentesPara, iasParaPreguntar, responder as responderIA } from './scripts/lib/preguntar.mjs';
 import { marcarHecha } from './scripts/lib/tareas.mjs';
 
 const RAIZ = path.dirname(fileURLToPath(import.meta.url));
@@ -15,6 +16,7 @@ const GENERADOR = path.join(RAIZ, 'scripts/generar-datos.mjs');
 interface ConfigLocal {
   puerto?: number;
   carpetasGeneradas?: string[];
+  preguntar?: { ia?: string };
 }
 
 function leerConfig(): ConfigLocal {
@@ -147,6 +149,26 @@ function atlas(): Plugin {
       try {
         const resultado = marcarTarea(await leerJson(req));
         responder(res, resultado.ok ? 200 : 409, resultado);
+      } catch (error) {
+        responder(res, 400, { ok: false, error: String(error) });
+      }
+    });
+
+    // Preguntar a la memoria: GET dice qué IA respondería; POST responde.
+    app.use('/__atlas/preguntar', async (req, res) => {
+      const ias = iasParaPreguntar(leerConfig().preguntar?.ia ?? 'auto');
+      if (req.method === 'GET') return responder(res, 200, { ia: ias[0]?.nombre ?? null });
+      if (req.method !== 'POST') return responder(res, 405, { ok: false });
+      try {
+        const { pregunta } = (await leerJson(req)) as { pregunta?: string };
+        const texto = String(pregunta ?? '').trim().slice(0, 500);
+        if (texto.length < 3) return responder(res, 400, { ok: false, error: 'Escribe una pregunta' });
+        const fuentes = fuentesPara(texto, DATOS);
+        // A la página va la lista de fuentes, sin su texto.
+        const lista = fuentes.map((f: Record<string, unknown>) => ({ ...f, texto: undefined }));
+        if (!ias.length || !fuentes.length) return responder(res, 200, { ok: true, ia: ias[0]?.nombre ?? null, respuesta: null, fuentes: lista });
+        const resultado = await responderIA(ias, armarPedido(texto, fuentes));
+        responder(res, 200, { ok: true, ...resultado, fuentes: lista });
       } catch (error) {
         responder(res, 400, { ok: false, error: String(error) });
       }

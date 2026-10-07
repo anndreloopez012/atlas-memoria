@@ -3,10 +3,11 @@
 // que abriste, a dónde ir y las acciones disponibles. Las funciones nuevas se suman
 // aquí como grupos o acciones, no como botones sueltos por la interfaz.
 import MiniSearch from 'minisearch';
-import { ArrowRight, Bot, Clock, Compass, FileText, Moon, RefreshCw, Search, Sparkles, Star, Sun, X, type LucideIcon } from 'lucide-react';
+import { ArrowRight, Bot, Clock, Compass, FileText, MessageCircleQuestion, Moon, RefreshCw, Search, Sparkles, Star, Sun, X, type LucideIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cargarAgentes, cargarSkills, cargarVault, useVersionDatos } from '../lib/datos';
 import { useFavoritos } from '../lib/favoritos';
+import Markdown from './Markdown';
 import { recomendador } from '../lib/recomendar';
 import { leerRecientes, registrarReciente, type Reciente } from '../lib/recientes';
 import { navegar, rutaAgente, rutaSistema, rutaSkill, rutaVault } from '../lib/rutas';
@@ -94,6 +95,33 @@ async function construirIndice(atlas: Atlas, version: number) {
   return indiceCache;
 }
 
+/** Qué IA respondería las preguntas (null: ninguna; undefined: sin servidor). */
+let iaCache: Promise<string | null | undefined> | null = null;
+const iaDisponible = () =>
+  (iaCache ??= fetch('/__atlas/preguntar')
+    .then((r) => (r.ok ? r.json() : { ia: undefined }))
+    .then((d: { ia?: string | null }) => d.ia)
+    .catch(() => undefined));
+
+const ES_PREGUNTA = /^(qu[eé]|c[oó]mo|cu[aá]ndo|d[oó]nde|por ?qu[eé]|cu[aá]l(es)?|qui[eé]n(es)?|para qu[eé]|cu[aá]nt[oa]s?)\b/i;
+
+interface Fuente {
+  id: string;
+  s: string;
+  v: string;
+  t: string;
+  f: string;
+}
+
+interface Respuesta {
+  pregunta: string;
+  cargando: boolean;
+  ia: string | null;
+  texto: string | null;
+  error: string | null;
+  fuentes: Fuente[];
+}
+
 const sinAcentos = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const ICONO: Record<Doc['tipo'], LucideIcon> = { nota: FileText, skill: Sparkles, agente: Bot };
 const GRUPO: Record<Doc['tipo'], string> = { skill: 'Skills', agente: 'Agentes', nota: 'Notas' };
@@ -108,6 +136,23 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
   const lista = useRef<HTMLDivElement>(null);
   const [recientes] = useState<Reciente[]>(leerRecientes);
   const favoritos = useFavoritos();
+  const [ia, setIa] = useState<string | null | undefined>(undefined);
+  const [respuesta, setRespuesta] = useState<Respuesta | null>(null);
+
+  useEffect(() => {
+    iaDisponible().then(setIa);
+  }, []);
+
+  const preguntar = async (pregunta: string) => {
+    setRespuesta({ pregunta, cargando: true, ia: ia ?? null, texto: null, error: null, fuentes: [] });
+    try {
+      const r = await fetch('/__atlas/preguntar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pregunta }) });
+      const d = await r.json();
+      setRespuesta({ pregunta, cargando: false, ia: d.ia ?? null, texto: d.respuesta ?? null, error: d.ok ? (d.error ?? null) : (d.error ?? 'No se pudo preguntar'), fuentes: d.fuentes ?? [] });
+    } catch {
+      setRespuesta({ pregunta, cargando: false, ia: null, texto: null, error: 'El servidor no responde', fuentes: [] });
+    }
+  };
 
   useEffect(() => {
     requestAnimationFrame(() => entrada.current?.select());
@@ -247,9 +292,27 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
       }
     }
     const coincide = (f: Fila) => sinAcentos(`${f.titulo} ${f.contexto ?? ''}`).includes(sinAcentos(q));
-    return [...encontrados, ...destinos.filter(coincide), ...acciones.filter(coincide)];
+    // Preguntar a la memoria: primero si el texto es una pregunta; si no, al final.
+    const esPregunta = ES_PREGUNTA.test(q) || q.includes('?');
+    const filaPregunta: Fila[] =
+      ia !== undefined && (esPregunta || q.split(/\s+/).length >= 3)
+        ? [
+            {
+              clave: 'preguntar',
+              grupo: 'Preguntar a tu memoria',
+              titulo: `«${q}»`,
+              contexto: ia ? `responde ${ia} solo con tus notas, y las cita` : 'muestra las notas que lo responden',
+              icono: MessageCircleQuestion,
+              color: 'var(--laton)',
+              ejecutar: () => preguntar(q),
+            },
+          ]
+        : [];
+    return esPregunta
+      ? [...filaPregunta, ...encontrados, ...destinos.filter(coincide), ...acciones.filter(coincide)]
+      : [...encontrados, ...destinos.filter(coincide), ...acciones.filter(coincide), ...filaPregunta];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [consulta, listo, recientes, favoritos, destinos, acciones]);
+  }, [consulta, listo, recientes, favoritos, destinos, acciones, ia]);
 
   // La fila activa siempre a la vista al moverse con el teclado.
   useEffect(() => {
@@ -257,6 +320,12 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
   }, [activo]);
 
   const tecla = (e: React.KeyboardEvent) => {
+    // Con una respuesta a la vista: Esc vuelve a los resultados y Enter pregunta de nuevo.
+    if (respuesta) {
+      if (e.key === 'Escape') setRespuesta(null);
+      else if (e.key === 'Enter' && consulta.trim().length >= 3) preguntar(consulta.trim());
+      return;
+    }
     if (e.key === 'Escape') cerrar();
     else if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -290,7 +359,51 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
             <X size={16} />
           </button>
         </div>
-        <div className="buscador-resultados" ref={lista} id="centro-filas" role="listbox">
+        {respuesta && (
+          <div className="buscador-resultados respuesta" aria-live="polite">
+            <p className="rotulo">Pregunta</p>
+            <h3 className="respuesta-pregunta">{respuesta.pregunta}</h3>
+            {respuesta.cargando && (
+              <p className="respuesta-pensando">
+                <span className="respuesta-girando" aria-hidden="true" />
+                Buscando en tus notas{respuesta.ia ? ` y preguntando a ${respuesta.ia}` : ''}…
+                {respuesta.ia && <span className="mono"> Se envían tu pregunta y las notas que la responden a {respuesta.ia}.</span>}
+              </p>
+            )}
+            {respuesta.texto && <Markdown texto={respuesta.texto} className="respuesta-texto" />}
+            {!respuesta.cargando && !respuesta.texto && (
+              <p className="respuesta-aviso">
+                {respuesta.error
+                  ? `${/sesión iniciada/.test(respuesta.error) ? respuesta.error : `${respuesta.ia ?? 'La IA'} no pudo responder: ${respuesta.error}`}. `
+                  : respuesta.fuentes.length && !respuesta.ia
+                    ? 'No hay una IA instalada en este equipo para redactar la respuesta. '
+                    : ''}
+                {respuesta.fuentes.length ? 'Estas son las notas que hablan de eso:' : 'No encontré notas que hablen de eso.'}
+              </p>
+            )}
+            {respuesta.fuentes.length > 0 && (
+              <ol className="respuesta-fuentes">
+                {respuesta.fuentes.map((f, i) => (
+                  <li key={f.id}>
+                    <button
+                      onClick={() => {
+                        navegar(rutaVault(f.s, f.id));
+                        cerrar();
+                      }}
+                    >
+                      <span className="mono">[{i + 1}]</span> {f.t}
+                      <span className="resultado-contexto">
+                        {f.v}
+                        {f.f ? ` / ${f.f}` : ''}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+        )}
+        <div className="buscador-resultados" ref={lista} id="centro-filas" role="listbox" hidden={Boolean(respuesta)}>
           {q.length >= 2 && !listo && <p className="vacio">Preparando el índice de {atlas.totales.notas.toLocaleString('es-GT')} notas…</p>}
           {q.length >= 2 && listo && filas.length === 0 && <p className="vacio">Nada coincide con «{consulta}».</p>}
           {filas.map((f, i) => {
@@ -319,9 +432,18 @@ export default function CentroMando({ atlas, inicial, cerrar }: { atlas: Atlas; 
           })}
         </div>
         <div className="buscador-pie mono">
-          <span>↑↓ moverse</span>
-          <span>↵ abrir</span>
-          <span>esc cerrar</span>
+          {respuesta ? (
+            <>
+              <span>↵ preguntar de nuevo</span>
+              <span>esc volver</span>
+            </>
+          ) : (
+            <>
+              <span>↑↓ moverse</span>
+              <span>↵ abrir</span>
+              <span>esc cerrar</span>
+            </>
+          )}
         </div>
       </div>
     </div>

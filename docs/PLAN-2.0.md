@@ -56,7 +56,7 @@ Se marca cada punto al fusionarlo.
 - [x] 11 · uso real de skills
 - [x] 3 · salud de la memoria
 - [x] 8 · camino entre notas
-- [ ] 5 · preguntar a la memoria
+- [x] 5 · preguntar a la memoria
 - [ ] 7 · capturar
 - [ ] 10 · voz
 - [ ] 12 · exportar
