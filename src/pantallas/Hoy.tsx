@@ -4,6 +4,7 @@
 // Hoy se suman aquí, no como botones en la barra.
 import { ArrowRight, Bot, CheckSquare, ChevronDown, FileText, Sparkles, Star } from 'lucide-react';
 import { useMemo } from 'react';
+import { TarjetaAprende } from '../componentes/Aprende';
 import FilaTarea from '../componentes/FilaTarea';
 import OrbeVault from '../componentes/vault/OrbeVault';
 import { cargarRecientes, cargarTareas, useDatos } from '../lib/datos';
@@ -138,6 +139,7 @@ function PortadaHoy({ atlas }: { atlas: Atlas }) {
 
       <div className="hoy-rejilla">
         <aside className="hoy-lateral" aria-label="Lo pendiente">
+          <TarjetaAprende atlas={atlas} />
           <Favoritos />
           <Pendientes atlas={atlas} />
           <TarjetaProyectos />

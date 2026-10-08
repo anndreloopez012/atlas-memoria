@@ -3,10 +3,12 @@
 // que abriste, a dónde ir y las acciones disponibles. Las funciones nuevas se suman
 // aquí como grupos o acciones, no como botones sueltos por la interfaz.
 import MiniSearch from 'minisearch';
-import { ArrowRight, Bot, Check, Clock, Compass, ExternalLink, FileText, ImageDown, MessageCircleQuestion, Mic, Moon, NotebookPen, RefreshCw, Search, Sparkles, Star, Sun, X, type LucideIcon } from 'lucide-react';
+import { ArrowRight, Bot, Check, Clock, Compass, ExternalLink, FileText, GraduationCap, ImageDown, MessageCircleQuestion, Mic, Moon, NotebookPen, RefreshCw, Search, Sparkles, Star, Sun, X, type LucideIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cargarAgentes, cargarSkills, cargarVault, useVersionDatos } from '../lib/datos';
 import { useFavoritos } from '../lib/favoritos';
+import { marcarPaso } from '../lib/aprende';
+import { ABRIR_APRENDE, usePasosAprende, VistaAprende } from './Aprende';
 import Markdown from './Markdown';
 import { recomendador } from '../lib/recomendar';
 import { interpretarVoz, reconocimientoDeVoz, type ReconocimientoVoz } from '../lib/voz';
@@ -150,7 +152,9 @@ const GRUPO: Record<Doc['tipo'], string> = { skill: 'Skills', agente: 'Agentes',
 export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: Atlas; vista: string; inicial: string; cerrar: () => void }) {
   const version = useVersionDatos();
   const tema = useTema();
-  const [consulta, setConsulta] = useState(inicial);
+  const [aprende, setAprende] = useState(inicial === ABRIR_APRENDE);
+  const [consulta, setConsulta] = useState(inicial === ABRIR_APRENDE ? '' : inicial);
+  const pasos = usePasosAprende(atlas);
   const [listo, setListo] = useState<typeof indiceCache>(null);
   const [activo, setActivo] = useState(0);
   const entrada = useRef<HTMLInputElement>(null);
@@ -228,7 +232,9 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
     setCaptura({ texto, guardando: true });
     try {
       const r = await fetch('/__atlas/capturar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ texto }) });
-      setCaptura({ texto, guardando: false, ...(await r.json()) });
+      const d = await r.json();
+      if (d.ok) marcarPaso('capturar');
+      setCaptura({ texto, guardando: false, ...d });
     } catch {
       setCaptura({ texto, guardando: false, ok: false, error: 'El servidor no responde' });
     }
@@ -239,6 +245,7 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
     try {
       const r = await fetch('/__atlas/preguntar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pregunta }) });
       const d = await r.json();
+      if (d.ok && (d.respuesta || d.fuentes?.length)) marcarPaso('preguntar');
       setRespuesta({ pregunta, cargando: false, ia: d.ia ?? null, texto: d.respuesta ?? null, error: d.ok ? (d.error ?? null) : (d.error ?? 'No se pudo preguntar'), fuentes: d.fuentes ?? [] });
     } catch {
       setRespuesta({ pregunta, cargando: false, ia: null, texto: null, error: 'El servidor no responde', fuentes: [] });
@@ -330,6 +337,19 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
     [tema, cerrar, vista],
   );
 
+  // Ruta «Aprende»: arriba mientras falten varios pasos; si no, al final, a mano.
+  const pendientes = pasos?.filter((p) => !p.hecho) ?? [];
+  const filaAprende: Fila = {
+    clave: 'aprende',
+    grupo: 'Aprende',
+    titulo: 'Aprende: tu ruta para empezar',
+    contexto: pasos ? (pendientes.length ? `${pasos.length - pendientes.length} de ${pasos.length} pasos · sigue: ${pendientes[0].titulo.toLowerCase()}` : 'ruta completa: repásala cuando quieras') : 'de tu primer vault a tu primer agente',
+    icono: GraduationCap,
+    color: 'var(--laton)',
+    ejecutar: () => setAprende(true),
+  };
+  const aprendeArriba = pendientes.length >= 3;
+
   const filas: Fila[] = useMemo(() => {
     const q = consulta.trim();
     if (q.length < 2) {
@@ -355,7 +375,7 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
         color: r.color,
         ejecutar: () => abrir(r),
       }));
-      return [...fijos, ...ultimos, ...destinos, ...acciones];
+      return aprendeArriba ? [...fijos, filaAprende, ...ultimos, ...destinos, ...acciones] : [...fijos, ...ultimos, ...destinos, ...acciones, filaAprende];
     }
     const encontrados: Fila[] = [];
     // «¿Qué skill uso para…?»: si el texto describe una tarea, primero las skills que
@@ -430,10 +450,10 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
         : [];
     if (conMas) return filaCaptura;
     return esPregunta
-      ? [...filaPregunta, ...encontrados, ...destinos.filter(coincide), ...acciones.filter(coincide), ...filaCaptura]
-      : [...encontrados, ...destinos.filter(coincide), ...acciones.filter(coincide), ...filaPregunta, ...filaCaptura];
+      ? [...filaPregunta, ...encontrados, ...destinos.filter(coincide), ...acciones.filter(coincide), ...[filaAprende].filter(coincide), ...filaCaptura]
+      : [...encontrados, ...destinos.filter(coincide), ...acciones.filter(coincide), ...[filaAprende].filter(coincide), ...filaPregunta, ...filaCaptura];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [consulta, listo, recientes, favoritos, destinos, acciones, ia, destino]);
+  }, [consulta, listo, recientes, favoritos, destinos, acciones, ia, destino, pasos]);
 
   // La fila activa siempre a la vista al moverse con el teclado.
   useEffect(() => {
@@ -441,6 +461,14 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
   }, [activo]);
 
   const tecla = (e: React.KeyboardEvent) => {
+    // En la ruta Aprende: Esc vuelve a los resultados.
+    if (aprende) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setAprende(false);
+      }
+      return;
+    }
     // Con una captura a la vista: Esc (o Enter) vuelve a los resultados.
     if (captura) {
       if (e.key === 'Escape' || e.key === 'Enter') {
@@ -477,6 +505,7 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
             ref={entrada}
             value={consulta}
             onChange={(e) => {
+              setAprende(false);
               setConsulta(e.target.value);
               setActivo(0);
             }}
@@ -582,7 +611,21 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
             {captura.ok === false && <p className="respuesta-aviso">No se pudo guardar: {captura.error}</p>}
           </div>
         )}
-        <div className="buscador-resultados" ref={lista} id="centro-filas" role="listbox" hidden={Boolean(respuesta || captura)}>
+        {aprende && !respuesta && !captura && (
+          <div className="buscador-resultados respuesta">
+            <VistaAprende
+              atlas={atlas}
+              cerrar={cerrar}
+              setConsulta={(t) => {
+                setAprende(false);
+                setConsulta(t);
+                setActivo(0);
+                requestAnimationFrame(() => entrada.current?.focus());
+              }}
+            />
+          </div>
+        )}
+        <div className="buscador-resultados" ref={lista} id="centro-filas" role="listbox" hidden={Boolean(respuesta || captura || aprende)}>
           {q.length >= 2 && !listo && <p className="vacio">Preparando el índice de {atlas.totales.notas.toLocaleString('es-GT')} notas…</p>}
           {q.length >= 2 && listo && filas.length === 0 && <p className="vacio">Nada coincide con «{consulta}».</p>}
           {filas.map((f, i) => {
@@ -611,7 +654,7 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
           })}
         </div>
         <div className="buscador-pie mono">
-          {captura ? (
+          {captura || aprende ? (
             <span>esc volver</span>
           ) : respuesta ? (
             <>
