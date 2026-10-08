@@ -5652,3 +5652,118 @@ a:hover > .caja rect {
     gap: 2px;
   }
 }
+
+/* ---- Empezar de cero (sin vaults) ---------------------------------------- */
+.empezar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 440px;
+  margin-top: 22px;
+  padding: 18px 20px;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: var(--radio);
+  background: color-mix(in srgb, var(--superficie) 88%, transparent);
+  backdrop-filter: blur(8px);
+}
+.empezar p {
+  margin: 0;
+  color: var(--tinta-2);
+  line-height: 1.5;
+}
+.empezar .boton-primario {
+  align-self: flex-start;
+  margin-top: 4px;
+  border: 0;
+  cursor: pointer;
+}
+.empezar .boton-primario:disabled {
+  opacity: 0.6;
+  cursor: progress;
+  transform: none;
+}
+.empezar code {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--tinta);
+  overflow-wrap: anywhere;
+}
+.empezar-nota {
+  font-size: 13px;
+}
+.empezar-nota a {
+  color: var(--laton);
+}
+.empezar-tengo summary {
+  cursor: pointer;
+  color: var(--tinta-2);
+  font-size: 13px;
+}
+.empezar-tengo form {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.empezar-tengo input {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 11px;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: var(--radio-s);
+  background: var(--fondo-alto);
+  color: var(--tinta);
+  font: 13px var(--f-mono);
+}
+.empezar-tengo input:focus-visible {
+  outline: 2px solid var(--laton);
+  outline-offset: 1px;
+}
+.empezar-error {
+  color: var(--peligro) !important;
+  font-size: 13px;
+}
+.pantalla-estado .empezar {
+  margin-inline: auto;
+  text-align: left;
+}
+
+/* ---- Sin skills ni agentes todavía --------------------------------------- */
+.sin-ia {
+  max-width: 560px;
+  padding: 20px 22px;
+  border: 1px dashed var(--linea-fuerte);
+  border-radius: var(--radio);
+}
+.sin-ia p {
+  margin: 8px 0 14px;
+  color: var(--tinta-2);
+  line-height: 1.55;
+}
+.sin-ia ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sin-ia li {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 14px;
+}
+.sin-ia a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--laton);
+  text-decoration: none;
+}
+.sin-ia a:hover {
+  text-decoration: underline;
+}
+.sin-ia span {
+  color: var(--tinta-3);
+  font-size: 12px;
+}

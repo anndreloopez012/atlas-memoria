@@ -3,6 +3,7 @@ import { Marca } from './componentes/BarraSuperior';
 import BarraSuperior from './componentes/BarraSuperior';
 import Avisos from './componentes/Avisos';
 import CentroMando from './componentes/CentroMando';
+import EmpezarVault from './componentes/EmpezarVault';
 import Recorrido from './componentes/Recorrido';
 import { cargarAtlas, recargarDatos, useDatos } from './lib/datos';
 import { useRuta } from './lib/rutas';
@@ -91,8 +92,8 @@ export default function App() {
           <div className="pantalla-estado">
             <Marca />
             <h1 className="display">Todavía no hay vaults</h1>
-            <p>No se encontró ningún vault de Obsidian en este equipo. Pídele a tu IA que agregue uno al atlas, o ejecuta:</p>
-            <pre className="mono">npm run instalar -- --vault "/ruta/a/tu/vault"</pre>
+            <p>No se encontró ningún vault de Obsidian en este equipo.</p>
+            <EmpezarVault />
           </div>
         )}
         {atlas && ruta.vista === 'skills' && <Skills atlas={atlas} skill={ruta.skill} categoria={ruta.categoria} usoInicial={ruta.uso} />}

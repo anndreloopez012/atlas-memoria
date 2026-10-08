@@ -14,7 +14,7 @@ La persona solo dio la URL del repositorio y dijo «instala». Haz todo tú; pre
    - macOS / Linux: `bash instalar.sh --json`
    - Windows: `powershell -ExecutionPolicy Bypass -File instalar.ps1 --json`
 3. **Resumen JSON** (lo último que imprime):
-   - `vaults` vacío → pregunta dónde están sus vaults y agrégalos con `npm run instalar -- --vault "<ruta>" --json`.
+   - `vaults` vacío → pregunta dónde están sus vaults y agrégalos con `npm run instalar -- --vault "<ruta>" --json`; si no tiene ninguno, ofrece crear «Mi memoria» con notas guía: `npm run instalar -- --vault-inicial --json`.
    - `sugerenciasDeVaults` → pregunta si son suyos antes de agregarlos.
    - `centro` → cámbialo con `--centro "<nombre>"` si la persona usa otro vault como principal.
 4. **Español.** Si `totales.sinTraducir` > 0: `npm run traducir -- --lotes <carpeta>`, traduce cada `lote-NN.json` a `resultado-NN.json` (`{ clave: traducción }`, reglas en AGENTS.md → «Traducción») y `npm run traducir -- --importar <carpeta>`. Fuera de Claude Code también sirve `npm run traducir`.

@@ -3,6 +3,7 @@
 import { ChevronDown, LayoutGrid, Network, Search, SlidersHorizontal, Star, X } from 'lucide-react';
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import type { EnlaceGrafo, NodoGrafo } from '../componentes/Grafo';
+import SinIA from '../componentes/SinIA';
 import { cargarAgentes, cargarSkills, useDatos } from '../lib/datos';
 import { AYUDA_IA, colorIA, inicialIA, n, PALETA } from '../lib/formato';
 import { recomendador } from '../lib/recomendar';
@@ -126,6 +127,21 @@ export default function Skills({ atlas, skill, categoria, usoInicial = null }: {
   };
   const hayUso = Boolean(atlas.sistema.uso?.activo && d?.skills.some((s) => s.uso));
   const masUsadas = hayUso && !hayFiltros ? [...(d?.skills ?? [])].filter((s) => s.uso).sort((a, b) => b.uso!.total - a.uso!.total).slice(0, 8) : [];
+
+  if (d && d.skills.length === 0) {
+    return (
+      <div className="pagina skills">
+        <header className="pagina-cabecera">
+          <p className="rotulo">Arsenal</p>
+          <h1 className="display">
+            Skills, <em>cada una con su oficio</em>
+          </h1>
+          <p className="pagina-bajada">Una skill es un manual que la IA carga cuando tu pedido coincide con su descripción.</p>
+        </header>
+        <SinIA que="skills" />
+      </div>
+    );
+  }
 
   return (
     <div className="pagina skills">
