@@ -21,7 +21,9 @@ console.log(`## Instalar con doble clic
    - **Linux:** \`Instalar en Linux.sh\` (clic derecho › Ejecutar como programa, o \`bash "Instalar en Linux.sh"\`).
 3. Listo: desde ahora abre **«Atlas de memoria»** con doble clic. Cada vez que lo abres busca cambios en tus vaults de Obsidian, tus skills y tus agentes, y se apaga solo al cerrar la pestaña.
 
-Para actualizar, descarga la versión nueva y vuelve a ejecutar el instalador: conserva tu configuración.
+**Actualizar:** desde la 2.3, la app avisa sola cuando hay una versión nueva («Versión X» en la barra) y se actualiza en un clic, sin tocar tu configuración ni tus notas. Desde una versión anterior, descarga esta y vuelve a ejecutar el instalador.
+
+**Desinstalar:** doble clic en `Desinstalar en Mac.command`, `Desinstalar en Windows.cmd` o `Desinstalar en Linux.sh`. Tus vaults y tus notas nunca se tocan.
 
 También se instala pegándole el enlace del repositorio a Claude Code, Codex o Antigravity y pidiéndole «instala».
 
