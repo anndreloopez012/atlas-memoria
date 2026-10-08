@@ -5767,3 +5767,140 @@ a:hover > .caja rect {
   color: var(--tinta-3);
   font-size: 12px;
 }
+
+/* ---- Aprende: la ruta para empezar --------------------------------------- */
+.aprende {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.aprende-avance {
+  height: 4px;
+  border-radius: 99px;
+  background: var(--linea);
+  overflow: hidden;
+}
+.aprende-avance span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--laton), var(--hud));
+  transition: width 0.6s var(--ease);
+}
+.aprende-cuenta {
+  margin: 0 0 4px;
+  color: var(--tinta-3);
+  font-size: 12px;
+}
+.aprende-pasos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.aprende-paso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--radio-s);
+  background: none;
+  color: var(--tinta);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+.aprende-paso:hover,
+.aprende-pasos li.abierto .aprende-paso {
+  background: var(--superficie-2);
+}
+.aprende-marca {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: var(--tinta-3);
+  flex: none;
+}
+.aprende-pasos li.hecho .aprende-marca {
+  background: color-mix(in srgb, var(--exito) 18%, transparent);
+  color: var(--exito);
+}
+.aprende-pasos li.hecho .aprende-titulo {
+  color: var(--tinta-2);
+}
+.aprende-titulo .mono {
+  color: var(--tinta-3);
+  font-size: 12px;
+}
+.aprende-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 10px 12px 40px;
+}
+.aprende-porque {
+  margin: 0;
+  color: var(--laton);
+  font-size: 13px;
+}
+.aprende-como {
+  color: var(--tinta-2);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+.aprende-como p {
+  margin: 0 0 6px;
+}
+.aprende-plantilla summary {
+  cursor: pointer;
+  color: var(--tinta-2);
+  font-size: 12.5px;
+}
+.aprende-plantilla pre {
+  max-height: 220px;
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  overflow: auto;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio-s);
+  background: var(--fondo-alto);
+  color: var(--tinta-2);
+  font: 12px/1.5 var(--f-mono);
+  white-space: pre-wrap;
+}
+.aprende-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.tarjeta-aprende header {
+  position: relative;
+}
+.tarjeta-aprende-cerrar {
+  margin-left: auto;
+}
+.tarjeta-aprende-siguiente {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+  font-size: 14px;
+}
+.tarjeta-aprende-siguiente span {
+  color: var(--tinta-2);
+  font-size: 13px;
+}
+.tarjeta-aprende .boton-texto {
+  align-self: flex-start;
+}
+.sin-ia-aprende {
+  margin-top: 14px;
+}

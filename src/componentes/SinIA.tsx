@@ -1,4 +1,6 @@
 import { ExternalLink } from 'lucide-react';
+import { abrirCentro } from '../lib/recientes';
+import { ABRIR_APRENDE } from './Aprende';
 
 const IAS = [
   { nombre: 'Claude Code', url: 'https://claude.com/claude-code', nota: 'de Anthropic' },
@@ -29,6 +31,9 @@ export default function SinIA({ que }: { que: 'skills' | 'agentes' }) {
           </li>
         ))}
       </ul>
+      <button type="button" className="boton-texto sin-ia-aprende" onClick={() => abrirCentro(ABRIR_APRENDE)}>
+        Cómo crear {que === 'skills' ? 'tu primera skill' : 'tu primer agente'} (Aprende) →
+      </button>
     </section>
   );
 }
