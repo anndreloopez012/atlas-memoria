@@ -21,7 +21,7 @@ const INSTALADOR = path.join(RAIZ, 'scripts/instalar.mjs');
 interface ConfigLocal {
   puerto?: number;
   carpetasGeneradas?: string[];
-  preguntar?: { ia?: string };
+  preguntar?: { ia?: string; modelo?: string };
   captura?: { modo?: string; vault?: string; carpeta?: string };
 }
 
@@ -228,8 +228,9 @@ function atlas(): Plugin {
 
     // Preguntar a la memoria: GET dice qué IA respondería; POST responde.
     app.use('/__atlas/preguntar', async (req, res) => {
-      const ias = iasParaPreguntar(leerConfig().preguntar?.ia ?? 'auto');
-      if (req.method === 'GET') return responder(res, 200, { ia: ias[0]?.nombre ?? null });
+      const ajuste = leerConfig().preguntar;
+      const ias = (await iasParaPreguntar(ajuste?.ia ?? 'auto', ajuste?.modelo ?? null)) as { nombre: string; local?: boolean }[];
+      if (req.method === 'GET') return responder(res, 200, { ia: ias[0]?.nombre ?? null, local: Boolean(ias[0]?.local) });
       if (req.method !== 'POST') return responder(res, 405, { ok: false });
       try {
         const { pregunta } = (await leerJson(req)) as { pregunta?: string };

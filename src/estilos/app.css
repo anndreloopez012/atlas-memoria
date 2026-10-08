@@ -5952,3 +5952,15 @@ a:hover > .caja rect {
     display: none;
   }
 }
+.respuesta-gratis {
+  margin-top: 4px;
+  padding: 10px 12px;
+  border-left: 2px solid var(--laton);
+  border-radius: 0 var(--radio-s) var(--radio-s) 0;
+  background: var(--laton-suave);
+  color: var(--tinta-2);
+  font-size: 13px;
+}
+.respuesta-gratis p {
+  margin: 0;
+}

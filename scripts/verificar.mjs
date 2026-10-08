@@ -135,9 +135,24 @@ try {
   ok(usoDemo?.total === 2 && usoDemo.ias.Claude === 1 && usoDemo.ias.Codex === 1 && !skills.skills.find((x) => x.nombre === 'otra-skill')?.uso, 'cuenta el uso real de las skills en Claude Code y Codex (solo conteos)');
   const salud = leer('salud.json');
   ok(salud.rotos.total === 1 && salud.rotos.items[0].destinos[0] === 'Nota que no existe' && salud.adjuntos.items[0]?.destinos[0] === 'foto-perdida.png', 'revisa la salud: enlaces rotos y adjuntos que faltan');
-  const { fuentesPara, armarPedido, iasParaPreguntar } = await import('./lib/preguntar.mjs');
+  // Un Ollama de mentira (modelos locales): debe elegir el modelo de chat, no el de embeddings.
+  const http = await import('node:http');
+  const ollamaFalso = http.createServer((req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    if (req.url === '/api/tags') return res.end(JSON.stringify({ models: [{ name: 'nomic-embed-text:latest' }, { name: 'llama3.2:3b' }] }));
+    let cuerpo = '';
+    req.on('data', (d) => (cuerpo += d));
+    req.on('end', () => res.end(JSON.stringify({ response: `Respuesta local de ${JSON.parse(cuerpo).model} [1]` })));
+  });
+  await new Promise((r) => ollamaFalso.listen(0, '127.0.0.1', r));
+  process.env.OLLAMA_HOST = `http://127.0.0.1:${ollamaFalso.address().port}`;
+  const { fuentesPara, armarPedido, iasParaPreguntar, responder } = await import('./lib/preguntar.mjs');
   const fuentes = fuentesPara('¿Qué dice la idea?', entorno.ATLAS_SALIDA);
-  ok(fuentes[0]?.t === 'Idea' && fuentes[0].texto.includes('Revisar la idea') && armarPedido('x', fuentes).includes('[1] «Idea»') && iasParaPreguntar('ninguna').length === 0, 'encuentra las notas que responden una pregunta (sin llamar a ninguna IA)');
+  ok(fuentes[0]?.t === 'Idea' && fuentes[0].texto.includes('Revisar la idea') && armarPedido('x', fuentes).includes('[1] «Idea»') && (await iasParaPreguntar('ninguna')).length === 0, 'encuentra las notas que responden una pregunta (sin llamar a ninguna IA)');
+  const locales = await iasParaPreguntar('ollama');
+  const local = locales.length ? await responder(locales, armarPedido('x', fuentes)) : null;
+  ok(locales[0]?.modelo === 'llama3.2:3b' && local?.respuesta === 'Respuesta local de llama3.2:3b [1]', 'responde con Ollama (gratis y local) eligiendo un modelo de chat');
+  ollamaFalso.close();
   const recientes = leer('recientes.json');
   ok(recientes.notas.length === 5 && recientes.skills.some((s) => s.nombre === 'demo-skill') && recientes.agentes.length === 1, 'lista las novedades (notas, skills y agentes recientes)');
   const { capturar } = await import('./lib/capturar.mjs');

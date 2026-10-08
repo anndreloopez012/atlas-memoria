@@ -440,7 +440,7 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
               clave: 'preguntar',
               grupo: 'Preguntar a tu memoria',
               titulo: `«${q}»`,
-              contexto: ia ? `responde ${ia} solo con tus notas, y las cita` : 'muestra las notas que lo responden',
+              contexto: ia ? `responde ${ia} solo con tus notas, y las cita${ia.startsWith('Ollama') ? ' (en tu equipo)' : ''}` : 'muestra las notas que lo responden',
               icono: MessageCircleQuestion,
               color: 'var(--laton)',
               ejecutar: () => preguntar(q),
@@ -556,7 +556,7 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
               <p className="respuesta-pensando">
                 <span className="respuesta-girando" aria-hidden="true" />
                 Buscando en tus notas{respuesta.ia ? ` y preguntando a ${respuesta.ia}` : ''}…
-                {respuesta.ia && <span className="mono"> Se envían tu pregunta y las notas que la responden a {respuesta.ia}.</span>}
+                {respuesta.ia && <span className="mono">{respuesta.ia.startsWith('Ollama') ? ' Responde un modelo en tu equipo: nada sale de él (puede tardar un poco).' : ` Se envían tu pregunta y las notas que la responden a ${respuesta.ia}.`}</span>}
               </p>
             )}
             {respuesta.texto && <Markdown texto={respuesta.texto} className="respuesta-texto" />}
@@ -589,6 +589,14 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
                   </li>
                 ))}
               </ol>
+            )}
+            {!respuesta.cargando && !respuesta.texto && (!respuesta.ia || /sesión iniciada/.test(respuesta.error ?? '')) && (
+              <Markdown
+                className="respuesta-gratis"
+                texto={
+                  'Para que te responda **gratis**: instala [Ollama](https://ollama.com) y un modelo (`ollama pull llama3.2`), que corre en tu equipo sin cuenta ni internet; o [Gemini CLI](https://github.com/google-gemini/gemini-cli) e inicia sesión con tu cuenta de Google. El atlas los encuentra solo.'
+                }
+              />
             )}
           </div>
         )}
