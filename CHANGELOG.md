@@ -15,6 +15,11 @@
 - La app revisa al abrirse (dos veces al día como mucho) si hay una versión nueva en GitHub Releases. Si la hay, aparece «Versión X» en la barra y una fila en el centro de mando con lo que trae.
 - **Actualizar ahora** descarga el zip, lo instala sobre la copia sin tocar `atlas.config.json`, `datos/`, la caché ni las dependencias (solo corre `npm install` si cambiaron), se reinicia y la página se recarga sola con la versión nueva.
 - `npm run actualizar` (y `-- --buscar`) hace lo mismo desde la terminal. Las copias con git se actualizan con `git pull`; `"actualizaciones": false` lo apaga.
+### Preguntar a tu memoria, gratis
+- **Ollama** como opción gratis, local y sin cuenta: si está abierto con un modelo (`ollama pull llama3.2`), responde las preguntas sin que nada salga del equipo. Elige solo un modelo de chat (o `preguntar.modelo`).
+- Si Claude Code o Codex no tienen sesión, se prueba la siguiente IA hasta llegar a Gemini CLI u Ollama.
+- Gemini CLI recibe el pedido por la entrada estándar (antes iba como argumento, que en Windows se rompía con textos largos).
+- Sin IA (o sin sesión), la respuesta explica cómo tener una gratis: Ollama o Gemini CLI con una cuenta de Google.
 
 ## 2.2.0 · 2026-10-07
 
