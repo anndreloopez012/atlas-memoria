@@ -3,12 +3,13 @@
 // que abriste, a dónde ir y las acciones disponibles. Las funciones nuevas se suman
 // aquí como grupos o acciones, no como botones sueltos por la interfaz.
 import MiniSearch from 'minisearch';
-import { ArrowRight, ArrowUpCircle, Bot, Check, Clock, Compass, ExternalLink, FileText, GraduationCap, ImageDown, MessageCircleQuestion, Mic, Moon, NotebookPen, RefreshCw, Search, Sparkles, Star, Sun, X, type LucideIcon } from 'lucide-react';
+import { ArrowRight, ArrowUpCircle, Bot, Check, Clock, Compass, ExternalLink, FileText, GraduationCap, Share2, ImageDown, MessageCircleQuestion, Mic, Moon, NotebookPen, RefreshCw, Search, Sparkles, Star, Sun, X, type LucideIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cargarAgentes, cargarSkills, cargarVault, useActualizacion, useVersionDatos } from '../lib/datos';
 import { useFavoritos } from '../lib/favoritos';
 import { marcarPaso } from '../lib/aprende';
 import { ABRIR_ACTUALIZAR, VistaActualizacion } from './Actualizacion';
+import { VistaAvance } from './Avance';
 import { ABRIR_APRENDE, usePasosAprende, VistaAprende } from './Aprende';
 import Markdown from './Markdown';
 import { recomendador } from '../lib/recomendar';
@@ -155,6 +156,7 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
   const tema = useTema();
   const [aprende, setAprende] = useState(inicial === ABRIR_APRENDE);
   const [verVersion, setVerVersion] = useState(inicial === ABRIR_ACTUALIZAR);
+  const [verAvance, setVerAvance] = useState(false);
   const [consulta, setConsulta] = useState(inicial === ABRIR_APRENDE || inicial === ABRIR_ACTUALIZAR ? '' : inicial);
   const { nueva } = useActualizacion();
   const pasos = usePasosAprende(atlas);
@@ -313,6 +315,14 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
           // Se espera a que se cierre el centro de mando para que no salga en la imagen.
           setTimeout(() => import('../lib/exportar').then((m) => m.exportarVista(vista)), 250);
         },
+      },
+      {
+        clave: 'accion:avance',
+        grupo: 'Acciones',
+        titulo: 'Compartir mi avance',
+        contexto: 'un resumen para tu mentor, sin el contenido de tus notas',
+        icono: Share2,
+        ejecutar: () => setVerAvance(true),
       },
       {
         clave: 'accion:recorrido',
@@ -478,11 +488,12 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
 
   const tecla = (e: React.KeyboardEvent) => {
     // En la ruta Aprende: Esc vuelve a los resultados.
-    if (aprende || verVersion) {
+    if (aprende || verVersion || verAvance) {
       if (e.key === 'Escape') {
         e.preventDefault();
         setAprende(false);
         setVerVersion(false);
+        setVerAvance(false);
       }
       return;
     }
@@ -524,6 +535,7 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
             onChange={(e) => {
               setAprende(false);
               setVerVersion(false);
+              setVerAvance(false);
               setConsulta(e.target.value);
               setActivo(0);
             }}
@@ -637,12 +649,17 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
             {captura.ok === false && <p className="respuesta-aviso">No se pudo guardar: {captura.error}</p>}
           </div>
         )}
-        {verVersion && !respuesta && !captura && (
+        {verAvance && !respuesta && !captura && (
+          <div className="buscador-resultados respuesta">
+            <VistaAvance atlas={atlas} />
+          </div>
+        )}
+        {verVersion && !verAvance && !respuesta && !captura && (
           <div className="buscador-resultados respuesta">
             <VistaActualizacion />
           </div>
         )}
-        {aprende && !verVersion && !respuesta && !captura && (
+        {aprende && !verVersion && !verAvance && !respuesta && !captura && (
           <div className="buscador-resultados respuesta">
             <VistaAprende
               atlas={atlas}
@@ -656,7 +673,7 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
             />
           </div>
         )}
-        <div className="buscador-resultados" ref={lista} id="centro-filas" role="listbox" hidden={Boolean(respuesta || captura || aprende || verVersion)}>
+        <div className="buscador-resultados" ref={lista} id="centro-filas" role="listbox" hidden={Boolean(respuesta || captura || aprende || verVersion || verAvance)}>
           {q.length >= 2 && !listo && <p className="vacio">Preparando el índice de {atlas.totales.notas.toLocaleString('es-GT')} notas…</p>}
           {q.length >= 2 && listo && filas.length === 0 && <p className="vacio">Nada coincide con «{consulta}».</p>}
           {filas.map((f, i) => {
@@ -685,7 +702,7 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
           })}
         </div>
         <div className="buscador-pie mono">
-          {captura || aprende || verVersion ? (
+          {captura || aprende || verVersion || verAvance ? (
             <span>esc volver</span>
           ) : respuesta ? (
             <>
