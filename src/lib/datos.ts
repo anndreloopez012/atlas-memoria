@@ -92,34 +92,99 @@ export async function regenerarEnServidor(): Promise<{ ok: boolean; salida: stri
 
 // --- Estado del servidor ----------------------------------------------------------
 // La página pregunta cada 15 s si hay datos nuevos (en la app no hay recarga en
-// caliente) y si el servidor está buscando cambios. De paso le avisa que sigue en uso.
-let buscandoActual = false;
+// caliente), si el servidor está buscando cambios y si hay una versión nueva del
+// atlas. De paso le avisa que sigue en uso. Mientras se actualiza, pregunta seguido
+// y, cuando vuelve con otra versión, recarga la página.
+export interface VersionNueva {
+  version: string;
+  notas: string;
+  url: string;
+  /** la app puede instalarla sola */
+  automatica: boolean;
+  /** copia de desarrollo: se actualiza con git pull */
+  git: boolean;
+}
+interface EstadoServidor {
+  buscando: boolean;
+  nueva: VersionNueva | null;
+  progreso: string | null;
+}
+let estadoActual: EstadoServidor = { buscando: false, nueva: null, progreso: null };
 let generadoVisto: string | null = null;
+let versionVista: string | null = null;
+let esperandoReinicio = false;
 const oyentesEstado = new Set<() => void>();
+const cambiarEstado = (cambio: Partial<EstadoServidor>) => {
+  const nuevo = { ...estadoActual, ...cambio };
+  if (nuevo.buscando === estadoActual.buscando && nuevo.nueva?.version === estadoActual.nueva?.version && nuevo.progreso === estadoActual.progreso) return;
+  estadoActual = nuevo;
+  oyentesEstado.forEach((f) => f());
+};
 
 async function consultarEstado() {
   try {
     const r = await fetch('/__atlas/estado', { cache: 'no-store' });
     if (!r.ok) return;
-    const { generado, buscando } = (await r.json()) as { generado: string | null; buscando: boolean };
-    if (generadoVisto && generado && generado !== generadoVisto) recargarDatos();
-    generadoVisto = generado ?? generadoVisto;
-    if (buscando !== buscandoActual) {
-      buscandoActual = buscando;
-      oyentesEstado.forEach((f) => f());
+    const d = (await r.json()) as { generado: string | null; buscando: boolean; version?: string; actualizacion?: VersionNueva | null; progreso?: string | null };
+    // Volvió con otra versión: la página se recarga para usar el código nuevo.
+    if (d.version && versionVista && d.version !== versionVista) {
+      location.reload();
+      return;
     }
+    versionVista ??= d.version ?? null;
+    if (generadoVisto && d.generado && d.generado !== generadoVisto) recargarDatos();
+    generadoVisto = d.generado ?? generadoVisto;
+    cambiarEstado({ buscando: d.buscando, nueva: d.actualizacion ?? null, progreso: d.progreso ?? (esperandoReinicio ? estadoActual.progreso : null) });
   } catch {
-    /* servidor apagado o sin conexión */
+    /* servidor apagado, reiniciándose o sin conexión */
   }
+}
+
+function programarConsulta() {
+  setTimeout(
+    async () => {
+      await consultarEstado();
+      programarConsulta();
+    },
+    esperandoReinicio || estadoActual.progreso ? 2000 : 15_000,
+  );
 }
 
 if (typeof window !== 'undefined') {
   void consultarEstado();
-  setInterval(() => void consultarEstado(), 15_000);
+  programarConsulta();
   // Al volver a la pestaña se pregunta enseguida.
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') void consultarEstado();
   });
+}
+
+const suscribirEstado = (f: () => void) => {
+  oyentesEstado.add(f);
+  return () => oyentesEstado.delete(f);
+};
+
+/** La versión nueva disponible (si la hay) y en qué paso va la actualización. */
+export function useActualizacion() {
+  return useSyncExternalStore(suscribirEstado, () => estadoActual);
+}
+
+/** Pide al servidor que instale la versión nueva; la página se recarga sola al terminar. */
+export async function actualizarAtlas(): Promise<{ ok: boolean; error?: string }> {
+  cambiarEstado({ progreso: 'Empezando…' });
+  esperandoReinicio = true;
+  try {
+    const r = await fetch('/__atlas/actualizar', { method: 'POST' });
+    const d = (await r.json()) as { ok: boolean; error?: string };
+    if (!d.ok) {
+      esperandoReinicio = false;
+      cambiarEstado({ progreso: null });
+    } else cambiarEstado({ progreso: 'Reiniciando con la versión nueva…' });
+    return d;
+  } catch {
+    // La conexión se corta cuando el servidor se reinicia: se sigue esperando.
+    return { ok: true };
+  }
 }
 
 /** true mientras el servidor vuelve a leer vaults, skills y agentes. */
@@ -129,7 +194,7 @@ export function useBuscandoCambios() {
       oyentesEstado.add(f);
       return () => oyentesEstado.delete(f);
     },
-    () => buscandoActual,
+    () => estadoActual.buscando,
   );
 }
 
