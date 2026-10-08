@@ -8,6 +8,8 @@
 // resumen legible por máquina.
 //
 //   --vault <ruta>            agrega un vault (se puede repetir)
+//   --vault-inicial           crea «Mi memoria» en Documentos con notas guía y lo agrega
+//                             (para quien todavía no tiene vaults)
 //   --quitar-vault <nombre>   lo saca de la configuración
 //   --centro <nombre>         vault del que nacen los demás
 //   --skills <IA>=<ruta>      agrega una carpeta de skills (p. ej. Claude=~/mis-skills)
@@ -26,6 +28,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { abreviar, ARCHIVO_CONFIG, configDesdeDeteccion, expandir, leerConfigLocal, PUERTO_POR_DEFECTO, RAIZ } from './lib/config.mjs';
 import { contarSkills, detectarEntorno } from './lib/detectar.mjs';
+import { crearVaultInicial } from './lib/vault-inicial.mjs';
 
 const args = process.argv.slice(2);
 const valores = (nombre) => args.flatMap((a, i) => (a === nombre && args[i + 1] ? [args[i + 1]] : []));
@@ -93,6 +96,12 @@ for (const ruta of valores('--vault')) {
   }
   if (!config.vaults.some((v) => mismaRuta(v.ruta, abs))) config.vaults.push({ nombre: path.basename(abs), ruta: abreviar(abs) });
 }
+let vaultInicial = null;
+if (bandera('--vault-inicial')) {
+  vaultInicial = crearVaultInicial();
+  if (!config.vaults.some((v) => mismaRuta(v.ruta, vaultInicial.ruta))) config.vaults.push({ nombre: vaultInicial.nombre, ruta: abreviar(vaultInicial.ruta) });
+  config.centro ??= vaultInicial.nombre;
+}
 for (const nombre of valores('--quitar-vault')) config.vaults = config.vaults.filter((v) => v.nombre !== nombre);
 for (const par of valores('--skills')) {
   const [ia, ruta] = par.split(/=(.+)/);
@@ -139,13 +148,15 @@ const resumen = {
   agentes: config.agentes,
   ausentes,
   puerto: config.puerto,
+  ...(vaultInicial ? { vaultInicial: { ...vaultInicial, ruta: abreviar(vaultInicial.ruta) } } : {}),
 };
 
 log('');
 log(`  Configuración: ${abreviar(ARCHIVO_CONFIG)}`);
 log(`  Vaults (${resumen.vaults.length})${config.centro ? ` · centro: ${config.centro}` : ''}`);
 for (const v of resumen.vaults) log(`    · ${v.nombre}  ${v.ruta}`);
-if (!resumen.vaults.length) log('    (ninguno: el atlas mostrará solo skills y agentes; agrega uno con --vault "<ruta>")');
+if (!resumen.vaults.length) log('    (ninguno: el atlas mostrará solo skills y agentes; agrega uno con --vault "<ruta>" o crea uno con notas guía con --vault-inicial)');
+if (vaultInicial) log(`  ${vaultInicial.creado ? 'Vault inicial creado' : 'Vault inicial'}: ${abreviar(vaultInicial.ruta)}`);
 if (resumen.sugerenciasDeVaults.length) {
   log('  Otras carpetas con .obsidian que Obsidian no tiene registradas (agrégalas con --vault si son tuyas):');
   for (const s of resumen.sugerenciasDeVaults) log(`    ? ${s}`);
@@ -189,7 +200,7 @@ if (g.status !== 0) {
 
 let totales = {};
 try {
-  totales = JSON.parse(fs.readFileSync(path.join(RAIZ, 'datos', 'atlas.json'), 'utf8')).totales;
+  totales = JSON.parse(fs.readFileSync(path.join(process.env.ATLAS_SALIDA ? path.resolve(process.env.ATLAS_SALIDA) : path.join(RAIZ, 'datos'), 'atlas.json'), 'utf8')).totales;
 } catch {
   /* sin datos */
 }

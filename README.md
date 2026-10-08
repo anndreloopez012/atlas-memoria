@@ -336,7 +336,7 @@ Comandos paso a paso en [docs/FLUJO-GIT.md](docs/FLUJO-GIT.md).
 | Síntoma | Causa y arreglo |
 |---|---|
 | «Todavía no hay mapa» | No se generaron los datos: `bash instalar.sh` (o `npm run instalar`). |
-| «Todavía no hay vaults» | No se encontró ningún vault: `npm run instalar -- --vault "<ruta>"`. |
+| «Todavía no hay vaults» | No se encontró ningún vault. En la portada: «Crear mi primer vault» (notas guía en Documentos/Mi memoria) o «Ya tengo un vault». Por terminal: `npm run instalar -- --vault-inicial` o `--vault "<ruta>"`. |
 | Falta un vault, una carpeta de skills o de agentes | `npm run detectar`; si sigue faltando, agrégalo con `--vault`, `--skills` o `--agentes`. |
 | Una nota nueva no aparece | Con `npm start` no hay vigilancia en vivo: usa el botón de actualizar. Con `iniciar` o `npm run dev`, espera unos 10 segundos. |
 | Aparece texto en inglés | Es nuevo y aún no tiene traducción: `npm run traducir` (o los lotes, desde una IA). |

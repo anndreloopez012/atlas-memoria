@@ -146,6 +146,24 @@ try {
   const capturada = Object.values(JSON.parse(fs.readFileSync(path.join(entorno.ATLAS_SALIDA, 'vault', `${captura.slug}.json`), 'utf8')).notas).find((x) => x.id === captura.id);
   ok(captura.ok && captura.via === 'archivo' && captura.rel?.startsWith('Bandeja/') && capturada?.h?.[0]?.t === 'Probar el atlas en otro equipo', 'captura una idea como nota nueva en la bandeja del vault central');
 
+  // --- Empezar de cero -----------------------------------------------------------
+  console.log('\nEmpezar de cero (sin vaults)');
+  const vacio = path.join(base, 'vacio');
+  fs.mkdirSync(path.join(vacio, 'Documents'), { recursive: true });
+  const entornoVacio = { ...entorno, HOME: vacio, USERPROFILE: vacio, APPDATA: path.join(vacio, 'AppData', 'Roaming'), XDG_CONFIG_HOME: path.join(vacio, '.config'), ATLAS_CONFIG: path.join(base, 'vacio.config.json'), ATLAS_SALIDA: path.join(base, 'vacio-datos') };
+  const enVacio = (extra) => spawnSync(process.execPath, [path.join(RAIZ, 'scripts', 'instalar.mjs'), '--solo-detectar', '--json', ...extra], { cwd: RAIZ, env: entornoVacio, encoding: 'utf8' });
+  const sinNada = JSON.parse(enVacio([]).stdout || '{}');
+  ok(sinNada.vaults?.length === 0, 'en un equipo sin vaults no crea ninguno por su cuenta');
+  const inicial = JSON.parse(enVacio(['--vault-inicial']).stdout || '{}');
+  const rutaInicial = path.join(vacio, 'Documents', 'Mi memoria');
+  ok(
+    inicial.vaultInicial?.creado && inicial.centro === 'Mi memoria' && fs.existsSync(path.join(rutaInicial, 'Empieza aquí.md')) && fs.existsSync(path.join(rutaInicial, '.obsidian')) && !fs.existsSync(path.join(rutaInicial, 'Ideas', '.gitkeep')),
+    'con --vault-inicial crea «Mi memoria» con notas guía y lo deja como vault central',
+  );
+  fs.writeFileSync(path.join(rutaInicial, 'Empieza aquí.md'), 'mía');
+  const otraVez = JSON.parse(enVacio(['--vault-inicial']).stdout || '{}');
+  ok(otraVez.vaultInicial?.creado === false && otraVez.vaults.length === 1 && fs.readFileSync(path.join(rutaInicial, 'Empieza aquí.md'), 'utf8') === 'mía', 'pedirlo otra vez reutiliza el mismo vault sin sobrescribir nada');
+
   // --- Instrucciones para las IAs ---------------------------------------------
   console.log('\nInstrucciones para Claude Code, Codex y Antigravity');
   const leerRepo = (rel) => {

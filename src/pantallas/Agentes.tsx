@@ -4,6 +4,7 @@ import { ArrowLeft, Bot, Clock, Cpu, Eye, FileText, Wrench } from 'lucide-react'
 import EstrellaFavorito from '../componentes/EstrellaFavorito';
 import Markdown from '../componentes/Markdown';
 import Pipeline from '../componentes/Pipeline';
+import SinIA from '../componentes/SinIA';
 import { vaultPorNombre } from '../lib/atlas';
 import { cargarAgentes, cargarSkills, useDatos } from '../lib/datos';
 import { colorIA, corto, intervalo } from '../lib/formato';
@@ -36,6 +37,7 @@ export default function Agentes({ atlas, agente }: { atlas: Atlas; agente: strin
       </header>
 
       {datos.error && <p className="vacio">{datos.error}</p>}
+      {datos.datos && lista.length === 0 && <SinIA que="agentes" />}
 
       {porIA.map(([nombreIA, agentes]) => (
         <section key={nombreIA} className="grupo-agentes">

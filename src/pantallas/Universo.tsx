@@ -13,6 +13,7 @@ import CerebroNeuronal, { type Lobulo } from '../componentes/CerebroNeuronal';
 import { bordeCerebro, neuronasPara } from '../lib/neuronas';
 import { tono, useTema } from '../lib/tema';
 import type { Atlas, Carpeta, ResumenVault } from '../lib/tipos';
+import EmpezarVault, { vaultRecienAgregado } from '../componentes/EmpezarVault';
 
 const W = 1500;
 const H = 1000;
@@ -247,31 +248,34 @@ export default function Universo({ atlas }: { atlas: Atlas }) {
                 El anillo exterior son tus skills y agentes.
               </>
             ) : (
-              <>Todavía no hay vaults de Obsidian en este equipo: el anillo muestra tus skills y agentes. Para sumar uno, pídele a tu IA que lo agregue al atlas.</>
+              <>Todavía no hay vaults de Obsidian en este equipo. Cuando tengas uno, aquí verás tus notas como neuronas de un cerebro; el anillo exterior son tus skills y agentes.</>
             )}
           </p>
-          <dl className="cifras">
-            <div>
-              <dt>notas</dt>
-              <dd>{n(t.notas)}</dd>
-            </div>
-            <div>
-              <dt>enlaces</dt>
-              <dd>{n(t.enlaces)}</dd>
-            </div>
-            <div>
-              <dt>puentes</dt>
-              <dd>{n(t.puentes)}</dd>
-            </div>
-            <div>
-              <dt>skills</dt>
-              <dd>{n(t.skills)}</dd>
-            </div>
-            <div>
-              <dt>agentes</dt>
-              <dd>{n(t.agentes + t.automatizaciones)}</dd>
-            </div>
-          </dl>
+          {(central || t.skills > 0 || t.agentes > 0) && (
+            <dl className="cifras">
+              <div>
+                <dt>notas</dt>
+                <dd>{n(t.notas)}</dd>
+              </div>
+              <div>
+                <dt>enlaces</dt>
+                <dd>{n(t.enlaces)}</dd>
+              </div>
+              <div>
+                <dt>puentes</dt>
+                <dd>{n(t.puentes)}</dd>
+              </div>
+              <div>
+                <dt>skills</dt>
+                <dd>{n(t.skills)}</dd>
+              </div>
+              <div>
+                <dt>agentes</dt>
+                <dd>{n(t.agentes + t.automatizaciones)}</dd>
+              </div>
+            </dl>
+          )}
+          {(!central || vaultRecienAgregado()) && <EmpezarVault />}
           {central && (
             <a className="boton-primario" href={rutaVault(central.slug, atlas.sistema.contexto ?? central.inicio)}>
               <BookOpen size={16} /> Empieza por {central.nombre}
