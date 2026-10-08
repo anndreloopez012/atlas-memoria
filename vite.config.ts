@@ -1,11 +1,12 @@
 import react from '@vitejs/plugin-react';
-import { execFile, execFileSync } from 'node:child_process';
+import { execFile, execFileSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import type { ServerResponse } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Connect, type Plugin, type ViteDevServer } from 'vite';
+import { aplicarActualizacion, buscarActualizacion, versionActual } from './scripts/lib/actualizacion.mjs';
 import { capturar, modoDeCaptura } from './scripts/lib/capturar.mjs';
 import { armarPedido, fuentesPara, iasParaPreguntar, responder as responderIA } from './scripts/lib/preguntar.mjs';
 import { marcarHecha } from './scripts/lib/tareas.mjs';
@@ -174,6 +175,16 @@ function atlas(): Plugin {
   let avisarDatos: (() => void) | null = null;
   // Última vez que la página (o el lanzador) preguntó por el estado.
   let ultimaConsulta = Date.now();
+  // Versión que corre (la del disco puede cambiar al actualizar) y si hay una nueva.
+  const VERSION = versionActual();
+  // La app de doble clic (vite preview con apagado automático) puede actualizarse sola.
+  const modoApp = process.env.ATLAS_APAGAR_SIN_USO === '1';
+  let actualizacion: { nueva: { version: string; notas: string; url: string; zip: string } | null; git?: boolean } = { nueva: null };
+  let progreso: string | null = null;
+  const revisarVersion = () =>
+    void buscarActualizacion().then((r: typeof actualizacion & { error?: string }) => {
+      if (!r.error) actualizacion = r;
+    });
   const regenerar = () => (generando ??= generar().finally(() => (generando = null)));
 
   const middlewares = (app: Connect.Server) => {
@@ -264,7 +275,15 @@ function atlas(): Plugin {
       } catch {
         /* todavía sin datos */
       }
-      responder(res, 200, { atlas: true, generado, buscando: Boolean(generando) });
+      const nueva = actualizacion.nueva;
+      responder(res, 200, {
+        atlas: true,
+        generado,
+        buscando: Boolean(generando),
+        version: VERSION,
+        actualizacion: nueva ? { version: nueva.version, notas: nueva.notas, url: nueva.url, automatica: modoApp && !actualizacion.git, git: Boolean(actualizacion.git) } : null,
+        progreso,
+      });
     });
 
     // Empezar de cero: crea el vault inicial con notas guía, o agrega uno que ya existe.
@@ -293,6 +312,31 @@ function atlas(): Plugin {
       }
     });
 
+    // Instala la versión nueva y reinicia la app (solo en la app de doble clic).
+    app.use('/__atlas/actualizar', async (req, res) => {
+      if (req.method !== 'POST') return responder(res, 405, { ok: false });
+      const nueva = actualizacion.nueva;
+      if (!nueva) return responder(res, 409, { ok: false, error: 'No hay una versión nueva' });
+      if (!modoApp || actualizacion.git) return responder(res, 409, { ok: false, error: actualizacion.git ? 'Esta copia es un repositorio git: actualízala con git pull.' : 'Aquí se actualiza con npm run actualizar.' });
+      if (progreso) return responder(res, 409, { ok: false, error: 'Ya se está actualizando' });
+      progreso = 'Empezando…';
+      try {
+        const r = (await aplicarActualizacion(nueva, (paso: string) => (progreso = paso))) as { ok: boolean; error?: string; version?: string };
+        if (!r.ok) {
+          progreso = null;
+          return responder(res, 500, r);
+        }
+        progreso = 'Reiniciando con la versión nueva…';
+        responder(res, 200, r);
+        // Otra instancia arranca con el código nuevo cuando esta se apague.
+        spawn(process.execPath, [path.join(RAIZ, 'scripts', 'abrir.mjs'), '--reiniciar', '--sin-navegador'], { cwd: RAIZ, detached: true, stdio: 'ignore', windowsHide: true }).unref();
+        setTimeout(() => process.exit(0), 600);
+      } catch (error) {
+        progreso = null;
+        responder(res, 500, { ok: false, error: String(error) });
+      }
+    });
+
     app.use('/__atlas/regenerar', async (req, res) => {
       if (req.method !== 'POST') {
         res.statusCode = 405;
@@ -317,6 +361,7 @@ function atlas(): Plugin {
       // descubre consultando /__atlas/estado.
       avisarDatos = () => server.ws.send({ type: 'custom', event: 'atlas:datos', data: { ok: true } });
       if (process.env.ATLAS_VIGILAR !== '0') vigilar(server.config.logger, server.httpServer);
+      revisarVersion();
     },
     configurePreviewServer(server) {
       middlewares(server.middlewares);
@@ -324,6 +369,9 @@ function atlas(): Plugin {
       // Cada vez que se abre la app se buscan cambios (notas, skills, agentes) sin
       // hacer esperar: la página abre con los datos anteriores y se actualiza sola.
       if (process.env.ATLAS_BUSCAR_AL_ABRIR !== '0') void regenerar();
+      // Y si hay una versión nueva del atlas (dos veces al día como mucho).
+      revisarVersion();
+      setInterval(revisarVersion, 6 * 60 * 60 * 1000).unref();
       // Abierta con doble clic, la app se apaga sola cuando nadie la usa.
       if (process.env.ATLAS_APAGAR_SIN_USO === '1') {
         const minutos = Number(process.env.ATLAS_MINUTOS_SIN_USO || 3);

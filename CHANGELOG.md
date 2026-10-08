@@ -11,6 +11,10 @@
 - Cada paso explica para qué sirve y cómo hacerlo, con plantillas listas para copiar (skill y agente, con la carpeta exacta de este equipo) y el pedido para hacerlo con tu IA.
 - Se marca solo cuando el atlas ve que ya está hecho (en las notas, las tareas, las skills o lo que hiciste en la página); los demás se marcan con «Ya lo hice».
 - Vive en el centro de mando («Aprende») y, mientras falten varios pasos, en una tarjeta de Hoy con el siguiente paso, que se puede ocultar.
+### Actualizaciones en un clic
+- La app revisa al abrirse (dos veces al día como mucho) si hay una versión nueva en GitHub Releases. Si la hay, aparece «Versión X» en la barra y una fila en el centro de mando con lo que trae.
+- **Actualizar ahora** descarga el zip, lo instala sobre la copia sin tocar `atlas.config.json`, `datos/`, la caché ni las dependencias (solo corre `npm install` si cambiaron), se reinicia y la página se recarga sola con la versión nueva.
+- `npm run actualizar` (y `-- --buscar`) hace lo mismo desde la terminal. Las copias con git se actualizan con `git pull`; `"actualizaciones": false` lo apaga.
 
 ## 2.2.0 · 2026-10-07
 

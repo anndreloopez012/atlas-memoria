@@ -13,6 +13,7 @@
 //
 //   node scripts/abrir.mjs              (lo usan iniciar.sh / iniciar.ps1)
 //   node scripts/abrir.mjs --sin-navegador
+//   node scripts/abrir.mjs --reiniciar   (tras actualizarse: espera a que se apague la instancia anterior)
 import { spawn, spawnSync } from 'node:child_process';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
@@ -68,6 +69,11 @@ function huellaDelCodigo() {
   recorrer(path.join(RAIZ, 'src'));
   for (const f of ['index.html', 'vite.config.ts', 'package.json']) h.update(`${f}:${fs.statSync(path.join(RAIZ, f)).mtimeMs}`);
   return h.digest('hex');
+}
+
+// Tras una actualización, la instancia anterior se apaga sola: se espera a que libere el puerto.
+if (process.argv.includes('--reiniciar')) {
+  for (let i = 0; i < 40 && (await estaAbierto()); i++) await new Promise((r) => setTimeout(r, 500));
 }
 
 if (await estaAbierto()) {

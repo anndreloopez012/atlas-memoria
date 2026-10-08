@@ -3,6 +3,10 @@
   "private": true,
   "version": "2.2.0",
   "description": "Atlas interactivo de tu memoria: vaults de Obsidian con un vault central, skills y agentes de Claude Code, Codex y Antigravity. Lo instala una IA en cualquier equipo.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anndreloopez012/atlas-memoria.git"
+  },
   "type": "module",
   "scripts": {
     "instalar": "node scripts/instalar.mjs",
@@ -16,7 +20,8 @@
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
     "lanzador": "node scripts/lanzador.mjs",
-    "abrir": "node scripts/abrir.mjs"
+    "abrir": "node scripts/abrir.mjs",
+    "actualizar": "node scripts/actualizar.mjs"
   },
   "engines": {
     "node": ">=20"

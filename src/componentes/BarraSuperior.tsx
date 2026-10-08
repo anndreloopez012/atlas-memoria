@@ -1,5 +1,6 @@
 import { Moon, RefreshCw, Search, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { AvisoVersion } from './Actualizacion';
 import { cargarRecientes, recargarDatos, regenerarEnServidor, useBuscandoCambios, useDatos } from '../lib/datos';
 import { hace } from '../lib/formato';
 import { rutaVault, type Ruta } from '../lib/rutas';
@@ -84,6 +85,7 @@ export default function BarraSuperior({ atlas, ruta, abrirBuscador }: { atlas: A
       </nav>
 
       <div className="barra-acciones">
+        <AvisoVersion />
         <button className="buscar-boton" onClick={abrirBuscador} aria-label="Buscar o pedir algo (⌘K)">
           <Search size={15} />
           <span>Buscar o pedir</span>
