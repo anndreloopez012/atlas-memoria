@@ -23,7 +23,7 @@ console.log(`## Instalar con doble clic
 
 **Actualizar:** desde la 2.3, la app avisa sola cuando hay una versión nueva («Versión X» en la barra) y se actualiza en un clic, sin tocar tu configuración ni tus notas. Desde una versión anterior, descarga esta y vuelve a ejecutar el instalador.
 
-**Desinstalar:** doble clic en `Desinstalar en Mac.command`, `Desinstalar en Windows.cmd` o `Desinstalar en Linux.sh`. Tus vaults y tus notas nunca se tocan.
+**Desinstalar:** doble clic en \`Desinstalar en Mac.command\`, \`Desinstalar en Windows.cmd\` o \`Desinstalar en Linux.sh\`. Tus vaults y tus notas nunca se tocan.
 
 También se instala pegándole el enlace del repositorio a Claude Code, Codex o Antigravity y pidiéndole «instala».
 
