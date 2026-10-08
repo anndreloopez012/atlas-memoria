@@ -21,7 +21,7 @@ El instalador copia la app a una carpeta fija (puedes borrar la descarga), insta
 
 **Desde ahí, ábrelo con doble clic** en «Atlas de memoria» (macOS: Aplicaciones y Escritorio · Windows: Escritorio y menú Inicio · Linux: menú de aplicaciones y Escritorio). Cada vez que lo abres **busca cambios** en tus vaults de Obsidian, tus skills y tus agentes (y ubicaciones nuevas), los sigue vigilando mientras lo usas y **se apaga solo** unos minutos después de cerrar la pestaña. No quedan ventanas abiertas.
 
-Para actualizar, descarga la versión nueva y vuelve a ejecutar el instalador: conserva tu configuración.
+**Actualizaciones:** al abrirse, la app revisa (dos veces al día como mucho) si hay una versión nueva en Releases. Si la hay, aparece «Versión X» en la barra: ábrelo, lee qué trae y toca **Actualizar ahora**; se descarga, se instala sin tocar tu configuración, tus datos ni tus vaults, se reinicia y la página se recarga sola. También: `npm run actualizar`. Con el repositorio privado, solo funciona para quien tenga acceso (GitHub no publica las versiones de un repositorio privado).
 
 ## Instalar con IA
 
@@ -184,6 +184,7 @@ Lo que no se detecta se agrega con una opción: `--vault`, `--skills`, `--agente
 | `npm run instalar -- <opciones>` | El instalador sin el paso de Node.js; con opciones para ajustar vaults, skills, agentes, centro y puerto. |
 | `npm run detectar` | Vuelve a buscar vaults, skills y agentes nuevos y actualiza la configuración. |
 | `npm run datos` | Vuelve a leer todo y reescribe `datos/`. |
+| `npm run actualizar` | Instala la versión nueva publicada en Releases, si la hay (`-- --buscar` solo avisa). Una copia con git se actualiza con `git pull`. |
 | `npm run traducir` | Traduce al español los textos nuevos (ver [Todo en español](#todo-en-español)). |
 | `npm run verificar` | Prueba de humo en un equipo falso más una revisión de las instrucciones para IAs. No toca tus datos. |
 | `npm run dev` | Servidor de desarrollo (lo que usa `iniciar`). |

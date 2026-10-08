@@ -5904,3 +5904,51 @@ a:hover > .caja rect {
 .sin-ia-aprende {
   margin-top: 14px;
 }
+
+/* ---- Actualizaciones ------------------------------------------------------ */
+.aviso-version {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border: 1px solid color-mix(in srgb, var(--hud) 45%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--hud) 10%, transparent);
+  color: var(--hud);
+  font: 12px var(--f-mono);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.aviso-version:hover {
+  background: color-mix(in srgb, var(--hud) 18%, transparent);
+}
+.actualizacion {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.actualizacion .boton-primario {
+  margin-top: 0;
+  border: 0;
+  cursor: pointer;
+}
+.actualizacion-notas {
+  max-height: 46vh;
+  overflow: auto;
+  color: var(--tinta-2);
+  font-size: 14px;
+}
+.actualizacion-como {
+  margin: 0;
+  color: var(--tinta-2);
+  font-size: 13.5px;
+}
+.actualizacion-como code {
+  font-family: var(--f-mono);
+  color: var(--tinta);
+}
+@media (max-width: 640px) {
+  .aviso-version span {
+    display: none;
+  }
+}

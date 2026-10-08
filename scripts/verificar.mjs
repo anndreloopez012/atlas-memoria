@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { RAIZ } from './lib/config.mjs';
+import { descomprimir, esMasNueva } from './lib/actualizacion.mjs';
 import { registrosDeObsidian } from './lib/detectar.mjs';
 
 const fallas = [];
@@ -177,6 +178,17 @@ try {
   };
   recorrerGuia(path.join(RAIZ, 'instalador', 'vault-inicial'));
   ok(notasGuia.length > 0 && notasGuia.every((t) => guia.includes(t)), 'la ruta Aprende reconoce todas las notas guía del vault inicial');
+
+  // --- Actualizaciones ----------------------------------------------------------
+  console.log('\nActualizaciones');
+  ok(esMasNueva('2.10.0', '2.9.3') && esMasNueva('v3.0.0', '2.9.9') && !esMasNueva('2.2.0', '2.2.0') && !esMasNueva('2.1.9', '2.2.0'), 'compara versiones (2.10.0 es más nueva que 2.9.3)');
+  const zipPrueba = path.join(base, 'version.zip');
+  const archivo = spawnSync('git', ['archive', '--format=zip', '--prefix=Atlas de memoria/', '-o', zipPrueba, 'HEAD'], { cwd: RAIZ });
+  if (archivo.status === 0) {
+    const extraidos = descomprimir(fs.readFileSync(zipPrueba), path.join(base, 'version'));
+    const lanzadorMac = path.join(base, 'version', 'Atlas de memoria', 'Instalar en Mac.command');
+    ok(extraidos.includes('Atlas de memoria/package.json') && fs.existsSync(lanzadorMac) && (process.platform === 'win32' || (fs.statSync(lanzadorMac).mode & 0o111) !== 0), 'descomprime una versión descargada (con permisos de ejecución)');
+  }
 
   // --- Instrucciones para las IAs ---------------------------------------------
   console.log('\nInstrucciones para Claude Code, Codex y Antigravity');

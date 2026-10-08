@@ -52,6 +52,7 @@ Hay una copia en [atlas.config.ejemplo.json](../atlas.config.ejemplo.json).
 | `preguntar` | objeto | `ia`: qué IA responde las preguntas a la memoria: `auto` (la primera instalada entre Claude Code, Codex y Gemini CLI), `claude`, `codex`, `gemini` o `ninguna` (solo muestra las notas). La pregunta y las notas que la responden se envían a esa IA. |
 | `captura` | objeto | Dónde guarda el centro de mando lo que capturas. `modo`: `auto` (usa `memoria capturar` si hay sistema de memoria; si no, un archivo) o `archivo`. `vault` (nombre; por defecto el central) y `carpeta` (`Bandeja` por defecto) para el modo archivo. |
 | `uso` | sí/no | Contar el uso de las skills en los historiales locales de Claude Code y Codex (solo conteos y fechas; `true` por defecto). `false` lo apaga. |
+| `actualizaciones` | objeto o `false` | `repo`: de dónde buscar versiones nuevas (`dueño/repositorio` en GitHub; por defecto el de `package.json`). `false` apaga la revisión. |
 | `novedades` | objeto | `dias`: cuántos días hacia atrás guarda las novedades que muestra Hoy (45 por defecto). |
 
 ## Variables de entorno
@@ -65,6 +66,7 @@ Hay una copia en [atlas.config.ejemplo.json](../atlas.config.ejemplo.json).
 | `ATLAS_LAUNCH_PREFIJOS` | Prefijos de automatizaciones a mostrar, separados por coma. |
 | `ATLAS_PUERTO` o `PORT` | Puerto del servidor. |
 | `ATLAS_VIGILAR=0` | Desactiva la sincronización en vivo. |
+| `ATLAS_ACTUALIZAR=0` | No revisa si hay versiones nuevas. `ATLAS_REPO` cambia el repositorio. |
 | `ATLAS_USO=0` | No lee los historiales de las IAs (sin conteo de uso de skills). |
 | `ATLAS_TRADUCIR_MANUALES=1` | Marca también para traducir los `SKILL.md` completos. |
 | `CODEX_HOME`, `CLAUDE_CONFIG_DIR` | Si usas carpetas de configuración no estándar para Codex o Claude Code, la detección las respeta. |
