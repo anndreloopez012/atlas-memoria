@@ -1,6 +1,6 @@
 # Cambios
 
-## 2.3.0 · en curso
+## 2.3.0 · 2026-10-08
 
 ### Empezar de cero
 - **Vault inicial**: quien no tiene vaults ve en la portada «Crear mi primer vault», que deja «Mi memoria» en Documentos con notas guía (empezar, escribir, enlazar, tareas, primer proyecto, skills y agentes), plantillas y su bandeja, y lo abre en Obsidian. También «Ya tengo un vault» para sumar una carpeta escribiendo su ruta, y `npm run instalar -- --vault-inicial`. Nunca sobrescribe: si se pide otra vez, reutiliza el mismo.
