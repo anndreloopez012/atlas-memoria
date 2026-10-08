@@ -40,6 +40,7 @@ Objetivo: que la persona termine con el atlas abierto en el navegador y sepa có
 | `bash instalar.sh` · `instalar.ps1` | Instalación completa (también para actualizar) |
 | `bash iniciar.sh` · `iniciar.ps1` · `npm run abrir` | Abrir la app (instala primero si hace falta; `--dev` / `-Dev` para el modo desarrollo) |
 | `npm run lanzador` | Volver a crear el acceso de doble clic «Atlas de memoria» |
+| `npm run desinstalar -- --si --json` | Desinstalar: apaga, quita los accesos y borra la app instalada (nunca los vaults; una copia con git conserva el código). Pregúntale a la persona antes |
 | `npm run actualizar -- --json` | Instalar la versión nueva de Releases (`--buscar` solo revisa); conserva configuración y datos. En una copia con git, usar `git pull` |
 | `npm run instalar -- <opciones>` | Instalador sin el paso de Node.js (`--vault`, `--vault-inicial`, `--quitar-vault`, `--centro`, `--skills IA=ruta`, `--agentes IA=ruta`, `--cuenta`, `--propia`, `--puerto`, `--redetectar`, `--solo-detectar`, `--json`) |
 | `npm run detectar` | Volver a buscar vaults, skills y agentes nuevos sin generar datos |

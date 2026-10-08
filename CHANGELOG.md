@@ -27,6 +27,10 @@
 - Nueva acción del centro de mando, **Compartir mi avance**: un resumen para el mentor o docente con las cifras de cada vault, la constancia semana a semana, tareas, proyectos, las skills y agentes que creó la persona y su ruta Aprende.
 - Se descarga como una página HTML que abre en cualquier navegador (con los datos en JSON adentro, para revisarlos con una herramienta o una IA) o se copia como texto para pegarlo en un chat o una tarea. Nombre opcional.
 - No incluye el contenido de las notas ni sus títulos; solo los nombres de los proyectos.
+### Desinstalar con doble clic
+- `Desinstalar en Mac.command`, `Desinstalar en Windows.cmd` y `Desinstalar en Linux.sh` junto a los instaladores (y en la carpeta de la app). En Windows también queda «Desinstalar Atlas de memoria» en el menú Inicio, y en Linux la acción «Desinstalar» en el ícono.
+- Muestran qué se va a quitar y piden confirmar; apagan el atlas si está abierto, quitan los accesos de doble clic y borran la app instalada. **Nunca tocan los vaults ni las notas** (tampoco «Mi memoria»). Una copia con git conserva su código.
+- `npm run desinstalar` (`-- --si`, `--json`, `--solo-accesos`) y, en el centro de mando, «Desinstalar el atlas» explica dónde está el desinstalador.
 
 ## 2.2.0 · 2026-10-07
 

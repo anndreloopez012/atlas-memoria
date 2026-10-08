@@ -154,4 +154,14 @@ Se conserva tu configuración y se agrega lo nuevo que aparezca.
 
 ## Desinstalar
 
-Borra la carpeta del proyecto. Lo único que el instalador pudo agregar fuera de ella es Node.js (con Homebrew, fnm, nvm o winget), y puede quedarse para otros usos. Si lo quieres quitar, usa el mismo gestor con el que se instaló.
+Doble clic en el desinstalador de tu sistema (está en la descarga y en la carpeta de la app):
+
+| Sistema | Desinstalador | También |
+|---|---|---|
+| macOS | `Desinstalar en Mac.command` | — |
+| Windows | `Desinstalar en Windows.cmd` | Menú Inicio › «Desinstalar Atlas de memoria» |
+| Linux | `Desinstalar en Linux.sh` | Clic derecho en el ícono › Desinstalar |
+
+Muestra qué va a quitar y pide confirmar; apaga el atlas si está abierto, quita los accesos de doble clic y borra la app instalada. **Nunca toca tus vaults ni tus notas** (tampoco «Mi memoria»). Por terminal: `npm run desinstalar` (`-- --si` para no preguntar). En una copia con git (la de quien desarrolla) solo quita los accesos, los datos generados y la caché: el código queda.
+
+Lo único que el instalador pudo agregar fuera de la app es Node.js (con Homebrew, fnm, nvm o winget), y puede quedarse para otros usos. Si lo quieres quitar, usa el mismo gestor con el que se instaló.

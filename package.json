@@ -21,7 +21,8 @@
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
     "lanzador": "node scripts/lanzador.mjs",
     "abrir": "node scripts/abrir.mjs",
-    "actualizar": "node scripts/actualizar.mjs"
+    "actualizar": "node scripts/actualizar.mjs",
+    "desinstalar": "node scripts/desinstalar.mjs"
   },
   "engines": {
     "node": ">=20"
