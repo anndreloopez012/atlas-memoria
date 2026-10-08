@@ -86,6 +86,7 @@ Cada opción vuelve a detectar, guardar y generar:
 | Situación | Comando |
 |---|---|
 | No encontró un vault | `npm run instalar -- --vault "/ruta/al/vault"` |
+| No tiene ningún vault | `npm run instalar -- --vault-inicial` crea «Mi memoria» en Documentos con notas guía (también desde la portada del atlas: «Crear mi primer vault») |
 | Encontró uno que no quieres | `npm run instalar -- --quitar-vault "Nombre"` |
 | El vault central no es el que usas como principal | `npm run instalar -- --centro "Nombre"` |
 | Tienes skills en otra carpeta | `npm run instalar -- --skills "Claude=~/mis-skills"` |

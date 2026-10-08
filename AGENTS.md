@@ -21,7 +21,7 @@ Objetivo: que la persona termine con el atlas abierto en el navegador y sepa có
    - Windows: `powershell -ExecutionPolicy Bypass -File instalar.ps1 --json`
    Con `--json` lo último que imprime es un resumen en JSON: `vaults`, `sugerenciasDeVaults`, `centro`, `skills`, `agentes`, `totales`, `siguiente`.
 3. **Revisar el resumen y ajustar** (cada ajuste regenera los datos):
-   - `vaults` vacío → **pregunta** dónde están sus vaults de Obsidian (o si usa Obsidian) y agrégalos: `npm run instalar -- --vault "<ruta>" --json`. Sin vaults el atlas igual muestra skills y agentes.
+   - `vaults` vacío → **pregunta** dónde están sus vaults de Obsidian (o si usa Obsidian) y agrégalos: `npm run instalar -- --vault "<ruta>" --json`. Si no tiene ninguno (p. ej. alguien que recién empieza), ofrécele crear «Mi memoria» con notas guía: `npm run instalar -- --vault-inicial --json` (queda en Documentos; nunca sobrescribe). Sin vaults el atlas igual muestra skills y agentes, y la portada ofrece crearlo con un clic.
    - `sugerenciasDeVaults` → carpetas con `.obsidian` que Obsidian no tiene registradas. **Pregunta** si son suyas antes de agregarlas.
    - `centro` → el vault del que nacen los demás (se eligió solo). Si la persona tiene otro principal: `npm run instalar -- --centro "<nombre>"`.
    - Skills propias: las que viven fuera de las carpetas de las IAs ya cuentan como suyas. Para marcar las de su cuenta de GitHub o por nombre: `--cuenta <usuario>` y `--propia <texto>`.
@@ -40,7 +40,7 @@ Objetivo: que la persona termine con el atlas abierto en el navegador y sepa có
 | `bash instalar.sh` · `instalar.ps1` | Instalación completa (también para actualizar) |
 | `bash iniciar.sh` · `iniciar.ps1` · `npm run abrir` | Abrir la app (instala primero si hace falta; `--dev` / `-Dev` para el modo desarrollo) |
 | `npm run lanzador` | Volver a crear el acceso de doble clic «Atlas de memoria» |
-| `npm run instalar -- <opciones>` | Instalador sin el paso de Node.js (`--vault`, `--quitar-vault`, `--centro`, `--skills IA=ruta`, `--agentes IA=ruta`, `--cuenta`, `--propia`, `--puerto`, `--redetectar`, `--solo-detectar`, `--json`) |
+| `npm run instalar -- <opciones>` | Instalador sin el paso de Node.js (`--vault`, `--vault-inicial`, `--quitar-vault`, `--centro`, `--skills IA=ruta`, `--agentes IA=ruta`, `--cuenta`, `--propia`, `--puerto`, `--redetectar`, `--solo-detectar`, `--json`) |
 | `npm run detectar` | Volver a buscar vaults, skills y agentes nuevos sin generar datos |
 | `npm run datos` | Regenerar los datos |
 | `npm run traducir` | Traducir al español lo pendiente (`--lotes`, `--importar`) |

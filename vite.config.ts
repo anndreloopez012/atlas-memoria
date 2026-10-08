@@ -9,11 +9,13 @@ import { defineConfig, type Connect, type Plugin, type ViteDevServer } from 'vit
 import { capturar, modoDeCaptura } from './scripts/lib/capturar.mjs';
 import { armarPedido, fuentesPara, iasParaPreguntar, responder as responderIA } from './scripts/lib/preguntar.mjs';
 import { marcarHecha } from './scripts/lib/tareas.mjs';
+import { enlaceObsidianCarpeta } from './scripts/lib/vault-inicial.mjs';
 
 const RAIZ = path.dirname(fileURLToPath(import.meta.url));
 const DATOS = process.env.ATLAS_SALIDA ? path.resolve(process.env.ATLAS_SALIDA) : path.join(RAIZ, 'datos');
 const ARCHIVO_CONFIG = process.env.ATLAS_CONFIG ? path.resolve(process.env.ATLAS_CONFIG) : path.join(RAIZ, 'atlas.config.json');
 const GENERADOR = path.join(RAIZ, 'scripts/generar-datos.mjs');
+const INSTALADOR = path.join(RAIZ, 'scripts/instalar.mjs');
 
 interface ConfigLocal {
   puerto?: number;
@@ -129,6 +131,31 @@ function fuentesDeIAs(): { skills: string[]; agentes: string[] } {
   }
 }
 
+/** Corre el instalador en modo «solo detectar» con opciones extra (agregar o crear un vault). */
+function configurar(extra: string[]): Promise<{ ok: boolean; resumen?: Record<string, unknown>; error?: string }> {
+  return new Promise((resolve) => {
+    execFile(process.execPath, [INSTALADOR, '--solo-detectar', '--json', ...extra], { cwd: RAIZ, env: process.env, maxBuffer: 10_000_000 }, (error, stdout, stderr) => {
+      if (error) return resolve({ ok: false, error: (stderr || String(error)).trim().split('\n').pop() });
+      try {
+        resolve({ ok: true, resumen: JSON.parse(stdout) });
+      } catch {
+        resolve({ ok: false, error: 'Respuesta inesperada del instalador' });
+      }
+    });
+  });
+}
+
+/**
+ * Las acciones que escriben (marcar tareas, capturar, crear vaults…) solo se aceptan
+ * desde la propia página del atlas: otra web abierta en el navegador no puede usarlas.
+ */
+function deLaPropiaPagina(req: Connect.IncomingMessage) {
+  const sitio = req.headers['sec-fetch-site'];
+  if (sitio && sitio !== 'same-origin' && sitio !== 'none') return false;
+  const origen = req.headers.origin;
+  return !origen || /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(origen);
+}
+
 function generar(): Promise<{ ok: boolean; salida: string }> {
   return new Promise((resolve) => {
     execFile(process.execPath, [GENERADOR], { cwd: RAIZ, env: process.env, maxBuffer: 10_000_000 }, (error, stdout, stderr) => {
@@ -150,6 +177,11 @@ function atlas(): Plugin {
   const regenerar = () => (generando ??= generar().finally(() => (generando = null)));
 
   const middlewares = (app: Connect.Server) => {
+    app.use('/__atlas', (req, res, next) => {
+      if (req.method !== 'GET' && !deLaPropiaPagina(req)) return responder(res, 403, { ok: false, error: 'Solo desde la página del atlas' });
+      next();
+    });
+
     app.use('/datos', (req, res) => {
       const rel = decodeURIComponent((req.url || '').split('?')[0]).replace(/^\/+/, '');
       const abs = dentroDe(DATOS, rel);
@@ -233,6 +265,32 @@ function atlas(): Plugin {
         /* todavía sin datos */
       }
       responder(res, 200, { atlas: true, generado, buscando: Boolean(generando) });
+    });
+
+    // Empezar de cero: crea el vault inicial con notas guía, o agrega uno que ya existe.
+    app.use('/__atlas/vault', async (req, res) => {
+      if (req.method !== 'POST') return responder(res, 405, { ok: false });
+      try {
+        const { ruta, inicial } = (await leerJson(req)) as { ruta?: string; inicial?: boolean };
+        let extra: string[];
+        if (inicial) extra = ['--vault-inicial'];
+        else {
+          const abs = String(ruta ?? '').trim().replace(/^~(?=$|[\\/])/, os.homedir());
+          if (!abs || !path.isAbsolute(abs) || !fs.existsSync(abs) || !fs.statSync(abs).isDirectory()) return responder(res, 400, { ok: false, error: 'Esa carpeta no existe. Escribe la ruta completa, p. ej. ~/Documents/Mi vault' });
+          extra = ['--vault', abs];
+        }
+        const r = await configurar(extra);
+        if (!r.ok) return responder(res, 400, r);
+        // Si ya se estaba leyendo todo, esa lectura no incluye el vault nuevo: se espera y se repite.
+        if (generando) await generando;
+        const { ok } = await regenerar();
+        avisarDatos?.();
+        const vi = r.resumen?.vaultInicial as { ruta: string; nombre: string; creado: boolean } | undefined;
+        const abs = vi ? vi.ruta.replace(/^~(?=$|[\\/])/, os.homedir()) : String(extra[1]);
+        responder(res, 200, { ok, ruta: vi?.ruta ?? abs, nombre: vi?.nombre ?? path.basename(abs), creado: vi?.creado ?? false, obsidian: enlaceObsidianCarpeta(abs) });
+      } catch (error) {
+        responder(res, 400, { ok: false, error: String(error) });
+      }
     });
 
     app.use('/__atlas/regenerar', async (req, res) => {

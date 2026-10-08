@@ -132,3 +132,24 @@ export function useBuscandoCambios() {
     () => buscandoActual,
   );
 }
+
+export interface VaultListo {
+  ok: boolean;
+  error?: string;
+  ruta?: string;
+  nombre?: string;
+  creado?: boolean;
+  obsidian?: string;
+}
+
+/** Crea el vault inicial con notas guía (`inicial`) o agrega un vault que ya existe (`ruta`). */
+export async function agregarVault(pedido: { inicial: true } | { ruta: string }): Promise<VaultListo> {
+  try {
+    const r = await fetch('/__atlas/vault', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pedido) });
+    const datos = (await r.json()) as VaultListo;
+    if (datos.ok) recargarDatos();
+    return datos;
+  } catch {
+    return { ok: false, error: 'El servidor no responde' };
+  }
+}
