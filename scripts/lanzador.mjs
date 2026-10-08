@@ -72,25 +72,33 @@ function windows() {
   const objetivo = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
   const argumentos = `-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "${path.join(RAIZ, 'iniciar.ps1')}"`;
   const icono = path.join(RAIZ, 'instalador', 'atlas.ico');
-  const lugares = [path.join(process.env.APPDATA || path.join(casa, 'AppData', 'Roaming'), 'Microsoft', 'Windows', 'Start Menu', 'Programs')];
+  const menuInicio = path.join(process.env.APPDATA || path.join(casa, 'AppData', 'Roaming'), 'Microsoft', 'Windows', 'Start Menu', 'Programs');
+  const lugares = [menuInicio];
   if (conEscritorio) {
     const r = spawnSync('powershell', ['-NoProfile', '-Command', "[Environment]::GetFolderPath('Desktop')"], { encoding: 'utf8' });
     if (r.stdout?.trim()) lugares.push(r.stdout.trim());
   }
-  for (const carpeta of lugares) {
-    fs.mkdirSync(carpeta, { recursive: true });
-    const lnk = path.join(carpeta, `${NOMBRE}.lnk`);
+  // En el menú Inicio también queda «Desinstalar Atlas de memoria».
+  const accesos = lugares.map((carpeta) => ({ lnk: path.join(carpeta, `${NOMBRE}.lnk`), objetivo, argumentos, descripcion: `${NOMBRE}: vaults, skills y agentes` }));
+  accesos.push({
+    lnk: path.join(menuInicio, `Desinstalar ${NOMBRE}.lnk`),
+    objetivo: path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'cmd.exe'),
+    argumentos: `/c "${path.join(RAIZ, 'Desinstalar en Windows.cmd')}"`,
+    descripcion: `Quita ${NOMBRE} (tus vaults y notas no se tocan)`,
+  });
+  for (const { lnk, objetivo, argumentos, descripcion } of accesos) {
+    fs.mkdirSync(path.dirname(lnk), { recursive: true });
     const ps = [
       '$s = (New-Object -ComObject WScript.Shell).CreateShortcut($env:ATLAS_LNK)',
       '$s.TargetPath = $env:ATLAS_OBJETIVO',
       '$s.Arguments = $env:ATLAS_ARGS',
       '$s.WorkingDirectory = $env:ATLAS_RAIZ',
       '$s.IconLocation = $env:ATLAS_ICONO',
-      `$s.Description = '${NOMBRE}: vaults, skills y agentes'`,
+      '$s.Description = $env:ATLAS_DESCRIPCION',
       '$s.Save()',
     ].join('; ');
     const r = spawnSync('powershell', ['-NoProfile', '-Command', ps], {
-      env: { ...process.env, ATLAS_LNK: lnk, ATLAS_OBJETIVO: objetivo, ATLAS_ARGS: argumentos, ATLAS_RAIZ: RAIZ, ATLAS_ICONO: icono },
+      env: { ...process.env, ATLAS_LNK: lnk, ATLAS_OBJETIVO: objetivo, ATLAS_ARGS: argumentos, ATLAS_RAIZ: RAIZ, ATLAS_ICONO: icono, ATLAS_DESCRIPCION: descripcion },
       encoding: 'utf8',
     });
     if (r.status === 0) creados.push(lnk);
@@ -110,6 +118,11 @@ Icon=${path.join(RAIZ, 'instalador', 'atlas.png')}
 Terminal=false
 Categories=Office;Utility;
 StartupNotify=false
+Actions=desinstalar;
+
+[Desktop Action desinstalar]
+Name=Desinstalar
+Exec=/bin/bash ${comillas(path.join(RAIZ, 'Desinstalar en Linux.sh'))}
 `;
   const menu = path.join(casa, '.local', 'share', 'applications', 'atlas-memoria.desktop');
   fs.mkdirSync(path.dirname(menu), { recursive: true });

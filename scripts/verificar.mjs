@@ -77,6 +77,8 @@ try {
     XDG_CONFIG_HOME: path.join(home, '.config'),
     ATLAS_CONFIG: path.join(base, 'atlas.config.json'),
     ATLAS_SALIDA: path.join(base, 'datos'),
+    // Lo que apague funciones en este equipo no debe cambiar la prueba.
+    ATLAS_USO: '',
   };
   for (const v of ['CODEX_HOME', 'CLAUDE_CONFIG_DIR', 'ATLAS_OBSIDIAN', 'ATLAS_SKILLS_EXTRA', 'ATLAS_LAUNCH_PREFIJOS', 'ATLAS_PUERTO', 'PORT']) delete entorno[v];
   escribir(
@@ -223,10 +225,10 @@ try {
   ok(Boolean(leerRepo('INSTALAR.md')) && Boolean(leerRepo('instalar.sh')) && Boolean(leerRepo('instalar.ps1')), 'existen INSTALAR.md, instalar.sh e instalar.ps1');
   const ejecutable = (rel) => (fs.statSync(path.join(RAIZ, rel)).mode & 0o111) !== 0;
   ok(
-    ['Instalar en Mac.command', 'Instalar en Linux.sh', 'iniciar.sh', 'instalar.sh'].every(ejecutable) &&
-      fs.readFileSync(path.join(RAIZ, 'Instalar en Windows.cmd'), 'utf8').includes('\r\n') &&
+    ['Instalar en Mac.command', 'Instalar en Linux.sh', 'Desinstalar en Mac.command', 'Desinstalar en Linux.sh', 'iniciar.sh', 'instalar.sh'].every(ejecutable) &&
+      ['Instalar en Windows.cmd', 'Desinstalar en Windows.cmd'].every((f) => fs.readFileSync(path.join(RAIZ, f), 'utf8').includes('\r\n')) &&
       ['atlas.icns', 'atlas.ico', 'atlas.png'].every((f) => fs.existsSync(path.join(RAIZ, 'instalador', f))),
-    'trae los instaladores de doble clic (ejecutables) y los íconos de cada sistema',
+    'trae los instaladores y desinstaladores de doble clic (ejecutables) y los íconos de cada sistema',
   );
   if (process.platform !== 'win32') {
     const l = correr('lanzador.mjs', ['--json']);
@@ -234,7 +236,18 @@ try {
     const app = creados.find((c) => c.endsWith('.app') || c.endsWith('.desktop'));
     const listo = process.platform === 'darwin' ? app && fs.existsSync(path.join(app, 'Contents', 'MacOS', 'atlas')) : app && fs.readFileSync(app, 'utf8').includes('iniciar.sh');
     ok(Boolean(listo) && creados.every((c) => c.startsWith(home)), 'crea el acceso de doble clic «Atlas de memoria» en la carpeta personal');
+    const fuera = correr('desinstalar.mjs', ['--si', '--json', '--solo-accesos']);
+    const quitados = JSON.parse(fuera.stdout || '{}').accesos ?? [];
+    ok(fuera.status === 0 && creados.every((c) => !fs.existsSync(c)) && quitados.length === creados.length, 'el desinstalador quita los accesos de doble clic');
   }
+  // Una app instalada por el instalador de doble clic se borra entera; los vaults no.
+  const carpetaInstalada = process.platform === 'darwin' ? path.join(home, 'Library', 'Application Support', 'Atlas de memoria') : process.platform === 'win32' ? path.join(home, 'AppData', 'Local', 'Atlas de memoria') : path.join(home, '.local', 'share', 'atlas-memoria');
+  fs.mkdirSync(path.join(carpetaInstalada, 'scripts'), { recursive: true });
+  fs.copyFileSync(path.join(RAIZ, 'scripts', 'desinstalar.mjs'), path.join(carpetaInstalada, 'scripts', 'desinstalar.mjs'));
+  fs.writeFileSync(path.join(carpetaInstalada, 'atlas.config.json'), JSON.stringify({ vaults: [{ nombre: 'Uno', ruta: path.join(home, 'Uno') }], puerto: 59999 }));
+  const notasAntes = fs.readdirSync(path.join(home, 'Documents')).length;
+  const borrado = spawnSync(process.execPath, [path.join(carpetaInstalada, 'scripts', 'desinstalar.mjs'), '--si', '--json'], { cwd: carpetaInstalada, env: { ...entorno, ATLAS_CONFIG: '', LOCALAPPDATA: path.join(home, 'AppData', 'Local'), XDG_DATA_HOME: '' }, encoding: 'utf8' });
+  ok(borrado.status === 0 && !fs.existsSync(carpetaInstalada) && fs.readdirSync(path.join(home, 'Documents')).length === notasAntes, 'el desinstalador borra la app instalada y deja los vaults intactos');
 } finally {
   fs.rmSync(base, { recursive: true, force: true });
 }
