@@ -20,6 +20,9 @@
 - Si Claude Code o Codex no tienen sesión, se prueba la siguiente IA hasta llegar a Gemini CLI u Ollama.
 - Gemini CLI recibe el pedido por la entrada estándar (antes iba como argumento, que en Windows se rompía con textos largos).
 - Sin IA (o sin sesión), la respuesta explica cómo tener una gratis: Ollama o Gemini CLI con una cuenta de Google.
+### Todo en español
+- Se tradujeron los 988 textos que faltaban (descripciones, títulos y frases de activación de skills nuevas: marketing en Instagram y LinkedIn, Superpowers, HyperFrames, OpenAI y otras). Quedan en `traducciones/es.json`, así que llegan traducidos a quien instale o actualice.
+- Arreglo: el instalador contaba los textos sin traducir de la carpeta de datos por defecto aunque se usara otra (`ATLAS_SALIDA`).
 
 ## 2.2.0 · 2026-10-07
 
