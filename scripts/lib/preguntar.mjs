@@ -1,7 +1,10 @@
 // Preguntar a la memoria: busca las notas que mejor responden una pregunta y, si
-// hay una IA instalada en el equipo (Claude Code, Codex o Gemini CLI), le pide que
-// responda solo con esas notas y que las cite. Sin IA, devuelve solo las notas.
-// La pregunta y esas notas se envían a la IA elegida: la interfaz lo dice.
+// hay una IA en el equipo, le pide que responda solo con esas notas y que las cite.
+// Sin IA, devuelve solo las notas. La pregunta y esas notas se envían a la IA
+// elegida (la interfaz lo dice); con Ollama nada sale del equipo.
+//
+// IAs, en orden: Claude Code, Codex, Gemini CLI (gratis con una cuenta de Google) y
+// Ollama (modelos locales, gratis y sin cuenta: https://ollama.com).
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -66,8 +69,43 @@ export function fuentesPara(pregunta, datos, cuantas = 8) {
 const IAS = [
   { id: 'claude', nombre: 'Claude Code', comando: 'claude', args: ['-p'], porEntrada: true },
   { id: 'codex', nombre: 'Codex', comando: 'codex', args: ['exec', '--skip-git-repo-check', '--sandbox', 'read-only', '-'], porEntrada: true },
-  { id: 'gemini', nombre: 'Gemini CLI', comando: 'gemini', args: ['-p'], porEntrada: false },
+  // Gemini lee el pedido por la entrada y le suma lo que va en -p (así no hay que
+  // pasar un texto largo como argumento, que en Windows se rompe).
+  { id: 'gemini', nombre: 'Gemini CLI', comando: 'gemini', args: ['-p', 'Responde siguiendo las instrucciones de arriba.'], porEntrada: true },
 ];
+
+// --- Ollama: modelos locales por su API (no hace falta su terminal) ----------------
+const OLLAMA = (process.env.OLLAMA_HOST || 'http://127.0.0.1:11434').replace(/\/+$/, '').replace(/^(?!https?:\/\/)/, 'http://');
+// Modelos de chat conocidos, en orden de preferencia (los de «embeddings» no sirven).
+const PREFERIDOS = [/llama3/, /qwen/, /gemma/, /mistral/, /phi/, /deepseek/];
+let cacheOllama = { cuando: 0, modelo: null };
+
+/** El modelo de Ollama con el que responder (o null si Ollama no está corriendo). */
+async function modeloDeOllama(preferido) {
+  if (Date.now() - cacheOllama.cuando < 60_000) return cacheOllama.modelo;
+  let modelo = null;
+  try {
+    const r = await fetch(`${OLLAMA}/api/tags`, { signal: AbortSignal.timeout(1500) });
+    const nombres = r.ok ? ((await r.json()).models ?? []).map((m) => m.name).filter((n) => !/embed/i.test(n)) : [];
+    modelo = (preferido && nombres.find((n) => n === preferido || n.startsWith(`${preferido}:`))) || PREFERIDOS.map((re) => nombres.find((n) => re.test(n))).find(Boolean) || nombres[0] || null;
+  } catch {
+    /* Ollama no está instalado o no está abierto */
+  }
+  cacheOllama = { cuando: Date.now(), modelo };
+  return modelo;
+}
+
+async function preguntarOllama(modelo, pedido, tiempo = 240_000) {
+  const r = await fetch(`${OLLAMA}/api/generate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: modelo, prompt: pedido, stream: false }),
+    signal: AbortSignal.timeout(tiempo),
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok || !d.response) throw new Error(d.error || `Ollama respondió ${r.status}`);
+  return String(d.response).trim();
+}
 
 function enRuta(comando) {
   const extensiones = process.platform === 'win32' ? ['.cmd', '.exe', '.bat', ''] : [''];
@@ -84,11 +122,21 @@ function enRuta(comando) {
   return null;
 }
 
-/** Las IAs que pueden responder, en orden: la configurada (`preguntar.ia`) o todas las instaladas. */
-export function iasParaPreguntar(preferida = 'auto') {
+/**
+ * Las IAs que pueden responder, en orden: la configurada (`preguntar.ia`) o todas
+ * las disponibles. `modelo` elige el modelo de Ollama.
+ * @param {string} [preferida]
+ * @param {string | null} [modelo]
+ */
+export async function iasParaPreguntar(preferida = 'auto', modelo = null) {
   if (preferida === 'ninguna') return [];
   const candidatas = preferida === 'auto' ? IAS : IAS.filter((x) => x.id === preferida);
-  return candidatas.map((ia) => ({ ...ia, ruta: enRuta(ia.comando) })).filter((ia) => ia.ruta);
+  const lista = candidatas.map((ia) => ({ ...ia, ruta: enRuta(ia.comando) })).filter((ia) => ia.ruta);
+  if (preferida === 'auto' || preferida === 'ollama') {
+    const elegido = await modeloDeOllama(modelo);
+    if (elegido) lista.push({ id: 'ollama', nombre: `Ollama (${elegido})`, modelo: elegido, local: true });
+  }
+  return lista;
 }
 
 /**
@@ -125,7 +173,7 @@ export async function responder(ias, pedido) {
   return {
     ia: sinSesion.at(-1) ?? null,
     respuesta: null,
-    error: `${sinSesion.join(' y ')} ${sinSesion.length === 1 ? 'no tiene' : 'no tienen'} la sesión iniciada en este equipo. Abre una terminal e inicia sesión (por ejemplo, ejecuta «claude» o «codex login») para que redacten la respuesta`,
+    error: `${sinSesion.join(' y ')} ${sinSesion.length === 1 ? 'no tiene' : 'no tienen'} la sesión iniciada en este equipo. Abre una terminal e inicia sesión (por ejemplo, ejecuta «claude», «codex login» o «gemini») para que redacten la respuesta`,
   };
 }
 
@@ -149,6 +197,7 @@ export function armarPedido(pregunta, fuentes) {
 
 /** Ejecuta la IA con el pedido y devuelve su respuesta (texto). */
 export function preguntarIA(ia, pedido, tiempo = 120_000) {
+  if (ia.id === 'ollama') return preguntarOllama(ia.modelo, pedido);
   return new Promise((resolve, reject) => {
     // Si el servidor se abrió desde una sesión de Claude Code, la marca de sesión
     // anidada impediría responder: la pregunta es independiente de esa sesión.

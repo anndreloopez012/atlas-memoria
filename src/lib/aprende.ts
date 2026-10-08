@@ -192,7 +192,7 @@ export async function pasosAprende(atlas: Atlas): Promise<Paso[]> {
       id: 'preguntar',
       titulo: 'Pregúntale a tu memoria',
       porque: 'Buscar por pregunta, no por palabra: el atlas encuentra las notas que la responden.',
-      como: 'En el centro de mando escribe una pregunta, por ejemplo `¿cómo enlazo notas?`, y elige **Preguntar a tu memoria**. Con una IA instalada, te responde citando tus notas.',
+      como: 'En el centro de mando escribe una pregunta, por ejemplo `¿cómo enlazo notas?`, y elige **Preguntar a tu memoria**. Con una IA te responde citando tus notas. Gratis: [Ollama](https://ollama.com) con un modelo (`ollama pull llama3.2`), en tu equipo y sin cuenta, o Gemini CLI con tu cuenta de Google.',
       ir: { texto: 'Hacer una pregunta', centro: '¿cómo enlazo notas?' },
       visto: false,
     },
