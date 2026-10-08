@@ -112,6 +112,9 @@ interface EstadoServidor {
 let estadoActual: EstadoServidor = { buscando: false, nueva: null, progreso: null };
 let generadoVisto: string | null = null;
 let versionVista: string | null = null;
+let carpetaApp: string | null = null;
+/** Carpeta de la app en este equipo (la informa el servidor). */
+export const carpetaDeLaApp = () => carpetaApp;
 let esperandoReinicio = false;
 const oyentesEstado = new Set<() => void>();
 const cambiarEstado = (cambio: Partial<EstadoServidor>) => {
@@ -125,7 +128,8 @@ async function consultarEstado() {
   try {
     const r = await fetch('/__atlas/estado', { cache: 'no-store' });
     if (!r.ok) return;
-    const d = (await r.json()) as { generado: string | null; buscando: boolean; version?: string; actualizacion?: VersionNueva | null; progreso?: string | null };
+    const d = (await r.json()) as { generado: string | null; buscando: boolean; version?: string; carpeta?: string; actualizacion?: VersionNueva | null; progreso?: string | null };
+    carpetaApp = d.carpeta ?? carpetaApp;
     // Volvió con otra versión: la página se recarga para usar el código nuevo.
     if (d.version && versionVista && d.version !== versionVista) {
       location.reload();

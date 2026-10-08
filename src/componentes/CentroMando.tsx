@@ -3,13 +3,14 @@
 // que abriste, a dónde ir y las acciones disponibles. Las funciones nuevas se suman
 // aquí como grupos o acciones, no como botones sueltos por la interfaz.
 import MiniSearch from 'minisearch';
-import { ArrowRight, ArrowUpCircle, Bot, Check, Clock, Compass, ExternalLink, FileText, GraduationCap, Share2, ImageDown, MessageCircleQuestion, Mic, Moon, NotebookPen, RefreshCw, Search, Sparkles, Star, Sun, X, type LucideIcon } from 'lucide-react';
+import { ArrowRight, ArrowUpCircle, Bot, Check, Clock, Compass, ExternalLink, FileText, GraduationCap, Share2, ImageDown, LogOut, MessageCircleQuestion, Mic, Moon, NotebookPen, RefreshCw, Search, Sparkles, Star, Sun, X, type LucideIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cargarAgentes, cargarSkills, cargarVault, useActualizacion, useVersionDatos } from '../lib/datos';
 import { useFavoritos } from '../lib/favoritos';
 import { marcarPaso } from '../lib/aprende';
 import { ABRIR_ACTUALIZAR, VistaActualizacion } from './Actualizacion';
 import { VistaAvance } from './Avance';
+import { VistaDesinstalar } from './Desinstalar';
 import { ABRIR_APRENDE, usePasosAprende, VistaAprende } from './Aprende';
 import Markdown from './Markdown';
 import { recomendador } from '../lib/recomendar';
@@ -157,6 +158,7 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
   const [aprende, setAprende] = useState(inicial === ABRIR_APRENDE);
   const [verVersion, setVerVersion] = useState(inicial === ABRIR_ACTUALIZAR);
   const [verAvance, setVerAvance] = useState(false);
+  const [verDesinstalar, setVerDesinstalar] = useState(false);
   const [consulta, setConsulta] = useState(inicial === ABRIR_APRENDE || inicial === ABRIR_ACTUALIZAR ? '' : inicial);
   const { nueva } = useActualizacion();
   const pasos = usePasosAprende(atlas);
@@ -336,6 +338,14 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
         },
       },
       {
+        clave: 'accion:desinstalar',
+        grupo: 'Acciones',
+        titulo: 'Desinstalar el atlas',
+        contexto: 'cómo quitar la app (tus notas no se tocan)',
+        icono: LogOut,
+        ejecutar: () => setVerDesinstalar(true),
+      },
+      {
         clave: 'accion:actualizar',
         grupo: 'Acciones',
         titulo: 'Actualizar los datos ahora',
@@ -488,12 +498,13 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
 
   const tecla = (e: React.KeyboardEvent) => {
     // En la ruta Aprende: Esc vuelve a los resultados.
-    if (aprende || verVersion || verAvance) {
+    if (aprende || verVersion || verAvance || verDesinstalar) {
       if (e.key === 'Escape') {
         e.preventDefault();
         setAprende(false);
         setVerVersion(false);
         setVerAvance(false);
+        setVerDesinstalar(false);
       }
       return;
     }
@@ -536,6 +547,7 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
               setAprende(false);
               setVerVersion(false);
               setVerAvance(false);
+              setVerDesinstalar(false);
               setConsulta(e.target.value);
               setActivo(0);
             }}
@@ -649,7 +661,12 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
             {captura.ok === false && <p className="respuesta-aviso">No se pudo guardar: {captura.error}</p>}
           </div>
         )}
-        {verAvance && !respuesta && !captura && (
+        {verDesinstalar && !respuesta && !captura && (
+          <div className="buscador-resultados respuesta">
+            <VistaDesinstalar />
+          </div>
+        )}
+        {verAvance && !verDesinstalar && !respuesta && !captura && (
           <div className="buscador-resultados respuesta">
             <VistaAvance atlas={atlas} />
           </div>
@@ -673,7 +690,7 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
             />
           </div>
         )}
-        <div className="buscador-resultados" ref={lista} id="centro-filas" role="listbox" hidden={Boolean(respuesta || captura || aprende || verVersion || verAvance)}>
+        <div className="buscador-resultados" ref={lista} id="centro-filas" role="listbox" hidden={Boolean(respuesta || captura || aprende || verVersion || verAvance || verDesinstalar)}>
           {q.length >= 2 && !listo && <p className="vacio">Preparando el índice de {atlas.totales.notas.toLocaleString('es-GT')} notas…</p>}
           {q.length >= 2 && listo && filas.length === 0 && <p className="vacio">Nada coincide con «{consulta}».</p>}
           {filas.map((f, i) => {
@@ -702,7 +719,7 @@ export default function CentroMando({ atlas, vista, inicial, cerrar }: { atlas: 
           })}
         </div>
         <div className="buscador-pie mono">
-          {captura || aprende || verVersion || verAvance ? (
+          {captura || aprende || verVersion || verAvance || verDesinstalar ? (
             <span>esc volver</span>
           ) : respuesta ? (
             <>

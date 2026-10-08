@@ -282,6 +282,7 @@ function atlas(): Plugin {
         generado,
         buscando: Boolean(generando),
         version: VERSION,
+        carpeta: RAIZ,
         actualizacion: nueva ? { version: nueva.version, notas: nueva.notas, url: nueva.url, automatica: modoApp && !actualizacion.git, git: Boolean(actualizacion.git) } : null,
         progreso,
       });
@@ -336,6 +337,14 @@ function atlas(): Plugin {
         progreso = null;
         responder(res, 500, { ok: false, error: String(error) });
       }
+    });
+
+    // Apagar la app de doble clic (lo usa el desinstalador antes de borrarla).
+    app.use('/__atlas/apagar', (req, res) => {
+      if (req.method !== 'POST') return responder(res, 405, { ok: false });
+      if (!modoApp) return responder(res, 409, { ok: false, error: 'Solo la app de doble clic se apaga así' });
+      responder(res, 200, { ok: true });
+      setTimeout(() => process.exit(0), 300);
     });
 
     app.use('/__atlas/regenerar', async (req, res) => {
