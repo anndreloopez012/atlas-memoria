@@ -5964,3 +5964,74 @@ a:hover > .caja rect {
 .respuesta-gratis p {
   margin: 0;
 }
+
+/* ---- Compartir mi avance -------------------------------------------------- */
+.avance {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.avance-que {
+  margin: 0;
+  color: var(--tinta-2);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.avance-que strong {
+  color: var(--tinta);
+  font-weight: 600;
+}
+.avance-nombre {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12.5px;
+  color: var(--tinta-2);
+}
+.avance-nombre input {
+  max-width: 320px;
+  padding: 8px 11px;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: var(--radio-s);
+  background: var(--fondo-alto);
+  color: var(--tinta);
+  font: 14px var(--f-ui);
+}
+.avance-nombre input:focus-visible {
+  outline: 2px solid var(--laton);
+  outline-offset: 1px;
+}
+.avance-cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+.avance-cifras div {
+  padding: 10px 12px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio-s);
+}
+.avance-cifras dt {
+  font: 11px var(--f-mono);
+  color: var(--tinta-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.avance-cifras dd {
+  margin: 2px 0 0;
+  font: 22px var(--f-display);
+}
+.avance .boton-primario {
+  margin-top: 0;
+  border: 0;
+  cursor: pointer;
+}
+.avance .boton-primario:disabled {
+  opacity: 0.6;
+}
+.avance-nota {
+  margin: 0;
+  color: var(--tinta-3);
+  font-size: 11.5px;
+}

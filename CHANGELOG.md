@@ -23,6 +23,10 @@
 ### Todo en español
 - Se tradujeron los 988 textos que faltaban (descripciones, títulos y frases de activación de skills nuevas: marketing en Instagram y LinkedIn, Superpowers, HyperFrames, OpenAI y otras). Quedan en `traducciones/es.json`, así que llegan traducidos a quien instale o actualice.
 - Arreglo: el instalador contaba los textos sin traducir de la carpeta de datos por defecto aunque se usara otra (`ATLAS_SALIDA`).
+### Compartir mi avance
+- Nueva acción del centro de mando, **Compartir mi avance**: un resumen para el mentor o docente con las cifras de cada vault, la constancia semana a semana, tareas, proyectos, las skills y agentes que creó la persona y su ruta Aprende.
+- Se descarga como una página HTML que abre en cualquier navegador (con los datos en JSON adentro, para revisarlos con una herramienta o una IA) o se copia como texto para pegarlo en un chat o una tarea. Nombre opcional.
+- No incluye el contenido de las notas ni sus títulos; solo los nombres de los proyectos.
 
 ## 2.2.0 · 2026-10-07
 
