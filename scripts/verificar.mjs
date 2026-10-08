@@ -164,6 +164,20 @@ try {
   const otraVez = JSON.parse(enVacio(['--vault-inicial']).stdout || '{}');
   ok(otraVez.vaultInicial?.creado === false && otraVez.vaults.length === 1 && fs.readFileSync(path.join(rutaInicial, 'Empieza aquí.md'), 'utf8') === 'mía', 'pedirlo otra vez reutiliza el mismo vault sin sobrescribir nada');
 
+  // La ruta «Aprende» no cuenta las notas guía como «tu primera nota»: su lista debe
+  // coincidir con las notas que trae el vault inicial.
+  const guia = fs.readFileSync(path.join(RAIZ, 'src', 'lib', 'aprende.ts'), 'utf8').match(/DE_LA_GUIA = new Set\(\[([^\]]*)\]/)?.[1].match(/'([^']+)'/g)?.map((x) => x.slice(1, -1)) ?? [];
+  const notasGuia = [];
+  const recorrerGuia = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (e.name.startsWith('.')) continue;
+      if (e.isDirectory()) recorrerGuia(path.join(dir, e.name));
+      else if (e.name.endsWith('.md')) notasGuia.push(e.name.slice(0, -3));
+    }
+  };
+  recorrerGuia(path.join(RAIZ, 'instalador', 'vault-inicial'));
+  ok(notasGuia.length > 0 && notasGuia.every((t) => guia.includes(t)), 'la ruta Aprende reconoce todas las notas guía del vault inicial');
+
   // --- Instrucciones para las IAs ---------------------------------------------
   console.log('\nInstrucciones para Claude Code, Codex y Antigravity');
   const leerRepo = (rel) => {

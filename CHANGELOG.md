@@ -6,6 +6,11 @@
 - **Vault inicial**: quien no tiene vaults ve en la portada «Crear mi primer vault», que deja «Mi memoria» en Documentos con notas guía (empezar, escribir, enlazar, tareas, primer proyecto, skills y agentes), plantillas y su bandeja, y lo abre en Obsidian. También «Ya tengo un vault» para sumar una carpeta escribiendo su ruta, y `npm run instalar -- --vault-inicial`. Nunca sobrescribe: si se pide otra vez, reutiliza el mismo.
 - Skills y Agentes sin nada explican de dónde salen y qué IA instalar, en vez de una lista vacía; la portada oculta las cifras en cero.
 - Seguridad: las acciones que escriben (tareas, capturas, vaults) solo se aceptan desde la propia página del atlas, no desde otra web abierta en el navegador.
+### Aprende: la ruta para empezar
+- Diez pasos, del primer vault al primer agente: escribir una nota, enlazar ideas, anotar tareas con fecha, armar un proyecto, capturar, preguntar a la memoria, instalar una IA y crear la primera skill y el primer agente.
+- Cada paso explica para qué sirve y cómo hacerlo, con plantillas listas para copiar (skill y agente, con la carpeta exacta de este equipo) y el pedido para hacerlo con tu IA.
+- Se marca solo cuando el atlas ve que ya está hecho (en las notas, las tareas, las skills o lo que hiciste en la página); los demás se marcan con «Ya lo hice».
+- Vive en el centro de mando («Aprende») y, mientras falten varios pasos, en una tarjeta de Hoy con el siguiente paso, que se puede ocultar.
 
 ## 2.2.0 · 2026-10-07
 
