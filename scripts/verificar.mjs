@@ -196,6 +196,9 @@ try {
   recorrerGuia(path.join(RAIZ, 'instalador', 'vault-inicial'));
   ok(notasGuia.length > 0 && notasGuia.every((t) => guia.includes(t)), 'la ruta Aprende reconoce todas las notas guía del vault inicial');
 
+  const notas = spawnSync(process.execPath, [path.join(RAIZ, 'scripts', 'notas-version.mjs'), 'v0.0.0'], { cwd: RAIZ, encoding: 'utf8' });
+  ok(notas.status === 0 && notas.stdout.includes('Instalar con doble clic'), 'arma las notas de la versión para GitHub Releases');
+
   // --- Actualizaciones ----------------------------------------------------------
   console.log('\nActualizaciones');
   ok(esMasNueva('2.10.0', '2.9.3') && esMasNueva('v3.0.0', '2.9.9') && !esMasNueva('2.2.0', '2.2.0') && !esMasNueva('2.1.9', '2.2.0'), 'compara versiones (2.10.0 es más nueva que 2.9.3)');
